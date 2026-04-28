@@ -1,0 +1,985 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BeautyFlow — Protótipo Mobile MVP</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --rose: #C77D8A;
+      --rose-light: #F7EDEB;
+      --rose-dark: #9E5A65;
+      --nude: #F7EDEB;
+      --offwhite: #FFF9F7;
+      --gold: #D6A85A;
+      --gold-light: #F5EDD8;
+      --text-main: #2F2424;
+      --text-sec: #7A6A68;
+      --success: #5FA777;
+      --error: #D96C6C;
+      --warn: #E8B84D;
+      --border: rgba(199, 125, 138, 0.18);
+      --border-strong: rgba(199, 125, 138, 0.32);
+      --shadow: 0 12px 32px rgba(47, 36, 36, 0.12);
+    }
+
+    body {
+      min-height: 100vh;
+      font-family: 'DM Sans', sans-serif;
+      background:
+        radial-gradient(circle at 20% 10%, rgba(199, 125, 138, 0.16), transparent 28%),
+        radial-gradient(circle at 90% 0%, rgba(214, 168, 90, 0.18), transparent 24%),
+        linear-gradient(160deg, #f4e9e5, #e9ddd8);
+      color: var(--text-main);
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 18px 10px 32px;
+    }
+
+    .workspace {
+      width: 100%;
+      max-width: 430px;
+    }
+
+    .prototype-header {
+      text-align: center;
+      margin-bottom: 12px;
+      color: var(--text-main);
+    }
+
+    .prototype-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 26px;
+      font-weight: 600;
+      color: var(--rose-dark);
+      line-height: 1.1;
+    }
+
+    .prototype-subtitle {
+      font-size: 12px;
+      color: var(--text-sec);
+      margin-top: 4px;
+    }
+
+    .screen-selector {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding: 0 2px 14px;
+      scrollbar-width: none;
+    }
+
+    .screen-selector::-webkit-scrollbar {
+      display: none;
+    }
+
+    .screen-button {
+      flex-shrink: 0;
+      border: 1px solid var(--border-strong);
+      background: rgba(255, 255, 255, 0.82);
+      color: var(--text-sec);
+      border-radius: 999px;
+      padding: 7px 13px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 11px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: 0.2s ease;
+    }
+
+    .screen-button.active {
+      background: var(--rose);
+      color: #fff;
+      border-color: var(--rose);
+      box-shadow: 0 6px 14px rgba(199, 125, 138, 0.24);
+    }
+
+    .phone {
+      width: min(100%, 390px);
+      height: 760px;
+      margin: 0 auto;
+      border: 7px solid #2F2424;
+      border-radius: 42px;
+      overflow: hidden;
+      background: #fff;
+      box-shadow: 0 26px 70px rgba(47, 36, 36, 0.28);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    .notch {
+      height: 28px;
+      background: #2F2424;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .notch-pill {
+      width: 82px;
+      height: 14px;
+      background: #111;
+      border-radius: 999px;
+    }
+
+    .status-bar {
+      height: 25px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 18px;
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--text-sec);
+      background: #fff;
+      flex-shrink: 0;
+    }
+
+    .screen {
+      display: none;
+      flex: 1;
+      min-height: 0;
+      flex-direction: column;
+      background: var(--offwhite);
+    }
+
+    .screen.active {
+      display: flex;
+    }
+
+    .screen-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+      min-height: 0;
+    }
+
+    .screen-content::-webkit-scrollbar {
+      width: 0;
+    }
+
+    .topbar {
+      height: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 0 16px;
+      background: #fff;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    .topbar-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 17px;
+      font-weight: 600;
+      color: var(--rose-dark);
+    }
+
+    .icon-button {
+      width: 30px;
+      height: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 999px;
+      border: 1px solid var(--border-strong);
+      background: var(--rose-light);
+      color: var(--rose-dark);
+      cursor: pointer;
+      font-size: 13px;
+    }
+
+    .button-primary,
+    .button-secondary,
+    .button-ghost {
+      width: 100%;
+      border-radius: 13px;
+      padding: 13px 14px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.2s ease;
+      margin-bottom: 9px;
+    }
+
+    .button-primary {
+      border: 0;
+      color: #fff;
+      background: linear-gradient(135deg, var(--rose), #D26377);
+      box-shadow: 0 8px 16px rgba(199, 125, 138, 0.22);
+    }
+
+    .button-secondary {
+      border: 1.5px solid var(--rose);
+      color: var(--rose);
+      background: transparent;
+    }
+
+    .button-ghost {
+      border: 1px solid var(--border-strong);
+      color: var(--text-sec);
+      background: transparent;
+      font-weight: 500;
+    }
+
+    .field {
+      margin-bottom: 12px;
+    }
+
+    .label {
+      display: block;
+      font-size: 11px;
+      color: var(--text-sec);
+      margin-bottom: 5px;
+      font-weight: 500;
+    }
+
+    .input,
+    .select,
+    .textarea {
+      width: 100%;
+      border: 1px solid var(--border-strong);
+      border-radius: 11px;
+      padding: 12px 13px;
+      background: #fff;
+      font-family: 'DM Sans', sans-serif;
+      color: var(--text-main);
+      font-size: 13px;
+      outline: none;
+    }
+
+    .textarea {
+      min-height: 82px;
+      resize: none;
+      line-height: 1.5;
+    }
+
+    .input::placeholder,
+    .textarea::placeholder {
+      color: #A7918D;
+    }
+
+    .card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 15px;
+      padding: 13px;
+      box-shadow: 0 7px 18px rgba(47, 36, 36, 0.05);
+    }
+
+    .section-label {
+      font-size: 11px;
+      color: var(--text-sec);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      border-radius: 999px;
+      padding: 4px 10px;
+      font-size: 10px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .chip.pending {
+      background: var(--gold-light);
+      color: #8A6020;
+    }
+
+    .chip.sent {
+      background: #E5F5EC;
+      color: #2E7A52;
+    }
+
+    .chip.error {
+      background: #FBEAEA;
+      color: #963D3D;
+    }
+
+    .chip.inactive {
+      background: #EEE7E5;
+      color: var(--text-sec);
+    }
+
+    .avatar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      border-radius: 50%;
+      background: var(--rose-light);
+      color: var(--rose-dark);
+      font-weight: 700;
+      font-size: 12px;
+    }
+
+    .divider {
+      height: 1px;
+      background: var(--border);
+      margin: 11px 0;
+    }
+
+    .bottom-nav {
+      height: 62px;
+      background: #fff;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      flex-shrink: 0;
+    }
+
+    .nav-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      cursor: pointer;
+      color: var(--text-sec);
+      font-size: 9px;
+    }
+
+    .nav-icon {
+      font-size: 16px;
+    }
+
+    .nav-item.active {
+      color: var(--rose);
+      font-weight: 700;
+    }
+
+    .brand-logo {
+      width: 74px;
+      height: 74px;
+      margin: 0 auto 14px;
+      border: 2px solid var(--rose);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 34px;
+      background: rgba(255, 255, 255, 0.5);
+    }
+
+    .brand-name {
+      font-family: 'Playfair Display', serif;
+      color: var(--rose-dark);
+      font-size: 30px;
+      font-weight: 600;
+      text-align: center;
+    }
+
+    .subtext {
+      color: var(--text-sec);
+      font-size: 12px;
+      line-height: 1.55;
+    }
+
+    .home-hero {
+      flex-shrink: 0;
+      padding: 17px 16px 14px;
+      background: linear-gradient(135deg, #FFF5F3, #FDF0EC);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .stat-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 9px;
+      margin-bottom: 10px;
+    }
+
+    .stat-number {
+      font-family: 'Playfair Display', serif;
+      font-size: 24px;
+      font-weight: 600;
+      color: var(--rose-dark);
+      line-height: 1;
+      margin: 4px 0;
+    }
+
+    .stat-label {
+      font-size: 10px;
+      color: var(--text-sec);
+      line-height: 1.2;
+    }
+
+    .list-card {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
+      cursor: pointer;
+    }
+
+    .list-main {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .list-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .list-subtitle {
+      font-size: 10px;
+      color: var(--text-sec);
+      margin-top: 2px;
+    }
+
+    .fab {
+      position: absolute;
+      right: 20px;
+      bottom: 78px;
+      width: 54px;
+      height: 54px;
+      border-radius: 50%;
+      background: var(--rose);
+      color: #fff;
+      border: none;
+      box-shadow: 0 12px 24px rgba(199, 125, 138, 0.32);
+      font-size: 26px;
+      cursor: pointer;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 7px;
+      margin-bottom: 12px;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+
+    .tab {
+      border: 1px solid var(--border-strong);
+      background: #fff;
+      color: var(--text-sec);
+      border-radius: 999px;
+      padding: 7px 13px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .tab.active {
+      background: var(--rose);
+      border-color: var(--rose);
+      color: #fff;
+    }
+
+    .empty-state {
+      min-height: 230px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      gap: 8px;
+      color: var(--text-sec);
+    }
+  </style>
+</head>
+<body>
+  <main class="workspace">
+    <header class="prototype-header">
+      <div class="prototype-title">BeautyFlow</div>
+      <div class="prototype-subtitle">Protótipo navegável do MVP mobile</div>
+    </header>
+
+    <nav class="screen-selector" id="screenSelector">
+      <button class="screen-button active" data-screen="splash">Splash</button>
+      <button class="screen-button" data-screen="login">Login</button>
+      <button class="screen-button" data-screen="signup">Criar Conta</button>
+      <button class="screen-button" data-screen="home">Home</button>
+      <button class="screen-button" data-screen="customers">Clientes</button>
+      <button class="screen-button" data-screen="customer-form">Nova Cliente</button>
+      <button class="screen-button" data-screen="customer-detail">Detalhe Cliente</button>
+      <button class="screen-button" data-screen="services">Serviços</button>
+      <button class="screen-button" data-screen="service-form">Novo Serviço</button>
+      <button class="screen-button" data-screen="appointment">Atendimento</button>
+      <button class="screen-button" data-screen="appointments-history">Histórico</button>
+      <button class="screen-button" data-screen="messages">Mensagens</button>
+      <button class="screen-button" data-screen="message-detail">Detalhe Msg</button>
+      <button class="screen-button" data-screen="message-template">Msg Padrão</button>
+      <button class="screen-button" data-screen="salon-profile">Meu Salão</button>
+      <button class="screen-button" data-screen="notifications">Notificações</button>
+      <button class="screen-button" data-screen="more">Mais</button>
+    </nav>
+
+    <section class="phone">
+      <div class="notch"><div class="notch-pill"></div></div>
+      <div class="status-bar"><span>9:41</span><span>◔ ▪▪▪ 🔋</span></div>
+
+      <div class="screen active" id="screen-splash">
+        <div style="flex:1;background:linear-gradient(160deg,#FFF5F3,#FDF0EC 58%,#F7E8E4);display:flex;flex-direction:column;justify-content:center;align-items:center;padding:28px;position:relative;overflow:hidden;">
+          <div style="position:absolute;top:-52px;right:-54px;width:170px;height:170px;border-radius:50%;background:rgba(199,125,138,.12);"></div>
+          <div style="position:absolute;bottom:92px;left:-58px;width:150px;height:150px;border-radius:50%;background:rgba(214,168,90,.14);"></div>
+          <div class="brand-logo">🌸</div>
+          <div class="brand-name">BeautyFlow</div>
+          <p class="subtext" style="text-align:center;margin-top:8px;">Cuide das suas clientes<br>no momento certo.</p>
+          <div style="position:absolute;bottom:34px;left:22px;right:22px;">
+            <button class="button-primary" onclick="goToScreen('login')">Entrar</button>
+            <button class="button-secondary" onclick="goToScreen('signup')">Criar conta</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="screen" id="screen-login">
+        <div class="screen-content" style="display:flex;flex-direction:column;justify-content:center;padding:28px 22px;">
+          <div style="text-align:center;margin-bottom:28px;">
+            <div style="font-size:28px;margin-bottom:8px;">🌸</div>
+            <h1 style="font-family:'Playfair Display',serif;font-size:23px;color:var(--rose-dark);font-weight:600;">Bem-vinda de volta</h1>
+            <p class="subtext" style="margin-top:4px;">Entre na sua conta do salão</p>
+          </div>
+          <div class="field"><label class="label">E-mail</label><input class="input" type="email" placeholder="seu@email.com" /></div>
+          <div class="field"><label class="label">Senha</label><input class="input" type="password" placeholder="••••••••" /></div>
+          <div style="text-align:right;margin-bottom:18px;"><span style="font-size:12px;color:var(--rose);cursor:pointer;">Esqueci minha senha</span></div>
+          <button class="button-primary" onclick="goToScreen('home')">Entrar</button>
+          <p style="text-align:center;font-size:12px;color:var(--text-sec);margin-top:4px;">Não tem conta? <span style="color:var(--rose);cursor:pointer;" onclick="goToScreen('signup')">Criar conta</span></p>
+        </div>
+      </div>
+
+      <div class="screen" id="screen-signup">
+        <div class="topbar"><button class="icon-button" onclick="goToScreen('login')">←</button><div class="topbar-title">Criar conta</div><div style="width:30px"></div></div>
+        <div class="screen-content">
+          <div class="field"><label class="label">Nome da responsável *</label><input class="input" placeholder="Seu nome completo" /></div>
+          <div class="field"><label class="label">Nome do salão *</label><input class="input" placeholder="Studio Bella Hair" /></div>
+          <div class="field"><label class="label">Telefone do salão</label><input class="input" type="tel" placeholder="(31) 99999-9999" /></div>
+          <div class="field"><label class="label">E-mail *</label><input class="input" type="email" placeholder="seu@email.com" /></div>
+          <div class="field"><label class="label">Senha *</label><input class="input" type="password" placeholder="Mínimo 8 caracteres" /></div>
+          <div class="field"><label class="label">Confirmar senha *</label><input class="input" type="password" placeholder="Repita a senha" /></div>
+          <button class="button-primary" onclick="goToScreen('home')">Criar conta</button>
+          <button class="button-ghost" onclick="goToScreen('login')">Já tenho uma conta</button>
+        </div>
+      </div>
+
+      <div class="screen" id="screen-home">
+        <div class="home-hero">
+          <div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start;">
+            <div>
+              <div style="font-size:10px;color:var(--text-sec);">Olá,</div>
+              <div style="font-family:'Playfair Display',serif;font-size:19px;font-weight:600;color:var(--rose-dark);">Studio Bella Hair 💅</div>
+              <div style="font-size:11px;color:var(--text-sec);margin-top:2px;">Que bom te ver por aqui!</div>
+            </div>
+            <button class="icon-button" onclick="goToScreen('notifications')">🔔</button>
+          </div>
+        </div>
+        <div class="screen-content">
+          <div class="stat-grid">
+            <div class="card" onclick="goToScreen('messages')" style="cursor:pointer;"><div style="font-size:18px;">💬</div><div class="stat-number">3</div><div class="stat-label">Mensagens para enviar</div></div>
+            <div class="card" onclick="goToScreen('customers')" style="cursor:pointer;"><div style="font-size:18px;">👥</div><div class="stat-number">2</div><div class="stat-label">Clientes com retorno próximo</div></div>
+          </div>
+          <div class="card" style="display:flex;align-items:center;gap:11px;margin-bottom:12px;cursor:pointer;" onclick="goToScreen('appointments-history')"><div style="font-size:21px;">📅</div><div><div class="stat-number" style="font-size:22px;">5</div><div class="stat-label">Atendimentos este mês</div></div></div>
+          <button class="button-primary" onclick="goToScreen('appointment')">+ Registrar atendimento</button>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin:8px 0 9px;"><div class="section-label" style="margin:0;">Mensagens pendentes</div><span style="font-size:11px;color:var(--rose);font-weight:700;cursor:pointer;" onclick="goToScreen('messages')">Ver todas</span></div>
+          <div class="card list-card" onclick="goToScreen('message-detail')"><div class="avatar photo-avatar" style="width:38px;height:38px;"><img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=120&h=120&fit=crop&crop=face" alt="Gabriela" /></div><div class="list-main"><div class="list-title">Gabriela Alves</div><div class="list-subtitle">Mechas · 16/04</div></div><span class="chip pending">Pendente</span></div>
+          <div class="card list-card" onclick="goToScreen('message-detail')"><div class="avatar" style="width:38px;height:38px;">JM</div><div class="list-main"><div class="list-title">Juliana Martins</div><div class="list-subtitle">Coloração · 18/04</div></div><span class="chip pending">Pendente</span></div>
+          <div class="card list-card" onclick="goToScreen('message-detail')"><div class="avatar" style="width:38px;height:38px;">CS</div><div class="list-main"><div class="list-title">Carla Souza</div><div class="list-subtitle">Escova · 19/04</div></div><span class="chip pending">Pendente</span></div>
+        </div>
+        <div class="bottom-nav"><div class="nav-item active"><div class="nav-icon">🏠</div><div>Início</div></div><div class="nav-item" onclick="goToScreen('customers')"><div class="nav-icon">👤</div><div>Clientes</div></div><div class="nav-item" onclick="goToScreen('appointments-history')"><div class="nav-icon">📅</div><div>Atendimentos</div></div><div class="nav-item" onclick="goToScreen('messages')"><div class="nav-icon">💬</div><div>Mensagens</div></div><div class="nav-item" onclick="goToScreen('more')"><div class="nav-icon">···</div><div>Mais</div></div></div>
+      </div>
+
+      <div class="screen" id="screen-customers">
+        <div class="topbar"><div class="topbar-title">Clientes</div><button class="screen-button active" style="padding:6px 12px;" onclick="goToScreen('customer-form')">+ Nova</button></div>
+        <div class="screen-content">
+          <input class="input" placeholder="🔍 Buscar por nome ou telefone" style="margin-bottom:13px;" />
+          <div class="section-label">3 clientes cadastradas</div>
+          <div class="card list-card" onclick="goToScreen('customer-detail')"><div class="avatar photo-avatar" style="width:42px;height:42px;"><img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=120&h=120&fit=crop&crop=face" alt="Gabriela" /></div><div class="list-main"><div class="list-title">Gabriela Alves</div><div class="list-subtitle">(31) 99999-9999</div><div class="list-subtitle">Mechas · próx. contato 16/04</div></div><span style="color:var(--text-sec);">›</span></div>
+          <div class="card list-card" onclick="goToScreen('customer-detail')"><div class="avatar" style="width:42px;height:42px;">JM</div><div class="list-main"><div class="list-title">Juliana Martins</div><div class="list-subtitle">(31) 98888-7777</div><div class="list-subtitle">Coloração · próx. contato 18/04</div></div><span style="color:var(--text-sec);">›</span></div>
+          <div class="card list-card" onclick="goToScreen('customer-detail')"><div class="avatar" style="width:42px;height:42px;">CS</div><div class="list-main"><div class="list-title">Carla Souza</div><div class="list-subtitle">(31) 97777-6666</div><div class="list-subtitle">Escova · próx. contato 19/04</div></div><span style="color:var(--text-sec);">›</span></div>
+          <button class="fab" onclick="goToScreen('customer-form')">+</button>
+        </div>
+        <div class="bottom-nav"><div class="nav-item" onclick="goToScreen('home')"><div class="nav-icon">🏠</div><div>Início</div></div><div class="nav-item active"><div class="nav-icon">👤</div><div>Clientes</div></div><div class="nav-item" onclick="goToScreen('appointments-history')"><div class="nav-icon">📅</div><div>Atendimentos</div></div><div class="nav-item" onclick="goToScreen('messages')"><div class="nav-icon">💬</div><div>Mensagens</div></div><div class="nav-item" onclick="goToScreen('more')"><div class="nav-icon">···</div><div>Mais</div></div></div>
+      </div>
+
+      <div class="screen" id="screen-customer-form">
+        <div class="topbar"><button class="icon-button" onclick="goToScreen('customers')">←</button><div class="topbar-title">Nova cliente</div><div style="width:30px"></div></div>
+        <div class="screen-content">
+          <div class="photo-upload-card">
+            <label for="customerPhoto" class="photo-preview" id="photoPreview">
+              <span class="photo-placeholder">📷</span>
+              <img id="photoPreviewImage" alt="Prévia da cliente" />
+            </label>
+            <div class="photo-copy">
+              <div class="list-title">Foto da cliente</div>
+              <p class="subtext">Adicione uma foto para reconhecer a cliente mais rápido.</p>
+              <label for="customerPhoto" class="small-link-button">Inserir foto</label>
+              <input id="customerPhoto" type="file" accept="image/*" onchange="previewCustomerPhoto(event)" />
+            </div>
+          </div>
+          <div class="field"><label class="label">Nome da cliente *</label><input class="input" placeholder="Nome completo" value="Gabriela Alves" /></div>
+          <div class="field"><label class="label">WhatsApp *</label><input class="input" type="tel" placeholder="(31) 99999-9999" value="(31) 99999-9999" /></div>
+          <div class="field"><label class="label">Data de nascimento</label><input class="input" type="date" /></div>
+          <div class="field"><label class="label">Preferência de contato</label><select class="select"><option>WhatsApp</option><option>Ligação</option><option>SMS</option></select></div>
+          <div class="field"><label class="label">Observações</label><textarea class="textarea" placeholder="Alergias, preferências, histórico importante...">Alérgica a amônia. Prefere mechas balayage.</textarea></div>
+          <button class="button-primary" onclick="goToScreen('customers')">Salvar cliente</button>
+          <button class="button-ghost" onclick="goToScreen('customers')">Cancelar</button>
+        </div>
+      </div>
+
+      <div class="screen" id="screen-customer-detail">
+        <div class="topbar"><button class="icon-button" onclick="goToScreen('customers')">←</button><div class="topbar-title">Detalhes</div><span style="font-size:12px;color:var(--rose);font-weight:700;cursor:pointer;" onclick="goToScreen('customer-form')">Editar</span></div>
+        <div class="screen-content">
+          <div style="text-align:center;margin-bottom:15px;"><div class="avatar photo-avatar" style="width:76px;height:76px;font-size:19px;margin:0 auto 8px;"><img id="detailCustomerImage" src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=180&h=180&fit=crop&crop=face" alt="Gabriela" /></div><div style="font-family:'Playfair Display',serif;font-size:20px;font-weight:600;color:var(--rose-dark);">Gabriela Alves</div><div class="subtext">(31) 99999-9999 · WhatsApp</div></div>
+          <div class="card" style="margin-bottom:10px;"><div style="display:flex;justify-content:space-between;gap:12px;"><div><div class="list-subtitle">Último atendimento</div><div class="list-title">Mechas — 01/04/2026</div></div></div><div class="divider"></div><div style="display:flex;justify-content:space-between;align-items:center;"><div><div class="list-subtitle">Próximo contato</div><div class="list-title" style="color:var(--rose-dark);">16/04/2026</div></div><span class="chip pending">Pendente</span></div></div>
+          <div class="card" style="margin-bottom:12px;"><div class="section-label">Observações</div><p class="subtext">Alérgica a amônia. Prefere mechas balayage e finalização com ondas.</p></div>
+          <div class="section-label">Histórico</div>
+          <div class="card list-card"><div class="list-main"><div class="list-title">Mechas</div><div class="list-subtitle">01/04/2026 · mensagem para 16/04</div></div><span class="chip pending">Pendente</span></div>
+          <div class="card list-card"><div class="list-main"><div class="list-title">Hidratação</div><div class="list-subtitle">15/03/2026 · mensagem enviada</div></div><span class="chip sent">Enviada</span></div>
+          <button class="button-primary" onclick="goToScreen('appointment')">Registrar atendimento</button><button class="button-secondary">Abrir WhatsApp</button>
+        </div>
+      </div>
+
+      <div class="screen" id="screen-services">
+        <div class="topbar"><button class="icon-button" onclick="goToScreen('more')">←</button><div class="topbar-title">Serviços</div><button class="screen-button active" style="padding:6px 12px;" onclick="goToScreen('service-form')">+ Novo</button></div>
+        <div class="screen-content">
+          <div class="section-label">Serviços ativos</div>
+          <div class="card list-card" onclick="goToScreen('service-form')"><div style="font-size:20px;">✨</div><div class="list-main"><div class="list-title">Mechas</div><div class="list-subtitle">Retorno sugerido em 15 dias</div></div><span class="chip sent">Ativo</span></div>
+          <div class="card list-card" onclick="goToScreen('service-form')"><div style="font-size:20px;">🎨</div><div class="list-main"><div class="list-title">Coloração</div><div class="list-subtitle">Retorno sugerido em 30 dias</div></div><span class="chip sent">Ativo</span></div>
+          <div class="card list-card" onclick="goToScreen('service-form')"><div style="font-size:20px;">✂️</div><div class="list-main"><div class="list-title">Corte</div><div class="list-subtitle">Retorno sugerido em 45 dias</div></div><span class="chip sent">Ativo</span></div>
+          <div class="card list-card" onclick="goToScreen('service-form')"><div style="font-size:20px;">💆‍♀️</div><div class="list-main"><div class="list-title">Hidratação</div><div class="list-subtitle">Retorno sugerido em 15 dias</div></div><span class="chip inactive">Inativo</span></div>
+        </div>
+      </div>
+
+      <div class="screen" id="screen-service-form">
+        <div class="topbar"><button class="icon-button" onclick="goToScreen('services')">←</button><div class="topbar-title">Novo serviço</div><div style="width:30px"></div></div>
+        <div class="screen-content">
+          <div class="field"><label class="label">Nome do serviço *</label><input class="input" placeholder="Ex: Mechas" value="Mechas" /></div>
+          <div class="field"><label class="label">Prazo de retorno em dias *</label><input class="input" type="number" value="15" /></div>
+          <div class="field"><label class="label">Status</label><select class="select"><option>Ativo</option><option>Inativo</option></select></div>
+          <div class="field"><label class="label">Mensagem padrão do serviço</label><textarea class="textarea">Oi, {nome}! Tudo bem? 💕 Já faz {dias} dias desde o serviço de {servico}. Que tal agendar um retorno?</textarea></div>
+          <div class="card" style="margin-bottom:12px;background:var(--rose-light);"><div class="section-label">Variáveis disponíveis</div><p class="subtext">{nome}, {servico}, {dias}, {salao}, {data_atendimento}</p></div>
+          <button class="button-primary" onclick="goToScreen('services')">Salvar serviço</button><button class="button-ghost" onclick="goToScreen('services')">Cancelar</button>
+        </div>
+      </div>
+
+      <div class="screen" id="screen-appointment">
+        <div class="topbar"><button class="icon-button" onclick="goToScreen('home')">←</button><div class="topbar-title">Registrar atendimento</div><div style="width:30px"></div></div>
+        <div class="screen-content">
+          <div class="field"><label class="label">Cliente *</label><select class="select"><option>Gabriela Alves</option><option>Juliana Martins</option><option>Carla Souza</option></select></div>
+          <div class="field"><label class="label">Serviço realizado *</label><select class="select" id="service-days" onchange="calculateReturnDate()"><option value="15">Mechas — 15 dias</option><option value="30">Coloração — 30 dias</option><option value="45">Corte — 45 dias</option><option value="15">Hidratação — 15 dias</option></select></div>
+          <div class="field"><label class="label">Data do atendimento *</label><input class="input" type="date" id="appointment-date" value="2026-04-01" onchange="calculateReturnDate()" /></div>
+          <div class="card" style="margin-bottom:12px;background:var(--rose-light);border-color:rgba(199,125,138,.32);"><div style="font-size:10px;color:var(--rose-dark);font-weight:700;margin-bottom:4px;">Mensagem agendada automaticamente para:</div><div id="return-date" style="font-size:15px;font-weight:700;color:var(--rose-dark);">16/04/2026</div></div>
+          <div class="field"><label class="label">Observações</label><textarea class="textarea" placeholder="Ex: Fez mechas loiras e matização"></textarea></div>
+          <div class="card" style="margin-bottom:12px;"><div class="section-label">Prévia da mensagem</div><p class="subtext" style="font-style:italic;">“Oi, Gabriela! Tudo bem? 💕 Já faz 15 dias desde suas mechas. Que tal agendar um retorno?”</p></div>
+          <button class="button-primary" onclick="goToScreen('home')">Salvar atendimento</button><button class="button-ghost" onclick="goToScreen('home')">Cancelar</button>
+        </div>
+      </div>
+
+      <div class="screen" id="screen-appointments-history">
+        <div class="topbar"><div class="topbar-title">Atendimentos</div><button class="screen-button active" style="padding:6px 12px;" onclick="goToScreen('appointment')">+ Novo</button></div>
+        <div class="screen-content">
+          <div class="tabs"><button class="tab active">Todos</button><button class="tab">Este mês</button><button class="tab">Com retorno</button></div>
+          <input class="input" placeholder="🔍 Buscar por cliente ou serviço" style="margin-bottom:12px;" />
+          <div class="card list-card"><div style="font-size:20px;">✨</div><div class="list-main"><div class="list-title">Gabriela Alves</div><div class="list-subtitle">Mechas · 01/04/2026</div><div class="list-subtitle">Mensagem agendada para 16/04/2026</div></div><span class="chip pending">Pendente</span></div>
+          <div class="card list-card"><div style="font-size:20px;">💆‍♀️</div><div class="list-main"><div class="list-title">Gabriela Alves</div><div class="list-subtitle">Hidratação · 15/03/2026</div><div class="list-subtitle">Mensagem enviada</div></div><span class="chip sent">Enviada</span></div>
+          <div class="card list-card"><div style="font-size:20px;">🎨</div><div class="list-main"><div class="list-title">Juliana Martins</div><div class="list-subtitle">Coloração · 18/03/2026</div><div class="list-subtitle">Retorno sugerido em 30 dias</div></div><span class="chip sent">Enviada</span></div>
+        </div>
+        <div class="bottom-nav"><div class="nav-item" onclick="goToScreen('home')"><div class="nav-icon">🏠</div><div>Início</div></div><div class="nav-item" onclick="goToScreen('customers')"><div class="nav-icon">👤</div><div>Clientes</div></div><div class="nav-item active"><div class="nav-icon">📅</div><div>Atendimentos</div></div><div class="nav-item" onclick="goToScreen('messages')"><div class="nav-icon">💬</div><div>Mensagens</div></div><div class="nav-item" onclick="goToScreen('more')"><div class="nav-icon">···</div><div>Mais</div></div></div>
+      </div>
+
+      <div class="screen" id="screen-messages">
+        <div class="topbar"><div class="topbar-title">Mensagens</div><button class="icon-button" onclick="goToScreen('message-template')">⚙</button></div>
+        <div class="screen-content">
+          <div class="tabs"><button class="tab active">Hoje</button><button class="tab">Pendentes</button><button class="tab">Enviadas</button><button class="tab">Erro</button></div>
+          <div class="card" style="margin-bottom:9px;" onclick="goToScreen('message-detail')"><div style="display:flex;gap:10px;"><div class="avatar photo-avatar" style="width:42px;height:42px;"><img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=120&h=120&fit=crop&crop=face" alt="Gabriela" /></div><div class="list-main"><div style="display:flex;justify-content:space-between;gap:8px;"><div class="list-title">Gabriela Alves</div><span class="chip pending">Pendente</span></div><div class="list-subtitle">Mechas · Enviar em: 16/04/2026</div></div></div><div class="divider"></div><p class="subtext">Oi, Gabriela! Tudo bem? Está na hora do seu retoque de mechas...</p><div style="display:flex;gap:8px;margin-top:10px;"><button class="button-primary" style="padding:9px;margin:0;">Abrir WhatsApp</button><button class="button-secondary" style="padding:9px;margin:0;">Marcar enviada</button></div></div>
+          <div class="card" style="margin-bottom:9px;" onclick="goToScreen('message-detail')"><div style="display:flex;gap:10px;"><div class="avatar" style="width:42px;height:42px;">JM</div><div class="list-main"><div style="display:flex;justify-content:space-between;gap:8px;"><div class="list-title">Juliana Martins</div><span class="chip pending">Pendente</span></div><div class="list-subtitle">Coloração · Enviar em: 18/04/2026</div></div></div><div class="divider"></div><p class="subtext">Oi, Juliana! Já faz alguns dias desde sua coloração...</p></div>
+          <div class="card" style="margin-bottom:9px;" onclick="goToScreen('message-detail')"><div style="display:flex;gap:10px;"><div class="avatar" style="width:42px;height:42px;">CS</div><div class="list-main"><div style="display:flex;justify-content:space-between;gap:8px;"><div class="list-title">Carla Souza</div><span class="chip error">Erro</span></div><div class="list-subtitle">Escova · Envio falhou em 19/04/2026</div></div></div></div>
+        </div>
+        <div class="bottom-nav"><div class="nav-item" onclick="goToScreen('home')"><div class="nav-icon">🏠</div><div>Início</div></div><div class="nav-item" onclick="goToScreen('customers')"><div class="nav-icon">👤</div><div>Clientes</div></div><div class="nav-item" onclick="goToScreen('appointments-history')"><div class="nav-icon">📅</div><div>Atendimentos</div></div><div class="nav-item active"><div class="nav-icon">💬</div><div>Mensagens</div></div><div class="nav-item" onclick="goToScreen('more')"><div class="nav-icon">···</div><div>Mais</div></div></div>
+      </div>
+
+      <div class="screen" id="screen-message-detail">
+        <div class="topbar"><button class="icon-button" onclick="goToScreen('messages')">←</button><div class="topbar-title">Detalhe da mensagem</div><div style="width:30px"></div></div>
+        <div class="screen-content">
+          <div class="card list-card" onclick="goToScreen('customer-detail')"><div class="avatar photo-avatar" style="width:50px;height:50px;"><img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=140&h=140&fit=crop&crop=face" alt="Gabriela" /></div><div class="list-main"><div class="list-title" style="color:var(--rose-dark);">Gabriela Alves</div><div class="list-subtitle">(31) 99999-9999</div></div><span class="chip pending">Pendente</span></div>
+          <div class="card" style="margin-bottom:10px;"><div style="display:flex;justify-content:space-between;"><div><div class="list-subtitle">Serviço</div><div class="list-title">Mechas</div></div><div style="text-align:right;"><div class="list-subtitle">Enviar em</div><div class="list-title" style="color:var(--rose-dark);">16/04/2026</div></div></div></div>
+          <div class="card" style="margin-bottom:12px;"><div class="section-label">Mensagem</div><textarea class="textarea" style="min-height:128px;border-color:transparent;padding:0;background:transparent;">Oi, Gabriela! Tudo bem? 💕 Já faz 15 dias desde suas mechas. Que tal agendar um retorno? Aqui no Studio Bella Hair, a gente te espera com novidades!</textarea></div>
+          <button class="button-primary">Abrir WhatsApp</button><button class="button-secondary">Marcar como enviada</button><button class="button-ghost">Cancelar mensagem</button>
+        </div>
+      </div>
+
+      <div class="screen" id="screen-message-template">
+        <div class="topbar"><button class="icon-button" onclick="goToScreen('more')">←</button><div class="topbar-title">Mensagens padrão</div><div style="width:30px"></div></div>
+        <div class="screen-content">
+          <div class="card" style="margin-bottom:12px;background:var(--rose-light);"><div class="section-label">Mensagem geral</div><p class="subtext">Esse texto pode ser usado como base quando o serviço não tiver uma mensagem própria.</p></div>
+          <div class="field"><label class="label">Modelo da mensagem</label><textarea class="textarea" style="min-height:150px;">Oi, {nome}! Tudo bem? 💕
+
+Já faz {dias} dias desde o serviço de {servico} aqui no {salao}.
+
+Que tal agendar um retorno?</textarea></div>
+          <div class="card" style="margin-bottom:12px;"><div class="section-label">Variáveis disponíveis</div><p class="subtext">{nome}, {servico}, {dias}, {salao}, {data_atendimento}</p></div>
+          <div class="card" style="margin-bottom:12px;"><div class="section-label">Prévia</div><p class="subtext">Oi, Gabriela! Tudo bem? 💕 Já faz 15 dias desde o serviço de Mechas aqui no Studio Bella Hair. Que tal agendar um retorno?</p></div>
+          <button class="button-primary" onclick="goToScreen('more')">Salvar mensagem padrão</button><button class="button-secondary">Restaurar texto padrão</button>
+        </div>
+      </div>
+
+      <div class="screen" id="screen-salon-profile">
+        <div class="topbar"><button class="icon-button" onclick="goToScreen('more')">←</button><div class="topbar-title">Meu salão</div><div style="width:30px"></div></div>
+        <div class="screen-content">
+          <div style="text-align:center;margin-bottom:16px;"><div class="avatar" style="width:68px;height:68px;background:var(--rose);color:#fff;font-size:20px;margin:0 auto 8px;">SB</div><div style="font-family:'Playfair Display',serif;font-size:19px;font-weight:600;color:var(--rose-dark);">Studio Bella Hair</div><p class="subtext">Dados usados nas mensagens enviadas às clientes.</p></div>
+          <div class="field"><label class="label">Nome do salão *</label><input class="input" value="Studio Bella Hair" /></div>
+          <div class="field"><label class="label">Nome da responsável *</label><input class="input" value="Bella Martins" /></div>
+          <div class="field"><label class="label">E-mail da conta</label><input class="input" type="email" value="bellahairstudio@email.com" /></div>
+          <div class="field"><label class="label">Telefone do salão</label><input class="input" type="tel" value="(31) 98888-0000" /></div>
+          <button class="button-primary" onclick="goToScreen('more')">Salvar alterações</button>
+        </div>
+      </div>
+
+      <div class="screen" id="screen-notifications">
+        <div class="topbar"><button class="icon-button" onclick="goToScreen('more')">←</button><div class="topbar-title">Notificações</div><div style="width:30px"></div></div>
+        <div class="screen-content">
+          <div class="card" style="margin-bottom:12px;background:var(--rose-light);"><div class="section-label">Lembretes internos</div><p class="subtext">Receba um aviso quando houver mensagens para enviar no dia.</p></div>
+          <div class="card" style="margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;"><div><div class="list-title">Receber notificações</div><div class="list-subtitle">Avisos diários do app</div></div><label class="switch"><input type="checkbox" checked><span></span></label></div>
+          <div class="field"><label class="label">Horário preferido</label><input class="input" type="time" value="09:00" /></div>
+          <div class="field"><label class="label">Quando avisar?</label><select class="select"><option>Somente quando houver mensagens no dia</option><option>Todos os dias</option><option>Nunca</option></select></div>
+          <button class="button-primary" onclick="goToScreen('more')">Salvar notificações</button>
+        </div>
+      </div>
+
+      <div class="screen" id="screen-more">
+        <div style="background:linear-gradient(135deg,#FFF5F3,#FDF0EC);padding:22px 16px 18px;text-align:center;border-bottom:1px solid var(--border);"><div class="avatar" style="width:60px;height:60px;background:var(--rose);color:#fff;font-size:18px;margin:0 auto 8px;">SB</div><div style="font-family:'Playfair Display',serif;font-size:18px;font-weight:600;color:var(--rose-dark);">Studio Bella Hair</div><div class="subtext">bellahairstudio@email.com</div></div>
+        <div class="screen-content">
+          <div class="section-label">Configurações</div>
+          <div class="card" style="padding:0;overflow:hidden;margin-bottom:12px;">
+            <div class="menu-row" onclick="goToScreen('salon-profile')"><span>🏪</span><span>Meu salão</span><b>›</b></div>
+            <div class="menu-row" onclick="goToScreen('services')"><span>✂️</span><span>Serviços</span><b>›</b></div>
+            <div class="menu-row" onclick="goToScreen('message-template')"><span>💬</span><span>Mensagens padrão</span><b>›</b></div>
+            <div class="menu-row" onclick="goToScreen('notifications')"><span>🔔</span><span>Notificações</span><b>›</b></div>
+          </div>
+          <div class="card" style="background:var(--rose-light);margin-bottom:12px;"><div style="display:flex;gap:10px;align-items:center;"><span style="font-size:20px;">⭐</span><div><div class="list-title" style="color:var(--rose-dark);">BeautyFlow Pro</div><div class="list-subtitle">Mensagens ilimitadas e relatórios</div></div></div></div>
+          <button class="button-ghost" style="color:var(--error);border-color:rgba(217,108,108,.35);" onclick="goToScreen('login')">Sair da conta</button>
+        </div>
+        <div class="bottom-nav"><div class="nav-item" onclick="goToScreen('home')"><div class="nav-icon">🏠</div><div>Início</div></div><div class="nav-item" onclick="goToScreen('customers')"><div class="nav-icon">👤</div><div>Clientes</div></div><div class="nav-item" onclick="goToScreen('appointments-history')"><div class="nav-icon">📅</div><div>Atendimentos</div></div><div class="nav-item" onclick="goToScreen('messages')"><div class="nav-icon">💬</div><div>Mensagens</div></div><div class="nav-item active"><div class="nav-icon">···</div><div>Mais</div></div></div>
+      </div>
+    </section>
+  </main>
+
+  <style>
+    .menu-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 14px 13px;
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    .menu-row:last-child {
+      border-bottom: none;
+    }
+
+    .menu-row span:nth-child(2) {
+      flex: 1;
+      font-weight: 600;
+    }
+
+    .menu-row b {
+      color: var(--text-sec);
+      font-weight: 500;
+    }
+
+    .photo-upload-card {
+      display: flex;
+      gap: 13px;
+      align-items: center;
+      background: #fff;
+      border: 1px dashed var(--border-strong);
+      border-radius: 16px;
+      padding: 13px;
+      margin-bottom: 14px;
+      box-shadow: 0 7px 18px rgba(47, 36, 36, 0.04);
+    }
+
+    .photo-preview {
+      width: 78px;
+      height: 78px;
+      border-radius: 50%;
+      background: var(--rose-light);
+      border: 1.5px solid var(--rose);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      overflow: hidden;
+      flex-shrink: 0;
+      position: relative;
+    }
+
+    .photo-preview img,
+    .photo-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .photo-preview img {
+      display: none;
+    }
+
+    .photo-preview.has-image .photo-placeholder {
+      display: none;
+    }
+
+    .photo-preview.has-image img {
+      display: block;
+    }
+
+    .photo-placeholder {
+      font-size: 26px;
+    }
+
+    .photo-copy {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .small-link-button {
+      display: inline-flex;
+      margin-top: 8px;
+      color: var(--rose);
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    #customerPhoto {
+      display: none;
+    }
+
+    .photo-avatar {
+      overflow: hidden;
+    }
+
+    .switch {
+      position: relative;
+      width: 46px;
+      height: 26px;
+      flex-shrink: 0;
+    }
+
+    .switch input {
+      display: none;
+    }
+
+    .switch span {
+      position: absolute;
+      inset: 0;
+      border-radius: 999px;
+      background: #E5D8D5;
+      cursor: pointer;
+      transition: 0.2s ease;
+    }
+
+    .switch span::before {
+      content: '';
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      left: 3px;
+      top: 3px;
+      border-radius: 50%;
+      background: #fff;
+      box-shadow: 0 2px 6px rgba(47, 36, 36, 0.18);
+      transition: 0.2s ease;
+    }
+
+    .switch input:checked + span {
+      background: var(--rose);
+    }
+
+    .switch input:checked + span::before {
+      transform: translateX(20px);
+    }
+  </style>
+
+  <script>
+    const selector = document.getElementById('screenSelector');
+    const buttons = [...document.querySelectorAll('.screen-button')];
+    const screens = [...document.querySelectorAll('.screen')];
+
+    buttons.forEach((button) => {
+      button.addEventListener('click', () => {
+        goToScreen(button.dataset.screen);
+      });
+    });
+
+    function goToScreen(name) {
+      screens.forEach((screen) => screen.classList.remove('active'));
+      const next = document.getElementById(`screen-${name}`);
+      if (next) next.classList.add('active');
+
+      buttons.forEach((button) => {
+        button.classList.toggle('active', button.dataset.screen === name);
+      });
+
+      const activeButton = buttons.find((button) => button.dataset.screen === name);
+      if (activeButton) {
+        activeButton.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+      }
+    }
+
+    function calculateReturnDate() {
+      const service = document.getElementById('service-days');
+      const dateInput = document.getElementById('appointment-date');
+      const output = document.getElementById('return-date');
+      const days = Number(service.value || 0);
+      const date = new Date(`${dateInput.value}T00:00:00`);
+      if (!days || Number.isNaN(date.getTime())) {
+        output.textContent = 'Selecione um serviço e uma data';
+        return;
+      }
+      date.setDate(date.getDate() + days);
+      output.textContent = date.toLocaleDateString('pt-BR');
+    }
+
+    function previewCustomerPhoto(event) {
+      const file = event.target.files && event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const preview = document.getElementById('photoPreview');
+        const image = document.getElementById('photoPreviewImage');
+        const detailImage = document.getElementById('detailCustomerImage');
+
+        image.src = e.target.result;
+        preview.classList.add('has-image');
+
+        if (detailImage) {
+          detailImage.src = e.target.result;
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  </script>
+</body>
+</html>
