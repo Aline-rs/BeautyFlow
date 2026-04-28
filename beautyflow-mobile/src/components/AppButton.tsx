@@ -1,7 +1,9 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { ReactNode } from 'react';
 import {
+  ActivityIndicator,
   Pressable,
+  StyleProp,
   StyleSheet,
   Text,
   View,
@@ -15,8 +17,10 @@ type AppButtonProps = {
   label: string;
   onPress: () => void;
   variant?: Variant;
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
   icon?: ReactNode;
+  disabled?: boolean;
+  loading?: boolean;
 };
 
 export function AppButton({
@@ -25,18 +29,26 @@ export function AppButton({
   variant = 'primary',
   style,
   icon,
+  disabled = false,
+  loading = false,
 }: AppButtonProps) {
+  const isDisabled = disabled || loading;
+
   if (variant === 'primary') {
     return (
-      <Pressable onPress={onPress} style={[styles.buttonBase, style]}>
+      <Pressable
+        disabled={isDisabled}
+        onPress={onPress}
+        style={[styles.buttonBase, style, isDisabled ? styles.disabled : null]}
+      >
         <LinearGradient
           colors={[colors.rose, '#D26377']}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={[styles.primaryBg, shadows.card]}
         >
-          {icon}
-          <Text style={styles.primaryText}>{label}</Text>
+          {loading ? <ActivityIndicator color="#FFFFFF" size="small" /> : icon}
+          <Text style={styles.primaryText}>{loading ? 'Carregando...' : label}</Text>
         </LinearGradient>
       </Pressable>
     );
@@ -44,13 +56,14 @@ export function AppButton({
 
   return (
     <Pressable
+      disabled={isDisabled}
       onPress={onPress}
-      style={[styles.buttonBase, styles[variant], style]}
+      style={[styles.buttonBase, styles[variant], style, isDisabled ? styles.disabled : null]}
     >
       <View style={styles.contentRow}>
-        {icon}
+        {loading ? <ActivityIndicator color={colors.roseDark} size="small" /> : icon}
         <Text style={[styles.secondaryText, variant === 'ghost' && styles.ghostText]}>
-          {label}
+          {loading ? 'Carregando...' : label}
         </Text>
       </View>
     </Pressable>
@@ -67,6 +80,8 @@ const styles = StyleSheet.create({
     borderRadius: radius.md,
     alignItems: 'center',
     justifyContent: 'center',
+    flexDirection: 'row',
+    gap: spacing.xs,
     paddingVertical: 13,
     paddingHorizontal: 14,
   },
@@ -94,6 +109,9 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.borderStrong,
     backgroundColor: 'transparent',
+  },
+  disabled: {
+    opacity: 0.6,
   },
   primaryText: {
     fontFamily: typography.fontFamily.bodyBold,
