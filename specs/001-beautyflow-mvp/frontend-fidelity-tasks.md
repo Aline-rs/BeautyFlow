@@ -2,72 +2,72 @@
 
 ## Fase 0 — Preparação do contexto
 
-- [ ] Copiar `AGENTS.md` para a raiz do repositório.
-- [ ] Copiar `design-reference/beautyflow_mvp_mobile_prototype.html` para a raiz do repositório em `design-reference/`.
-- [ ] Garantir que Codex leia `docs/14_frontend_visual_implementation_spec.md` antes de implementar.
+- [x] Copiar `AGENTS.md` para a raiz do repositório.
+- [x] Copiar `design-reference/beautyflow_mvp_mobile_prototype.html` para a raiz do repositório em `design-reference/`.
+- [x] Garantir que Codex leia `docs/14_frontend_visual_implementation_spec.md` antes de implementar.
 
 ## Fase 1 — Design tokens
 
-- [ ] Criar `src/theme/colors.ts` com as cores do protótipo.
-- [ ] Criar `src/theme/typography.ts` com Playfair Display e DM Sans.
-- [ ] Criar `src/theme/spacing.ts`.
-- [ ] Criar `src/theme/radius.ts`.
-- [ ] Criar `src/theme/shadows.ts`.
+- [x] Criar `src/theme/colors.ts` com as cores do protótipo.
+- [x] Criar `src/theme/typography.ts` com Playfair Display e DM Sans.
+- [x] Criar `src/theme/spacing.ts`.
+- [x] Criar `src/theme/radius.ts`.
+- [x] Criar `src/theme/shadows.ts`.
 
 ## Fase 2 — Fontes
 
-- [ ] Instalar `expo-font`.
-- [ ] Carregar Playfair Display.
-- [ ] Carregar DM Sans.
+- [x] Instalar `expo-font`.
+- [x] Carregar Playfair Display.
+- [x] Carregar DM Sans.
 - [ ] Garantir fallback enquanto fontes carregam.
 
 ## Fase 3 — Componentes base
 
-- [ ] Criar `Screen`.
-- [ ] Criar `TopBar`.
-- [ ] Criar `AppButton`.
-- [ ] Criar `AppInput`.
-- [ ] Criar `AppTextarea`.
-- [ ] Criar `AppSelect`.
-- [ ] Criar `AppCard`.
-- [ ] Criar `AppChip`.
-- [ ] Criar `Avatar`.
-- [ ] Criar `PhotoPicker`.
-- [ ] Criar `StatCard`.
-- [ ] Criar `ListCard`.
-- [ ] Criar `EmptyState`.
+- [x] Criar `Screen`.
+- [x] Criar `TopBar`.
+- [x] Criar `AppButton`.
+- [x] Criar `AppInput`.
+- [x] Criar `AppTextarea`.
+- [x] Criar `AppSelect`.
+- [x] Criar `AppCard`.
+- [x] Criar `AppChip`.
+- [x] Criar `Avatar`.
+- [x] Criar `PhotoPicker`.
+- [x] Criar `StatCard`.
+- [x] Criar `ListCard`.
+- [x] Criar `EmptyState`.
 
 ## Fase 4 — Navegação
 
-- [ ] Criar AuthStack.
-- [ ] Criar MainTabs.
-- [ ] Criar stacks internos para Clientes, Atendimentos, Mensagens e Mais.
-- [ ] Configurar bottom tab com Início, Clientes, Atendimentos, Mensagens, Mais.
+- [x] Criar AuthStack.
+- [x] Criar MainTabs.
+- [x] Criar stacks internos para Clientes, Atendimentos, Mensagens e Mais.
+- [x] Configurar bottom tab com Início, Clientes, Atendimentos, Mensagens, Mais.
 
 ## Fase 5 — Telas
 
-- [ ] Implementar Splash.
-- [ ] Implementar Login.
-- [ ] Implementar Criar Conta.
-- [ ] Implementar Home.
-- [ ] Implementar Clientes.
-- [ ] Implementar Nova Cliente / Editar Cliente.
-- [ ] Implementar Detalhes da Cliente.
-- [ ] Implementar Serviços.
+- [x] Implementar Splash.
+- [x] Implementar Login.
+- [x] Implementar Criar Conta.
+- [~] Implementar Home.
+- [~] Implementar Clientes.
+- [~] Implementar Nova Cliente / Editar Cliente.
+- [~] Implementar Detalhes da Cliente.
+- [~] Implementar Serviços.
 - [ ] Implementar Novo Serviço / Editar Serviço.
-- [ ] Implementar Registrar Atendimento.
-- [ ] Implementar Histórico de Atendimentos.
-- [ ] Implementar Mensagens.
-- [ ] Implementar Detalhe da Mensagem.
-- [ ] Implementar Mensagens Padrão.
-- [ ] Implementar Meu Salão.
-- [ ] Implementar Notificações.
-- [ ] Implementar Mais.
+- [~] Implementar Registrar Atendimento.
+- [~] Implementar Histórico de Atendimentos.
+- [~] Implementar Mensagens.
+- [~] Implementar Detalhe da Mensagem.
+- [~] Implementar Mensagens Padrão.
+- [~] Implementar Meu Salão.
+- [~] Implementar Notificações.
+- [~] Implementar Mais.
 
 ## Fase 6 — Comportamentos do MVP
 
-- [ ] Login mockado redireciona para Home.
-- [ ] Criar Conta mockado redireciona para Home.
+- [x] Login mockado redireciona para Home.
+- [x] Criar Conta mockado redireciona para Home.
 - [ ] Registrar Atendimento calcula data de retorno.
 - [ ] Cliente permite selecionar foto.
 - [ ] Foto aparece no preview.
@@ -90,6 +90,6 @@
 
 - [ ] Rodar TypeScript check.
 - [ ] Rodar lint.
-- [ ] Remover console.log.
+- [x] Remover console.log.
 - [ ] Remover código morto.
 - [ ] Documentar pendências.

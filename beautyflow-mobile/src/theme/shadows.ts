@@ -1,6 +1,6 @@
-import { Platform } from 'react-native';
+import { Platform, ViewStyle } from 'react-native';
 
-const iosShadow = {
+const iosShadow: ViewStyle = {
   shadowColor: '#9E5A65',
   shadowOffset: { width: 0, height: 6 },
   shadowOpacity: 0.08,
@@ -8,11 +8,9 @@ const iosShadow = {
 };
 
 export const shadows = {
-  card: Platform.select({
+  card: Platform.select<ViewStyle>({
     ios: iosShadow,
     android: { elevation: 3 },
-    default: {
-      ...iosShadow,
-    },
-  }),
+    default: iosShadow,
+  }) ?? iosShadow,
 } as const;

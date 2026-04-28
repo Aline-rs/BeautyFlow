@@ -3,17 +3,31 @@ import { colors, radius, typography } from '../theme';
 
 type AppInputProps = TextInputProps & {
   label: string;
+  errorMessage?: string;
+  helperText?: string;
 };
 
-export function AppInput({ label, ...props }: AppInputProps) {
+export function AppInput({
+  label,
+  errorMessage,
+  helperText,
+  ...props
+}: AppInputProps) {
+  const message = errorMessage ?? helperText;
+
   return (
     <View style={styles.field}>
       <Text style={styles.label}>{label}</Text>
       <TextInput
         placeholderTextColor="#A7918D"
-        style={styles.input}
+        style={[styles.input, errorMessage ? styles.inputError : null]}
         {...props}
       />
+      {message ? (
+        <Text style={[styles.message, errorMessage ? styles.errorText : styles.helperText]}>
+          {message}
+        </Text>
+      ) : null}
     </View>
   );
 }
@@ -38,5 +52,19 @@ const styles = StyleSheet.create({
     color: colors.textMain,
     fontFamily: typography.fontFamily.body,
     fontSize: 13,
+  },
+  inputError: {
+    borderColor: colors.error,
+  },
+  message: {
+    marginTop: 5,
+    fontFamily: typography.fontFamily.body,
+    fontSize: 11,
+  },
+  helperText: {
+    color: colors.textSecondary,
+  },
+  errorText: {
+    color: colors.error,
   },
 });

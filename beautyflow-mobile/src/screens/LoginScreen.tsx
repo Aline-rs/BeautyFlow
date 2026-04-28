@@ -1,31 +1,97 @@
+import { zodResolver } from '@hookform/resolvers/zod';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { Controller, useForm } from 'react-hook-form';
 import { StyleSheet, Text, View } from 'react-native';
 import { AppButton } from '../components/AppButton';
 import { AppInput } from '../components/AppInput';
 import { Screen } from '../components/Screen';
-import { RootStackParamList } from '../navigation/types';
+import { useAuth } from '../features/auth';
+import { LoginFormValues, loginSchema } from '../features/auth/schemas';
+import { AuthStackParamList } from '../navigation/types';
 import { colors, typography } from '../theme';
 
-type Props = NativeStackScreenProps<RootStackParamList, 'Login'>;
+type Props = NativeStackScreenProps<AuthStackParamList, 'Login'>;
 
 export function LoginScreen({ navigation }: Props) {
+  const { signIn } = useAuth();
+  const {
+    control,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    setError,
+  } = useForm<LoginFormValues>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      email: '',
+      password: '',
+    },
+  });
+
+  async function onSubmit(values: LoginFormValues) {
+    try {
+      await signIn(values);
+    } catch {
+      setError('root', {
+        message: 'Nao foi possivel entrar agora. Tente novamente em instantes.',
+      });
+    }
+  }
+
   return (
     <Screen>
       <View style={styles.content}>
         <View style={styles.header}>
-          <Text style={styles.flower}>🌸</Text>
+          <Text style={styles.flower}>*</Text>
           <Text style={styles.title}>Bem-vinda de volta</Text>
-          <Text style={styles.subtitle}>Entre na sua conta do salão</Text>
+          <Text style={styles.subtitle}>Entre na sua conta do salao</Text>
         </View>
 
-        <AppInput label="E-mail" placeholder="seu@email.com" keyboardType="email-address" />
-        <AppInput label="Senha" placeholder="••••••••" secureTextEntry />
+        <Controller
+          control={control}
+          name="email"
+          render={({ field: { onChange, onBlur, value } }) => (
+            <AppInput
+              autoCapitalize="none"
+              autoCorrect={false}
+              keyboardType="email-address"
+              label="E-mail"
+              onBlur={onBlur}
+              onChangeText={onChange}
+              placeholder="seu@email.com"
+              value={value}
+              errorMessage={errors.email?.message}
+            />
+          )}
+        />
+
+        <Controller
+          control={control}
+          name="password"
+          render={({ field: { onChange, onBlur, value } }) => (
+            <AppInput
+              autoCapitalize="none"
+              label="Senha"
+              onBlur={onBlur}
+              onChangeText={onChange}
+              placeholder="********"
+              secureTextEntry
+              value={value}
+              errorMessage={errors.password?.message}
+            />
+          )}
+        />
 
         <Text style={styles.forgot}>Esqueci minha senha</Text>
 
-        <AppButton label="Entrar" onPress={() => navigation.replace('Home')} />
+        {errors.root?.message ? <Text style={styles.formError}>{errors.root.message}</Text> : null}
+
+        <AppButton
+          label="Entrar"
+          onPress={handleSubmit(onSubmit)}
+          loading={isSubmitting}
+        />
         <Text style={styles.footerText}>
-          Não tem conta?{' '}
+          Nao tem conta?{' '}
           <Text style={styles.footerLink} onPress={() => navigation.navigate('SignUp')}>
             Criar conta
           </Text>
@@ -69,6 +135,13 @@ const styles = StyleSheet.create({
     color: colors.rose,
     fontSize: 12,
     fontFamily: typography.fontFamily.body,
+  },
+  formError: {
+    marginBottom: 12,
+    color: colors.error,
+    fontFamily: typography.fontFamily.bodyMedium,
+    fontSize: 12,
+    textAlign: 'center',
   },
   footerText: {
     textAlign: 'center',

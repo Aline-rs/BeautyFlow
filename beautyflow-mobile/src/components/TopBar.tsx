@@ -11,7 +11,7 @@ export function TopBar({ title, onBack }: TopBarProps) {
     <View style={styles.container}>
       {onBack ? (
         <Pressable style={styles.iconButton} onPress={onBack}>
-          <Text style={styles.iconText}>←</Text>
+          <Text style={styles.iconText}>{'<'}</Text>
         </Pressable>
       ) : (
         <View style={styles.placeholder} />

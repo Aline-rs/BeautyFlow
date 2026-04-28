@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/beautyflow-api/" />
+  <Folder Name="/beautyflow-api/src/">
+    <Project Path="beautyflow-api/src/BeautyFlow.Api/BeautyFlow.Api.csproj" />
+    <Project Path="beautyflow-api/src/BeautyFlow.Application/BeautyFlow.Application.csproj" />
+    <Project Path="beautyflow-api/src/BeautyFlow.Domain/BeautyFlow.Domain.csproj" />
+    <Project Path="beautyflow-api/src/BeautyFlow.Infrastructure/BeautyFlow.Infrastructure.csproj" />
+  </Folder>
+</Solution>

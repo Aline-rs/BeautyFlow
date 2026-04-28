@@ -1,4 +1,4 @@
-# Tasks — BeautyFlow MVP
+# Tasks - BeautyFlow MVP
 
 ## Format
 
@@ -6,52 +6,52 @@
 - `[~]` in progress
 - `[x]` done
 
-## Phase 1 — Repository and Foundations
+## Phase 1 - Repository and Foundations
 
 ### Shared
 
-- [ ] T001 Create repository structure with `beautyflow-api`, `beautyflow-mobile`, `docs`, `specs`.
-- [ ] T002 Add root README with project overview and setup instructions.
-- [ ] T003 Add `.gitignore` for .NET, Node, Expo, env files and build outputs.
+- [x] T001 Create repository structure with `beautyflow-api`, `beautyflow-mobile`, `docs`, `specs`.
+- [x] T002 Add root README with project overview and setup instructions.
+- [x] T003 Add `.gitignore` for .NET, Node, Expo, env files and build outputs.
 
 ### Frontend foundation
 
-- [ ] T004 Create Expo TypeScript project in `beautyflow-mobile`.
-- [ ] T005 Install navigation, forms, validation, axios, image picker and secure storage dependencies.
-- [ ] T006 Create frontend folder structure.
-- [ ] T007 Implement theme files from design system.
-- [ ] T008 Implement base components: Screen, AppButton, AppInput, AppCard, AppChip, Avatar.
-- [ ] T009 Configure AuthNavigator, MainTabs and RootStack.
+- [x] T004 Create Expo TypeScript project in `beautyflow-mobile`.
+- [x] T005 Install navigation, forms, validation, axios, image picker and secure storage dependencies.
+- [x] T006 Create frontend folder structure.
+- [x] T007 Implement theme files from design system.
+- [x] T008 Implement base components: Screen, AppButton, AppInput, AppCard, AppChip, Avatar.
+- [x] T009 Configure AuthNavigator, MainTabs and RootStack.
 
 ### Backend foundation
 
-- [ ] T010 Create .NET solution and projects.
-- [ ] T011 Configure project references.
-- [ ] T012 Configure appsettings and environment variables.
-- [ ] T013 Configure EF Core PostgreSQL.
-- [ ] T014 Configure Swagger with Bearer authentication.
-- [ ] T015 Configure global error middleware and response envelope.
+- [x] T010 Create .NET solution and projects.
+- [x] T011 Configure project references.
+- [x] T012 Configure appsettings and environment variables.
+- [x] T013 Configure EF Core PostgreSQL.
+- [x] T014 Configure Swagger with Bearer authentication.
+- [x] T015 Configure global error middleware and response envelope.
 
-## Phase 2 — Auth
+## Phase 2 - Auth
 
 ### Backend
 
-- [ ] T016 Create User and Salon entities.
-- [ ] T017 Configure password hashing.
-- [ ] T018 Configure JWT service.
-- [ ] T019 Implement POST `/auth/register`.
-- [ ] T020 Implement POST `/auth/login`.
-- [ ] T021 Implement CurrentUser service with UserId and SalonId.
+- [x] T016 Create User and Salon entities.
+- [x] T017 Configure password hashing.
+- [x] T018 Configure JWT service.
+- [x] T019 Implement POST `/auth/register`.
+- [x] T020 Implement POST `/auth/login`.
+- [x] T021 Implement CurrentUser service with UserId and SalonId.
 
 ### Frontend
 
-- [ ] T022 Implement SplashScreen.
-- [ ] T023 Implement LoginScreen with validation.
-- [ ] T024 Implement SignUpScreen with validation.
-- [ ] T025 Implement AuthContext and token persistence.
-- [ ] T026 Integrate login/register with API.
+- [x] T022 Implement SplashScreen.
+- [x] T023 Implement LoginScreen with validation.
+- [x] T024 Implement SignUpScreen with validation.
+- [x] T025 Implement AuthContext and token persistence.
+- [x] T026 Integrate login/register with API.
 
-## Phase 3 — Customers
+## Phase 3 - Customers
 
 ### Backend
 
@@ -71,7 +71,7 @@
 - [ ] T037 Implement CustomerDetailScreen.
 - [ ] T038 Integrate customers API.
 
-## Phase 4 — Services
+## Phase 4 - Services
 
 ### Backend
 
@@ -88,7 +88,7 @@
 - [ ] T046 Implement ServiceFormScreen.
 - [ ] T047 Integrate services API.
 
-## Phase 5 — Appointments and Scheduled Messages
+## Phase 5 - Appointments and Scheduled Messages
 
 ### Backend
 
@@ -116,7 +116,7 @@
 - [ ] T066 Implement WhatsApp opening with Linking.
 - [ ] T067 Integrate messages API.
 
-## Phase 6 — Settings
+## Phase 6 - Settings
 
 ### Backend
 
@@ -134,7 +134,7 @@
 - [ ] T076 Implement SalonProfileScreen.
 - [ ] T077 Integrate settings APIs.
 
-## Phase 7 — Quality and Hardening
+## Phase 7 - Quality and Hardening
 
 - [ ] T078 Add backend unit tests for date calculation and template rendering.
 - [ ] T079 Add backend integration tests for auth.
