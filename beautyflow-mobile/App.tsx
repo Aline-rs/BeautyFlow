@@ -1,13 +1,21 @@
-import { StatusBar } from 'expo-status-bar';
-import { useFonts } from 'expo-font';
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import {
   DMSans_400Regular,
   DMSans_500Medium,
   DMSans_700Bold,
 } from '@expo-google-fonts/dm-sans';
 import { PlayfairDisplay_600SemiBold } from '@expo-google-fonts/playfair-display';
-import { StyleSheet, Text, View } from 'react-native';
-import { colors, spacing, typography } from './src/theme';
+import { useFonts } from 'expo-font';
+import { StatusBar } from 'expo-status-bar';
+import { RootStackParamList } from './src/navigation/types';
+import { HomePlaceholderScreen } from './src/screens/HomePlaceholderScreen';
+import { LoginScreen } from './src/screens/LoginScreen';
+import { SignUpScreen } from './src/screens/SignUpScreen';
+import { SplashScreen } from './src/screens/SplashScreen';
+import { colors } from './src/theme';
+
+const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function App() {
   const [fontsLoaded] = useFonts({
@@ -17,40 +25,25 @@ export default function App() {
     PlayfairDisplay_600SemiBold,
   });
 
-  const titleFontFamily = fontsLoaded ? typography.fontFamily.title : undefined;
-  const bodyFontFamily = fontsLoaded ? typography.fontFamily.body : undefined;
+  if (!fontsLoaded) {
+    return null;
+  }
 
   return (
-    <View style={styles.container}>
-      <Text style={[styles.title, { fontFamily: titleFontFamily }]}>
-        BeautyFlow
-      </Text>
-      <Text style={[styles.subtitle, { fontFamily: bodyFontFamily }]}>
-        Base Expo + TypeScript pronta para o MVP.
-      </Text>
+    <NavigationContainer>
+      <Stack.Navigator
+        initialRouteName="Splash"
+        screenOptions={{
+          headerShown: false,
+          contentStyle: { backgroundColor: colors.offWhite },
+        }}
+      >
+        <Stack.Screen name="Splash" component={SplashScreen} />
+        <Stack.Screen name="Login" component={LoginScreen} />
+        <Stack.Screen name="SignUp" component={SignUpScreen} />
+        <Stack.Screen name="Home" component={HomePlaceholderScreen} />
+      </Stack.Navigator>
       <StatusBar style="dark" />
-    </View>
+    </NavigationContainer>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.offWhite,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: spacing.lg,
-    gap: spacing.sm,
-  },
-  title: {
-    fontSize: typography.size.xxl,
-    lineHeight: typography.lineHeight.xxl,
-    color: colors.textMain,
-  },
-  subtitle: {
-    fontSize: typography.size.md,
-    lineHeight: typography.lineHeight.md,
-    color: colors.textSecondary,
-    textAlign: 'center',
-  },
-});
