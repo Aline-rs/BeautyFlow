@@ -12,6 +12,7 @@ public sealed class BeautyFlowDbContext : DbContext
 
     public DbSet<Salon> Salons => Set<Salon>();
     public DbSet<Customer> Customers => Set<Customer>();
+    public DbSet<Service> Services => Set<Service>();
     public DbSet<User> Users => Set<User>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -64,6 +65,25 @@ public sealed class BeautyFlowDbContext : DbContext
             entity
                 .HasOne(x => x.Salon)
                 .WithMany(x => x.Customers)
+                .HasForeignKey(x => x.SalonId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<Service>(entity =>
+        {
+            entity.ToTable("services");
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.Name).HasMaxLength(160).IsRequired();
+            entity.Property(x => x.SuggestedReturnDays).IsRequired();
+            entity.Property(x => x.IsActive).IsRequired();
+            entity.Property(x => x.CreatedAtUtc).IsRequired();
+            entity.Property(x => x.UpdatedAtUtc);
+            entity.Property(x => x.SalonId).IsRequired();
+            entity.HasIndex(x => new { x.SalonId, x.Name });
+
+            entity
+                .HasOne(x => x.Salon)
+                .WithMany(x => x.Services)
                 .HasForeignKey(x => x.SalonId)
                 .OnDelete(DeleteBehavior.Cascade);
         });

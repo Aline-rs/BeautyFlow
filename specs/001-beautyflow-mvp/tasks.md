@@ -75,12 +75,12 @@
 
 ### Backend
 
-- [ ] T039 Create Service entity and mapping.
-- [ ] T040 Implement service DTOs.
-- [ ] T041 Implement GET `/services`.
-- [ ] T042 Implement POST `/services`.
-- [ ] T043 Implement PUT `/services/{id}`.
-- [ ] T044 Implement PATCH `/services/{id}/status`.
+- [x] T039 Create Service entity and mapping.
+- [x] T040 Implement service DTOs.
+- [x] T041 Implement GET `/services`.
+- [x] T042 Implement POST `/services`.
+- [x] T043 Implement PUT `/services/{id}`.
+- [x] T044 Implement PATCH `/services/{id}/status`.
 
 ### Frontend
 
