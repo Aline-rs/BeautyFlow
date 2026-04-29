@@ -1,11 +1,14 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useFocusEffect } from '@react-navigation/native';
+import * as ImagePicker from 'expo-image-picker';
 import { useCallback, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { AppButton } from '../components/AppButton';
 import { AppInput } from '../components/AppInput';
+import { Avatar } from '../components/Avatar';
+import { PhotoPicker } from '../components/PhotoPicker';
 import { Screen } from '../components/Screen';
 import { TopBar } from '../components/TopBar';
 import { SalonProfileFormValues, salonProfileSchema, useSettings } from '../features/settings';
@@ -15,8 +18,9 @@ import { colors, typography } from '../theme';
 type Props = NativeStackScreenProps<MoreStackParamList, 'SalonProfile'>;
 
 export function SalonProfileScreen({ navigation }: Props) {
-  const { salonProfile, loadSettings, saveSalonProfile } = useSettings();
+  const { salonProfile, loadSettings, saveSalonProfile, saveSalonProfilePhoto } = useSettings();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [photoPreviewUri, setPhotoPreviewUri] = useState<string | undefined>();
   const {
     control,
     handleSubmit,
@@ -45,6 +49,7 @@ export function SalonProfileScreen({ navigation }: Props) {
   useFocusEffect(
     useCallback(() => {
       if (salonProfile) {
+        setPhotoPreviewUri(salonProfile.profilePhotoUrl);
         reset({
           salonName: salonProfile.salonName,
           ownerName: salonProfile.ownerName,
@@ -55,6 +60,39 @@ export function SalonProfileScreen({ navigation }: Props) {
     }, [reset, salonProfile]),
   );
 
+  async function handlePickProfilePhoto() {
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permission.granted) {
+      Alert.alert('Permissão necessária', 'Permita o acesso à galeria para adicionar sua foto.');
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.8,
+    });
+
+    if (result.canceled) {
+      return;
+    }
+
+    const nextUri = result.assets[0]?.uri;
+    if (!nextUri) {
+      return;
+    }
+
+    setPhotoPreviewUri(nextUri);
+
+    try {
+      await saveSalonProfilePhoto(nextUri);
+      Alert.alert('Sucesso', 'Foto de perfil atualizada.');
+    } catch {
+      Alert.alert('Erro', 'Não foi possível atualizar a foto de perfil.');
+    }
+  }
+
   async function onSubmit(values: SalonProfileFormValues) {
     setIsSubmitting(true);
     try {
@@ -63,10 +101,11 @@ export function SalonProfileScreen({ navigation }: Props) {
         ownerName: values.ownerName,
         email: values.email,
         phone: values.phone || undefined,
+        profilePhotoUrl: salonProfile?.profilePhotoUrl,
       });
-      Alert.alert('Sucesso', 'Perfil do salao atualizado.');
+      Alert.alert('Sucesso', 'Perfil do salão atualizado.');
     } catch {
-      Alert.alert('Erro', 'Nao foi possivel salvar o perfil do salao.');
+      Alert.alert('Erro', 'Não foi possível salvar o perfil do salão.');
     } finally {
       setIsSubmitting(false);
     }
@@ -77,12 +116,21 @@ export function SalonProfileScreen({ navigation }: Props) {
       <TopBar title="Meu salao" onBack={() => navigation.goBack()} />
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.header}>
-          <View style={styles.avatar}>
-            <Text style={styles.avatarText}>SB</Text>
-          </View>
+          <Avatar
+            initials={buildInitials(salonProfile?.ownerName ?? salonProfile?.salonName ?? 'BF')}
+            size={68}
+            source={photoPreviewUri ? { uri: photoPreviewUri } : undefined}
+          />
           <Text style={styles.headerTitle}>{salonProfile?.salonName ?? 'Studio Bella Hair'}</Text>
-          <Text style={styles.headerCopy}>Dados usados nas mensagens enviadas as clientes.</Text>
+          <Text style={styles.headerCopy}>Dados usados nas mensagens enviadas às clientes.</Text>
         </View>
+
+        <PhotoPicker
+          label="Adicionar foto de perfil"
+          helperText="Escolha uma foto para personalizar sua conta no app."
+          previewUri={photoPreviewUri}
+          onPress={() => void handlePickProfilePhoto()}
+        />
 
         <Controller
           control={control}
@@ -158,21 +206,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 16,
   },
-  avatar: {
-    width: 68,
-    height: 68,
-    borderRadius: 999,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: colors.rose,
-    marginBottom: 8,
-  },
-  avatarText: {
-    color: '#FFFFFF',
-    fontFamily: typography.fontFamily.bodyBold,
-    fontSize: 20,
-  },
   headerTitle: {
+    marginTop: 8,
     fontFamily: typography.fontFamily.title,
     fontSize: 19,
     color: colors.roseDark,
@@ -185,3 +220,12 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
 });
+
+function buildInitials(label: string) {
+  return label
+    .split(' ')
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase() ?? '')
+    .join('');
+}

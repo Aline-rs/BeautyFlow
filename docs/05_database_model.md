@@ -7,7 +7,9 @@ Banco recomendado: PostgreSQL.
 - IDs como UUID.
 - Datas de criação e atualização em UTC.
 - Soft delete opcional apenas onde fizer sentido.
-- Todas as entidades de negócio devem conter `SalonId`.
+- Clientes pertencem à profissional.
+- Salões representam contexto de trabalho.
+- Nem toda entidade de negócio deve conter `SalonId`; isso depende do dono conceitual do dado.
 
 ## 2. Tabelas
 
@@ -26,10 +28,22 @@ updated_at timestamptz null
 
 ```text
 id uuid pk
-salon_id uuid fk salons(id)
 name varchar(160) not null
 email varchar(180) not null unique
 password_hash text not null
+profile_photo_url text null
+created_at timestamptz not null
+updated_at timestamptz null
+```
+
+### user_salons
+
+```text
+id uuid pk
+user_id uuid fk users(id)
+salon_id uuid fk salons(id)
+role varchar(40) not null
+is_primary boolean not null default false
 created_at timestamptz not null
 updated_at timestamptz null
 ```
@@ -38,7 +52,7 @@ updated_at timestamptz null
 
 ```text
 id uuid pk
-salon_id uuid fk salons(id)
+user_id uuid fk users(id)
 name varchar(160) not null
 phone varchar(30) not null
 birth_date date null
@@ -67,6 +81,7 @@ updated_at timestamptz null
 
 ```text
 id uuid pk
+user_id uuid fk users(id)
 salon_id uuid fk salons(id)
 customer_id uuid fk customers(id)
 service_id uuid fk services(id)
@@ -80,6 +95,7 @@ updated_at timestamptz null
 
 ```text
 id uuid pk
+user_id uuid fk users(id)
 salon_id uuid fk salons(id)
 customer_id uuid fk customers(id)
 appointment_id uuid fk appointments(id)
@@ -118,12 +134,13 @@ updated_at timestamptz null
 ## 3. Índices recomendados
 
 ```sql
-create index ix_customers_salon_name on customers (salon_id, name);
-create index ix_customers_salon_phone on customers (salon_id, phone);
+create index ix_customers_user_name on customers (user_id, name);
+create index ix_customers_user_phone on customers (user_id, phone);
+create index ix_user_salons_user_salon on user_salons (user_id, salon_id);
 create index ix_services_salon_active on services (salon_id, is_active);
-create index ix_appointments_salon_date on appointments (salon_id, appointment_date desc);
+create index ix_appointments_user_date on appointments (user_id, appointment_date desc);
 create index ix_appointments_salon_customer on appointments (salon_id, customer_id);
-create index ix_messages_salon_status_date on scheduled_messages (salon_id, status, send_date);
+create index ix_messages_user_status_date on scheduled_messages (user_id, status, send_date);
 create index ix_messages_salon_customer on scheduled_messages (salon_id, customer_id);
 ```
 
@@ -160,11 +177,12 @@ Never
 - `phone` deve ser obrigatório em cliente.
 - `status` deve aceitar apenas valores conhecidos.
 - `send_date` deve ser calculado a partir do atendimento.
-- Não permitir relacionamento entre entidades de salões diferentes.
+- Não permitir atendimento em salão sem vínculo `user_salons`.
+- Não permitir relacionamento entre cliente de uma profissional e atendimento de outra.
 
 ## 6. Dados seed recomendados
 
-Ao criar um salão, criar serviços iniciais opcionais:
+Ao criar e vincular um salão, criar serviços iniciais opcionais:
 
 ```text
 Mechas — 15 dias
@@ -174,4 +192,4 @@ Hidratação — 15 dias
 Escova — 7 dias
 ```
 
-Também criar mensagem padrão geral.
+Também criar mensagem padrão geral da profissional.

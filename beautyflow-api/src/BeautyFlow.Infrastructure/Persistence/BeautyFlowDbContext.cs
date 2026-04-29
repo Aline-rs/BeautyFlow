@@ -42,6 +42,7 @@ public sealed class BeautyFlowDbContext : DbContext
             entity.Property(x => x.Name).HasMaxLength(160).IsRequired();
             entity.Property(x => x.Email).HasMaxLength(160).IsRequired();
             entity.Property(x => x.PasswordHash).HasMaxLength(512).IsRequired();
+            entity.Property(x => x.ProfilePhotoUrl).HasMaxLength(512);
             entity.Property(x => x.CreatedAtUtc).IsRequired();
             entity.Property(x => x.SalonId).IsRequired();
             entity.HasIndex(x => x.Email).IsUnique();

@@ -64,13 +64,21 @@ Infrastructure -> Domain/Application
 
 ## Data Model
 
-Use SalonId multi-tenancy. Every business entity must include SalonId.
+Use a professional-centric model:
+
+- `User` is global.
+- `UserSalon` links professionals to one or more salons.
+- `Customer` belongs to the professional.
+- `Service` belongs to the salon.
+- `Appointment` references professional, salon, customer and service.
+- `ScheduledMessage` derives from the appointment.
 
 ## Security Plan
 
 - JWT authentication.
 - Password hashing.
-- SalonId from token.
+- User identity from token.
+- Salon context validated against `UserSalon` when required.
 - DTOs only.
 - Upload validation.
 - No secrets in repository.
@@ -90,21 +98,22 @@ Use SalonId multi-tenancy. Every business entity must include SalonId.
 - Create API solution.
 - Configure theme, navigation, EF Core, JWT.
 
-### Phase 2 — Auth and Settings
+### Phase 2 — Auth and Professional Profile
 
 - Register/login.
 - Token persistence.
-- Salon profile.
+- Professional profile.
+- Salon linking.
 
 ### Phase 3 — Customers and Services
 
-- CRUD customers.
+- CRUD customers owned by the professional.
 - Upload photo.
-- CRUD services.
+- CRUD services by salon.
 
 ### Phase 4 — Appointments and Messages
 
-- Register appointment.
+- Register appointment with selected salon.
 - Generate scheduled message.
 - List messages.
 - Open WhatsApp.

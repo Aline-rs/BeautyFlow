@@ -47,6 +47,7 @@ Adicionar:
 
 - Salon
 - User
+- UserSalon
 - Customer
 - Service
 - Appointment
@@ -88,12 +89,10 @@ Usar implementação segura do .NET.
 Gerar token com:
 
 - userId
-- salonId
 - email
 
 ### BE-013 — Criar Register endpoint
 
-- Criar salão.
 - Criar usuário.
 - Criar template padrão.
 - Criar settings padrão.
@@ -106,17 +105,33 @@ Gerar token com:
 
 ### BE-015 — Criar CurrentUser service
 
-Ler userId e salonId do token.
+Ler userId do token.
 
-## Epic BE-04 — Salão
+## Epic BE-04 — Profissional e Salões
 
-### BE-016 — GET /salon/profile
+### BE-016 — GET /profile
 
-Retornar dados do salão autenticado.
+Retornar dados da profissional autenticada.
 
-### BE-017 — PUT /salon/profile
+### BE-017 — PUT /profile
 
-Atualizar dados básicos.
+Atualizar dados básicos da profissional.
+
+### BE-018 — POST /salons
+
+Criar salão e vincular profissional.
+
+### BE-019 — GET /salons
+
+Listar salões vinculados.
+
+### BE-020 — GET /salon/profile
+
+Retornar dados do salão selecionado.
+
+### BE-021 — PUT /salon/profile
+
+Atualizar dados básicos do salão selecionado.
 
 ## Epic BE-05 — Clientes
 
@@ -129,7 +144,7 @@ Atualizar dados básicos.
 
 ### BE-019 — GET /customers
 
-- Filtrar por SalonId.
+- Filtrar por UserId dono da carteira.
 - Busca por nome/telefone.
 - Paginação.
 
@@ -147,7 +162,7 @@ Atualizar dados básicos.
 ### BE-022 — PUT /customers/{id}
 
 - Atualizar cliente.
-- Filtrar por SalonId.
+- Filtrar por UserId.
 
 ### BE-023 — POST /customers/{id}/photo
 
@@ -166,7 +181,7 @@ Atualizar dados básicos.
 
 ### BE-025 — GET /services
 
-Listar serviços por SalonId.
+Listar serviços do salão selecionado.
 
 ### BE-026 — POST /services
 
@@ -209,7 +224,7 @@ Regra:
 
 ### BE-032 — POST /appointments
 
-Criar atendimento e mensagem.
+Criar atendimento e mensagem validando vínculo da profissional com o salão informado.
 
 ### BE-033 — GET /appointments
 
@@ -278,18 +293,22 @@ Atualizar settings.
 
 Resposta padronizada.
 
-### BE-046 — Garantir filtro por SalonId
+### BE-046 — Garantir regras de ownership e contexto
 
-Revisar todos os endpoints privados.
+Revisar todos os endpoints privados e separar:
+
+- filtro por UserId para carteira de clientes
+- validação de UserSalon para contexto de salão
 
 ### BE-047 — Criar testes de geração de mensagem
 
 - Template.
 - Data retorno.
 
-### BE-048 — Criar testes de isolamento por SalonId
+### BE-048 — Criar testes de ownership profissional e contexto de salão
 
-Dados de um salão não devem aparecer para outro.
+- Clientes de uma profissional não devem aparecer para outra.
+- Uma profissional não deve operar em salão sem vínculo `UserSalon`.
 
 ### BE-049 — Criar testes de autenticação
 
