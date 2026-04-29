@@ -493,19 +493,6 @@ beautyflow_dev
 
 ---
 
-## 🚀 Possível deploy gratuito
-
-Para uma versão inicial de validação, o projeto pode ser publicado usando:
-
-- Supabase Free para PostgreSQL
-- Render Free para hospedar a API
-- Expo/EAS para gerar build do aplicativo mobile
-
-Essa configuração é útil para MVP, testes, portfólio e validação com poucos usuários.
-
-Para produção real, será necessário avaliar hospedagem paga, segurança, backups, logs e monitoramento.
-
----
 
 ## 📌 Status do projeto
 
