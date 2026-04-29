@@ -121,6 +121,9 @@ export function CustomerDetailScreen({ navigation, route }: Props) {
                 screen: 'AppointmentsTab',
                 params: {
                   screen: 'AppointmentForm',
+                  params: {
+                    customerId: customer.id,
+                  },
                 },
               })
           }

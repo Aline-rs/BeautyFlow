@@ -22,12 +22,16 @@ export type CustomersStackParamList = {
 
 export type AppointmentsStackParamList = {
   AppointmentsMain: undefined;
-  AppointmentForm: undefined;
+  AppointmentForm: {
+    customerId?: string;
+  };
 };
 
 export type MessagesStackParamList = {
   MessagesMain: undefined;
-  MessageDetail: undefined;
+  MessageDetail: {
+    messageId: string;
+  };
 };
 
 export type MoreStackParamList = {
