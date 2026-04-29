@@ -1,7 +1,11 @@
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { useFocusEffect } from '@react-navigation/native';
+import { useCallback } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { AppCard } from '../components/AppCard';
 import { Screen } from '../components/Screen';
+import { useAuth } from '../features/auth';
+import { useSettings } from '../features/settings';
 import { MoreStackParamList } from '../navigation/types';
 import { colors, typography } from '../theme';
 
@@ -21,14 +25,23 @@ const menuItems: {
 ];
 
 export function MoreScreen({ navigation }: Props) {
+  const { signOut } = useAuth();
+  const { loadSettings, salonProfile } = useSettings();
+
+  useFocusEffect(
+    useCallback(() => {
+      void loadSettings();
+    }, [loadSettings]),
+  );
+
   return (
     <Screen>
       <View style={styles.hero}>
         <View style={styles.avatar}>
           <Text style={styles.avatarText}>SB</Text>
         </View>
-        <Text style={styles.heroTitle}>Studio Bella Hair</Text>
-        <Text style={styles.heroSubtitle}>bellahairstudio@email.com</Text>
+        <Text style={styles.heroTitle}>{salonProfile?.salonName ?? 'Studio Bella Hair'}</Text>
+        <Text style={styles.heroSubtitle}>{salonProfile?.email ?? 'bellahairstudio@email.com'}</Text>
       </View>
 
       <View style={styles.content}>
@@ -47,6 +60,10 @@ export function MoreScreen({ navigation }: Props) {
             </Pressable>
           ))}
         </AppCard>
+
+        <Pressable style={styles.signOutButton} onPress={() => void signOut()}>
+          <Text style={styles.signOutText}>Sair da conta</Text>
+        </Pressable>
       </View>
     </Screen>
   );
@@ -130,6 +147,21 @@ const styles = StyleSheet.create({
   menuArrow: {
     color: colors.textSecondary,
     fontFamily: typography.fontFamily.body,
+    fontSize: 14,
+  },
+  signOutButton: {
+    marginTop: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(217,108,108,.35)',
+    borderRadius: 13,
+    paddingVertical: 13,
+    paddingHorizontal: 14,
+    alignItems: 'center',
+    backgroundColor: 'transparent',
+  },
+  signOutText: {
+    color: colors.error,
+    fontFamily: typography.fontFamily.bodyMedium,
     fontSize: 14,
   },
 });
