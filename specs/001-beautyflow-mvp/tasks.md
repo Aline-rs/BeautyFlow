@@ -65,11 +65,11 @@
 
 ### Frontend
 
-- [ ] T034 Implement CustomersScreen.
-- [ ] T035 Implement CustomerFormScreen.
-- [ ] T036 Implement PhotoPicker with preview.
-- [ ] T037 Implement CustomerDetailScreen.
-- [ ] T038 Integrate customers API.
+- [x] T034 Implement CustomersScreen.
+- [x] T035 Implement CustomerFormScreen.
+- [x] T036 Implement PhotoPicker with preview.
+- [x] T037 Implement CustomerDetailScreen.
+- [x] T038 Integrate customers API.
 
 ## Phase 4 - Services
 
