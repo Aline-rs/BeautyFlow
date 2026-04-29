@@ -2,6 +2,7 @@ using BeautyFlow.Api.Contracts;
 using BeautyFlow.Api.Contracts.Customers;
 using BeautyFlow.Application.Abstractions.Auth;
 using BeautyFlow.Domain.Entities;
+using BeautyFlow.Domain.Enums;
 using BeautyFlow.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -64,7 +65,7 @@ public sealed class CustomersController : ControllerBase
             .Take(pageSize)
             .ToListAsync();
 
-        return Ok(customers.Select(MapCustomer).ToList());
+        return Ok(await MapCustomersAsync(customers));
     }
 
     [HttpGet("{id:guid}")]
@@ -87,7 +88,7 @@ public sealed class CustomersController : ControllerBase
             return NotFound(ApiResponse<object>.Failure("Customer was not found."));
         }
 
-        return Ok(MapCustomer(customer));
+        return Ok(await MapCustomerAsync(customer));
     }
 
     [HttpPost]
@@ -120,7 +121,7 @@ public sealed class CustomersController : ControllerBase
         _dbContext.Customers.Add(customer);
         await _dbContext.SaveChangesAsync();
 
-        return CreatedAtAction(nameof(GetCustomer), new { id = customer.Id }, MapCustomer(customer));
+        return CreatedAtAction(nameof(GetCustomer), new { id = customer.Id }, await MapCustomerAsync(customer));
     }
 
     [HttpPut("{id:guid}")]
@@ -158,7 +159,7 @@ public sealed class CustomersController : ControllerBase
 
         await _dbContext.SaveChangesAsync();
 
-        return Ok(MapCustomer(customer));
+        return Ok(await MapCustomerAsync(customer));
     }
 
     [HttpPost("{id:guid}/photo")]
@@ -207,7 +208,7 @@ public sealed class CustomersController : ControllerBase
         customer.UpdatedAtUtc = DateTime.UtcNow;
         await _dbContext.SaveChangesAsync();
 
-        return Ok(MapCustomer(customer));
+        return Ok(await MapCustomerAsync(customer));
     }
 
     private ActionResult<CustomerDto>? BuildInvalidRequestResult(string message)
@@ -247,8 +248,56 @@ public sealed class CustomersController : ControllerBase
         return true;
     }
 
-    private CustomerDto MapCustomer(Customer customer)
+    public static string MapMessageStatusLabel(MessageStatus? status)
     {
+        return status switch
+        {
+            MessageStatus.Sent => "Enviada",
+            MessageStatus.Canceled => "Cancelada",
+            MessageStatus.Error => "Erro",
+            _ => "Pendente"
+        };
+    }
+
+    private async Task<IReadOnlyList<CustomerDto>> MapCustomersAsync(IReadOnlyList<Customer> customers)
+    {
+        var customerIds = customers.Select(x => x.Id).ToList();
+        var appointments = await _dbContext.Appointments
+            .AsNoTracking()
+            .Include(x => x.Service)
+            .Include(x => x.ScheduledMessage)
+            .Where(x => customerIds.Contains(x.CustomerId))
+            .OrderByDescending(x => x.AppointmentDate)
+            .ThenByDescending(x => x.CreatedAtUtc)
+            .ToListAsync();
+
+        return customers
+            .Select(customer => MapCustomer(customer, appointments.Where(x => x.CustomerId == customer.Id).ToList()))
+            .ToList();
+    }
+
+    private async Task<CustomerDto> MapCustomerAsync(Customer customer)
+    {
+        var appointments = await _dbContext.Appointments
+            .AsNoTracking()
+            .Include(x => x.Service)
+            .Include(x => x.ScheduledMessage)
+            .Where(x => x.CustomerId == customer.Id)
+            .OrderByDescending(x => x.AppointmentDate)
+            .ThenByDescending(x => x.CreatedAtUtc)
+            .ToListAsync();
+
+        return MapCustomer(customer, appointments);
+    }
+
+    private CustomerDto MapCustomer(Customer customer, IReadOnlyList<Appointment> appointments)
+    {
+        var latestAppointment = appointments.FirstOrDefault();
+        var nextPendingAppointment = appointments
+            .Where(x => x.ScheduledMessage is not null && x.ScheduledMessage.Status == MessageStatus.Pending)
+            .OrderBy(x => x.ScheduledMessage!.ScheduledForDate)
+            .FirstOrDefault();
+
         return new CustomerDto
         {
             Id = customer.Id.ToString(),
@@ -259,10 +308,19 @@ public sealed class CustomersController : ControllerBase
             Notes = customer.Notes,
             PhotoUrl = BuildAbsoluteUrl(customer.PhotoUrl),
             Initials = BuildInitials(customer.Name),
-            NextServiceName = null,
-            NextContactDate = null,
-            LastAppointmentLabel = null,
-            History = []
+            NextServiceName = nextPendingAppointment?.Service.Name ?? latestAppointment?.Service.Name,
+            NextContactDate = nextPendingAppointment?.ScheduledMessage?.ScheduledForDate.ToString("yyyy-MM-dd"),
+            LastAppointmentLabel = latestAppointment is null
+                ? null
+                : $"{latestAppointment.Service.Name} em {latestAppointment.AppointmentDate:dd/MM/yyyy}",
+            History = appointments.Select(appointment => new CustomerHistoryItemDto
+            {
+                Id = appointment.Id.ToString(),
+                ServiceName = appointment.Service.Name,
+                AppointmentDate = appointment.AppointmentDate.ToString("yyyy-MM-dd"),
+                MessageStatus = MapMessageStatusLabel(appointment.ScheduledMessage?.Status),
+                NextContactDate = appointment.ScheduledMessage?.ScheduledForDate.ToString("yyyy-MM-dd")
+            }).ToList()
         };
     }
 

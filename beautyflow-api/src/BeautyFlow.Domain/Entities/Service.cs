@@ -10,5 +10,7 @@ public sealed class Service : SalonOwnedEntity
     public DateTime CreatedAtUtc { get; set; } = DateTime.UtcNow;
     public DateTime? UpdatedAtUtc { get; set; }
 
+    public ICollection<Appointment> Appointments { get; set; } = new List<Appointment>();
+    public ICollection<ScheduledMessage> ScheduledMessages { get; set; } = new List<ScheduledMessage>();
     public Salon Salon { get; set; } = null!;
 }

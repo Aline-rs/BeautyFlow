@@ -1,5 +1,9 @@
+using BeautyFlow.Application.Abstractions.Appointments;
 using BeautyFlow.Application.Abstractions.Auth;
+using BeautyFlow.Application.Abstractions.Messaging;
+using BeautyFlow.Infrastructure.Appointments;
 using BeautyFlow.Infrastructure.Auth;
+using BeautyFlow.Infrastructure.Messaging;
 using BeautyFlow.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -18,6 +22,8 @@ public static class ServiceCollectionExtensions
 
         services.AddScoped<IPasswordHasher, Pbkdf2PasswordHasher>();
         services.AddScoped<IJwtTokenService, JwtTokenService>();
+        services.AddScoped<IMessageTemplateRenderer, DefaultMessageTemplateRenderer>();
+        services.AddScoped<IAppointmentService, AppointmentService>();
 
         return services;
     }
