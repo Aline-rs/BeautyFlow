@@ -12,8 +12,12 @@ export type HomeStackParamList = {
 
 export type CustomersStackParamList = {
   CustomersMain: undefined;
-  CustomerForm: undefined;
-  CustomerDetail: undefined;
+  CustomerForm: {
+    customerId?: string;
+  };
+  CustomerDetail: {
+    customerId: string;
+  };
 };
 
 export type AppointmentsStackParamList = {

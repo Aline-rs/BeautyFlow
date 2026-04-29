@@ -1,12 +1,22 @@
+import { ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { colors, typography } from '../theme';
 
 type TopBarProps = {
   title: string;
   onBack?: () => void;
+  rightLabel?: string;
+  onRightPress?: () => void;
+  rightContent?: ReactNode;
 };
 
-export function TopBar({ title, onBack }: TopBarProps) {
+export function TopBar({
+  title,
+  onBack,
+  rightLabel,
+  onRightPress,
+  rightContent,
+}: TopBarProps) {
   return (
     <View style={styles.container}>
       {onBack ? (
@@ -17,7 +27,15 @@ export function TopBar({ title, onBack }: TopBarProps) {
         <View style={styles.placeholder} />
       )}
       <Text style={styles.title}>{title}</Text>
-      <View style={styles.placeholder} />
+      {rightContent ? (
+        rightContent
+      ) : rightLabel ? (
+        <Pressable onPress={onRightPress}>
+          <Text style={styles.rightLabel}>{rightLabel}</Text>
+        </Pressable>
+      ) : (
+        <View style={styles.placeholder} />
+      )}
     </View>
   );
 }
@@ -52,6 +70,13 @@ const styles = StyleSheet.create({
     color: colors.roseDark,
     fontSize: 13,
     fontFamily: typography.fontFamily.bodyBold,
+  },
+  rightLabel: {
+    minWidth: 30,
+    textAlign: 'right',
+    color: colors.rose,
+    fontFamily: typography.fontFamily.bodyBold,
+    fontSize: 12,
   },
   placeholder: {
     width: 30,

@@ -1,0 +1,33 @@
+export type ContactPreference = 'WhatsApp' | 'Ligacao' | 'SMS';
+
+export type CustomerHistoryItem = {
+  id: string;
+  serviceName: string;
+  appointmentDate: string;
+  messageStatus: 'Pendente' | 'Enviada';
+  nextContactDate?: string;
+};
+
+export type Customer = {
+  id: string;
+  name: string;
+  whatsapp: string;
+  birthDate?: string;
+  contactPreference: ContactPreference;
+  notes?: string;
+  photoUrl?: string;
+  initials: string;
+  nextServiceName?: string;
+  nextContactDate?: string;
+  lastAppointmentLabel?: string;
+  history: CustomerHistoryItem[];
+};
+
+export type CustomerFormPayload = {
+  name: string;
+  whatsapp: string;
+  birthDate?: string;
+  contactPreference: ContactPreference;
+  notes?: string;
+  photoUrl?: string;
+};
