@@ -10,5 +10,6 @@ public sealed class Salon : Entity
     public DateTime CreatedAtUtc { get; set; } = DateTime.UtcNow;
 
     public ICollection<Customer> Customers { get; set; } = new List<Customer>();
+    public ICollection<Service> Services { get; set; } = new List<Service>();
     public ICollection<User> Users { get; set; } = new List<User>();
 }
