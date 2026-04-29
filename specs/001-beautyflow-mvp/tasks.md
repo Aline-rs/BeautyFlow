@@ -128,11 +128,11 @@
 
 ### Frontend
 
-- [ ] T073 Implement MoreScreen.
-- [ ] T074 Implement MessageTemplateScreen.
-- [ ] T075 Implement NotificationsScreen.
-- [ ] T076 Implement SalonProfileScreen.
-- [ ] T077 Integrate settings APIs.
+- [x] T073 Implement MoreScreen.
+- [x] T074 Implement MessageTemplateScreen.
+- [x] T075 Implement NotificationsScreen.
+- [x] T076 Implement SalonProfileScreen.
+- [x] T077 Integrate settings APIs.
 
 ## Phase 7 - Quality and Hardening
 
