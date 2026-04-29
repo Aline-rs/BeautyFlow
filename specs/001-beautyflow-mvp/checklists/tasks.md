@@ -1,0 +1,151 @@
+# Tasks — BeautyFlow MVP
+
+## Format
+
+- `[ ]` not started
+- `[~]` in progress
+- `[x]` done
+
+## Phase 1 — Repository and Foundations
+
+### Shared
+
+- [ ] T001 Create repository structure with `beautyflow-api`, `beautyflow-mobile`, `docs`, `specs`.
+- [ ] T002 Add root README with project overview and setup instructions.
+- [~] T003 Add `.gitignore` for .NET, Node, Expo, env files and build outputs.
+
+### Frontend foundation
+
+- [x] T004 Create Expo TypeScript project in `beautyflow-mobile`.
+- [~] T005 Install navigation, forms, validation, axios, image picker and secure storage dependencies.
+- [~] T006 Create frontend folder structure.
+- [x] T007 Implement theme files from design system.
+- [~] T008 Implement base components: Screen, AppButton, AppInput, AppCard, AppChip, Avatar.
+- [ ] T009 Configure AuthNavigator, MainTabs and RootStack.
+
+### Backend foundation
+
+- [ ] T010 Create .NET solution and projects.
+- [ ] T011 Configure project references.
+- [ ] T012 Configure appsettings and environment variables.
+- [ ] T013 Configure EF Core PostgreSQL.
+- [ ] T014 Configure Swagger with Bearer authentication.
+- [ ] T015 Configure global error middleware and response envelope.
+
+## Phase 2 — Auth
+
+### Backend
+
+- [ ] T016 Create User and Salon entities.
+- [ ] T017 Configure password hashing.
+- [ ] T018 Configure JWT service.
+- [ ] T019 Implement POST `/auth/register`.
+- [ ] T020 Implement POST `/auth/login`.
+- [ ] T021 Implement CurrentUser service with UserId and SalonId.
+
+### Frontend
+
+- [x] T022 Implement SplashScreen.
+- [~] T023 Implement LoginScreen with validation.
+- [~] T024 Implement SignUpScreen with validation.
+- [ ] T025 Implement AuthContext and token persistence.
+- [ ] T026 Integrate login/register with API.
+
+## Phase 3 — Customers
+
+### Backend
+
+- [ ] T027 Create Customer entity and mapping.
+- [ ] T028 Implement customer DTOs.
+- [ ] T029 Implement GET `/customers` with search and pagination.
+- [ ] T030 Implement GET `/customers/{id}` with history summary.
+- [ ] T031 Implement POST `/customers`.
+- [ ] T032 Implement PUT `/customers/{id}`.
+- [ ] T033 Implement POST `/customers/{id}/photo`.
+
+### Frontend
+
+- [ ] T034 Implement CustomersScreen.
+- [ ] T035 Implement CustomerFormScreen.
+- [ ] T036 Implement PhotoPicker with preview.
+- [ ] T037 Implement CustomerDetailScreen.
+- [ ] T038 Integrate customers API.
+
+## Phase 4 — Services
+
+### Backend
+
+- [ ] T039 Create Service entity and mapping.
+- [ ] T040 Implement service DTOs.
+- [ ] T041 Implement GET `/services`.
+- [ ] T042 Implement POST `/services`.
+- [ ] T043 Implement PUT `/services/{id}`.
+- [ ] T044 Implement PATCH `/services/{id}/status`.
+
+### Frontend
+
+- [ ] T045 Implement ServicesScreen.
+- [ ] T046 Implement ServiceFormScreen.
+- [ ] T047 Integrate services API.
+
+## Phase 5 — Appointments and Scheduled Messages
+
+### Backend
+
+- [ ] T048 Create Appointment and ScheduledMessage entities.
+- [ ] T049 Create MessageStatus enum.
+- [ ] T050 Implement MessageTemplateRenderer.
+- [ ] T051 Implement AppointmentService transaction.
+- [ ] T052 Implement POST `/appointments`.
+- [ ] T053 Implement GET `/appointments`.
+- [ ] T054 Implement GET `/messages`.
+- [ ] T055 Implement GET `/messages/{id}`.
+- [ ] T056 Implement PUT `/messages/{id}`.
+- [ ] T057 Implement PATCH `/messages/{id}/mark-as-sent`.
+- [ ] T058 Implement PATCH `/messages/{id}/cancel`.
+- [ ] T059 Implement GET `/messages/{id}/whatsapp-link`.
+
+### Frontend
+
+- [ ] T060 Implement AppointmentFormScreen.
+- [ ] T061 Implement local return date preview.
+- [ ] T062 Integrate POST `/appointments`.
+- [ ] T063 Implement AppointmentsHistoryScreen.
+- [ ] T064 Implement MessagesScreen.
+- [ ] T065 Implement MessageDetailScreen.
+- [ ] T066 Implement WhatsApp opening with Linking.
+- [ ] T067 Integrate messages API.
+
+## Phase 6 — Settings
+
+### Backend
+
+- [ ] T068 Create MessageTemplate entity.
+- [ ] T069 Create NotificationSettings entity.
+- [ ] T070 Implement GET/PUT `/settings/message-template`.
+- [ ] T071 Implement GET/PUT `/settings/notifications`.
+- [ ] T072 Implement GET/PUT `/salon/profile`.
+
+### Frontend
+
+- [ ] T073 Implement MoreScreen.
+- [ ] T074 Implement MessageTemplateScreen.
+- [ ] T075 Implement NotificationsScreen.
+- [ ] T076 Implement SalonProfileScreen.
+- [ ] T077 Integrate settings APIs.
+
+## Phase 7 — Quality and Hardening
+
+- [ ] T078 Add backend unit tests for date calculation and template rendering.
+- [ ] T079 Add backend integration tests for auth.
+- [ ] T080 Add backend integration tests for customer CRUD.
+- [ ] T081 Add backend integration test for appointment generating message.
+- [ ] T082 Add backend tests for SalonId isolation.
+- [ ] T083 Add frontend tests for template replacement.
+- [ ] T084 Add frontend tests for WhatsApp URL.
+- [ ] T085 Add frontend tests for return date calculation.
+- [ ] T086 Review all private endpoints for authorization.
+- [ ] T087 Review upload security.
+- [ ] T088 Remove mocks from integrated screens.
+- [ ] T089 Run manual MVP validation script.
+- [ ] T090 Update README with final local setup.

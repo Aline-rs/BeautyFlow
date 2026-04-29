@@ -163,10 +163,13 @@ public sealed class CustomersController : ControllerBase
     }
 
     [HttpPost("{id:guid}/photo")]
+    [Consumes("multipart/form-data")]
     [ProducesResponseType(typeof(CustomerDto), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<CustomerDto>> UploadPhoto(Guid id, [FromForm] IFormFile photo)
+    public async Task<ActionResult<CustomerDto>> UploadPhoto(
+    Guid id,
+    IFormFile photo)
     {
         var salonId = GetSalonId();
         if (salonId is null)
@@ -193,7 +196,11 @@ public sealed class CustomersController : ControllerBase
             return BadRequest(ApiResponse<object>.Failure("Only image uploads are allowed."));
         }
 
-        var uploadsRoot = Path.Combine(_environment.WebRootPath ?? Path.Combine(_environment.ContentRootPath, "wwwroot"), "uploads", "customers");
+        var uploadsRoot = Path.Combine(
+            _environment.WebRootPath ?? Path.Combine(_environment.ContentRootPath, "wwwroot"),
+            "uploads",
+            "customers");
+
         Directory.CreateDirectory(uploadsRoot);
 
         var fileName = $"{customer.Id:N}-{Guid.NewGuid():N}{extension}";
@@ -206,6 +213,7 @@ public sealed class CustomersController : ControllerBase
 
         customer.PhotoUrl = $"/uploads/customers/{fileName}";
         customer.UpdatedAtUtc = DateTime.UtcNow;
+
         await _dbContext.SaveChangesAsync();
 
         return Ok(await MapCustomerAsync(customer));
