@@ -120,11 +120,11 @@
 
 ### Backend
 
-- [ ] T068 Create MessageTemplate entity.
-- [ ] T069 Create NotificationSettings entity.
-- [ ] T070 Implement GET/PUT `/settings/message-template`.
-- [ ] T071 Implement GET/PUT `/settings/notifications`.
-- [ ] T072 Implement GET/PUT `/salon/profile`.
+- [x] T068 Create MessageTemplate entity.
+- [x] T069 Create NotificationSettings entity.
+- [x] T070 Implement GET/PUT `/settings/message-template`.
+- [x] T071 Implement GET/PUT `/settings/notifications`.
+- [x] T072 Implement GET/PUT `/salon/profile`.
 
 ### Frontend
 
