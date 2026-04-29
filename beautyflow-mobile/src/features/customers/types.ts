@@ -4,7 +4,7 @@ export type CustomerHistoryItem = {
   id: string;
   serviceName: string;
   appointmentDate: string;
-  messageStatus: 'Pendente' | 'Enviada';
+  messageStatus: 'Pendente' | 'Enviada' | 'Cancelada' | 'Erro';
   nextContactDate?: string;
 };
 

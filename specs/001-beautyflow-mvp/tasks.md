@@ -107,14 +107,14 @@
 
 ### Frontend
 
-- [ ] T060 Implement AppointmentFormScreen.
-- [ ] T061 Implement local return date preview.
-- [ ] T062 Integrate POST `/appointments`.
-- [ ] T063 Implement AppointmentsHistoryScreen.
-- [ ] T064 Implement MessagesScreen.
-- [ ] T065 Implement MessageDetailScreen.
-- [ ] T066 Implement WhatsApp opening with Linking.
-- [ ] T067 Integrate messages API.
+- [x] T060 Implement AppointmentFormScreen.
+- [x] T061 Implement local return date preview.
+- [x] T062 Integrate POST `/appointments`.
+- [x] T063 Implement AppointmentsHistoryScreen.
+- [x] T064 Implement MessagesScreen.
+- [x] T065 Implement MessageDetailScreen.
+- [x] T066 Implement WhatsApp opening with Linking.
+- [x] T067 Integrate messages API.
 
 ## Phase 6 - Settings
 
