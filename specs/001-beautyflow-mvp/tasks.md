@@ -84,9 +84,9 @@
 
 ### Frontend
 
-- [ ] T045 Implement ServicesScreen.
-- [ ] T046 Implement ServiceFormScreen.
-- [ ] T047 Integrate services API.
+- [x] T045 Implement ServicesScreen.
+- [x] T046 Implement ServiceFormScreen.
+- [x] T047 Integrate services API.
 
 ## Phase 5 - Appointments and Scheduled Messages
 
