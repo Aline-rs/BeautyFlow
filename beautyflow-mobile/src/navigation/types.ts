@@ -34,6 +34,9 @@ export type MoreStackParamList = {
   MoreMain: undefined;
   SalonProfile: undefined;
   Services: undefined;
+  ServiceForm: {
+    serviceId?: string;
+  };
   MessageTemplates: undefined;
   Notifications: undefined;
 };
