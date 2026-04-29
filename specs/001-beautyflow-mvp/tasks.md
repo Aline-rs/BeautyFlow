@@ -55,13 +55,13 @@
 
 ### Backend
 
-- [ ] T027 Create Customer entity and mapping.
-- [ ] T028 Implement customer DTOs.
-- [ ] T029 Implement GET `/customers` with search and pagination.
-- [ ] T030 Implement GET `/customers/{id}` with history summary.
-- [ ] T031 Implement POST `/customers`.
-- [ ] T032 Implement PUT `/customers/{id}`.
-- [ ] T033 Implement POST `/customers/{id}/photo`.
+- [x] T027 Create Customer entity and mapping.
+- [x] T028 Implement customer DTOs.
+- [x] T029 Implement GET `/customers` with search and pagination.
+- [x] T030 Implement GET `/customers/{id}` with history summary.
+- [x] T031 Implement POST `/customers`.
+- [x] T032 Implement PUT `/customers/{id}`.
+- [x] T033 Implement POST `/customers/{id}/photo`.
 
 ### Frontend
 
