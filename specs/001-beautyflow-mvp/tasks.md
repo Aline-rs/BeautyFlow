@@ -150,6 +150,17 @@
 - [ ] T089 Run manual MVP validation script.
 - [ ] T090 Update README with final local setup.
 
+## Phase 8 - Security Hardening
+
+- [ ] T091 Remove mobile auth mock fallback from integrated flows.
+- [ ] T092 Validate persisted mobile token with backend during app startup.
+- [ ] T093 Stop returning internal exception details in API error responses.
+- [ ] T094 Move development secrets to environment-based configuration.
+- [ ] T095 Protect customer photo access behind authorized delivery instead of public static exposure.
+- [ ] T096 Add upload size limits and stronger file validation for customer photos.
+- [ ] T097 Add rate limiting for `/auth/login` and `/auth/register`.
+- [ ] T098 Add security regression tests for unauthorized access and SalonId isolation.
+
 ## MVP Closeout Priority List
 
 ### P1 - Complete the real Home flow
