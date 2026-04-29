@@ -149,3 +149,73 @@
 - [ ] T088 Remove mocks from integrated screens.
 - [ ] T089 Run manual MVP validation script.
 - [ ] T090 Update README with final local setup.
+
+## MVP Closeout Priority List
+
+### P1 - Complete the real Home flow
+
+- [ ] P101 Replace `HomePlaceholderScreen` with a production `HomeScreen`.
+- [ ] P102 Match the Home visual layout to `design-reference/beautyflow_mvp_mobile_prototype.html`.
+- [ ] P103 Show real metrics for pending messages, upcoming follow-ups and appointments.
+- [ ] P104 Add working navigation from Home to `AppointmentForm` and `Messages`.
+
+### P2 - Remove mock fallbacks from integrated mobile flows
+
+- [ ] P105 Remove mock auth fallback from `src/features/auth/authService.ts`.
+- [ ] P106 Remove mock customer fallback from `src/features/customers/customersService.ts`.
+- [ ] P107 Remove mock service fallback from `src/features/services/servicesService.ts`.
+- [ ] P108 Remove mock appointment fallback from `src/features/appointments/appointmentsService.ts`.
+- [ ] P109 Remove mock message fallback from `src/features/appointments/messagesService.ts`.
+- [ ] P110 Remove mock settings fallback from `src/features/settings/settingsService.ts`.
+
+### P3 - Close remaining visual and UX gaps
+
+- [ ] P111 Review `CustomersScreen` against the HTML prototype and adjust spacing, hierarchy and states.
+- [ ] P112 Review `CustomerFormScreen` and `CustomerDetailScreen` against the HTML prototype.
+- [ ] P113 Review `ServicesScreen` and `ServiceFormScreen` against the HTML prototype.
+- [ ] P114 Review `AppointmentFormScreen` and `AppointmentsHistoryScreen` against the HTML prototype.
+- [ ] P115 Review `MessagesScreen` and `MessageDetailScreen` against the HTML prototype.
+- [ ] P116 Review `MoreScreen`, `SalonProfileScreen`, `MessageTemplateScreen` and `NotificationsScreen` against the HTML prototype.
+- [ ] P117 Add a visible loading/fallback experience while fonts load instead of returning `null` in `App.tsx`.
+
+### P4 - Finish missing functional gaps in forms and flows
+
+- [ ] P118 Confirm customer photo selection, preview and persistence work end-to-end.
+- [ ] P119 Confirm appointment return-date calculation is correct and timezone-safe.
+- [ ] P120 Confirm message text editing persists correctly.
+- [ ] P121 Confirm WhatsApp link generation works correctly in list and detail flows.
+- [ ] P122 Decide and implement whether service-level default message content is required in `ServiceFormScreen`.
+
+### P5 - Fix environment and runtime readiness
+
+- [ ] P123 Replace the fixed mobile API `baseURL` with environment-aware configuration.
+- [ ] P124 Validate mobile-to-local API communication for emulator and physical device scenarios.
+- [ ] P125 Validate uploaded customer photo URLs resolve correctly from the mobile app.
+
+### P6 - Add automated test coverage
+
+- [ ] P126 Create backend unit tests for date calculation and template rendering.
+- [ ] P127 Create backend integration tests for auth flows.
+- [ ] P128 Create backend integration tests for customer CRUD.
+- [ ] P129 Create backend integration tests for appointment creation and scheduled message generation.
+- [ ] P130 Create backend tests for SalonId isolation across protected resources.
+- [ ] P131 Create frontend tests for template replacement.
+- [ ] P132 Create frontend tests for WhatsApp URL generation.
+- [ ] P133 Create frontend tests for return-date calculation.
+
+### P7 - Security and hardening review
+
+- [ ] P134 Review authorization on all private endpoints.
+- [ ] P135 Review upload validation and file handling security.
+- [ ] P136 Remove dead code and temporary compatibility paths no longer needed after integration cleanup.
+- [ ] P137 Recheck shared components for regressions after closeout changes.
+
+### P8 - Final validation and documentation
+
+- [ ] P138 Run TypeScript check on the mobile app.
+- [ ] P139 Run lint on the mobile app.
+- [ ] P140 Run backend automated tests.
+- [ ] P141 Execute full manual MVP navigation and regression validation.
+- [ ] P142 Compare final mobile UI visually against the HTML prototype screen by screen.
+- [ ] P143 Update `README.md` with final local setup and run instructions.
+- [ ] P144 Sync `specs/001-beautyflow-mvp/checklists/tasks.md` with the real project status.
