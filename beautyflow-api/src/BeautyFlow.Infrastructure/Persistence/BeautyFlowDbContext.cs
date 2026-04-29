@@ -1,4 +1,5 @@
 using BeautyFlow.Domain.Entities;
+using BeautyFlow.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace BeautyFlow.Infrastructure.Persistence;
@@ -11,7 +12,9 @@ public sealed class BeautyFlowDbContext : DbContext
     }
 
     public DbSet<Salon> Salons => Set<Salon>();
+    public DbSet<Appointment> Appointments => Set<Appointment>();
     public DbSet<Customer> Customers => Set<Customer>();
+    public DbSet<ScheduledMessage> ScheduledMessages => Set<ScheduledMessage>();
     public DbSet<Service> Services => Set<Service>();
     public DbSet<User> Users => Set<User>();
 
@@ -86,6 +89,83 @@ public sealed class BeautyFlowDbContext : DbContext
                 .WithMany(x => x.Services)
                 .HasForeignKey(x => x.SalonId)
                 .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<Appointment>(entity =>
+        {
+            entity.ToTable("appointments");
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.AppointmentDate).IsRequired();
+            entity.Property(x => x.Notes).HasMaxLength(2000);
+            entity.Property(x => x.CreatedAtUtc).IsRequired();
+            entity.Property(x => x.SalonId).IsRequired();
+            entity.Property(x => x.CustomerId).IsRequired();
+            entity.Property(x => x.ServiceId).IsRequired();
+            entity.HasIndex(x => new { x.SalonId, x.AppointmentDate });
+
+            entity
+                .HasOne(x => x.Salon)
+                .WithMany(x => x.Appointments)
+                .HasForeignKey(x => x.SalonId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity
+                .HasOne(x => x.Customer)
+                .WithMany(x => x.Appointments)
+                .HasForeignKey(x => x.CustomerId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity
+                .HasOne(x => x.Service)
+                .WithMany(x => x.Appointments)
+                .HasForeignKey(x => x.ServiceId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity
+                .HasOne(x => x.ScheduledMessage)
+                .WithOne(x => x.Appointment)
+                .HasForeignKey<ScheduledMessage>(x => x.AppointmentId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<ScheduledMessage>(entity =>
+        {
+            entity.ToTable("scheduled_messages");
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.ScheduledForDate).IsRequired();
+            entity.Property(x => x.MessageText).HasMaxLength(4000).IsRequired();
+            entity.Property(x => x.Status)
+                .HasConversion<string>()
+                .HasMaxLength(24)
+                .IsRequired();
+            entity.Property(x => x.CreatedAtUtc).IsRequired();
+            entity.Property(x => x.UpdatedAtUtc);
+            entity.Property(x => x.SentAtUtc);
+            entity.Property(x => x.CanceledAtUtc);
+            entity.Property(x => x.ErrorMessage).HasMaxLength(500);
+            entity.Property(x => x.SalonId).IsRequired();
+            entity.Property(x => x.CustomerId).IsRequired();
+            entity.Property(x => x.ServiceId).IsRequired();
+            entity.Property(x => x.AppointmentId).IsRequired();
+            entity.HasIndex(x => new { x.SalonId, x.ScheduledForDate, x.Status });
+
+            entity
+                .HasOne(x => x.Salon)
+                .WithMany(x => x.ScheduledMessages)
+                .HasForeignKey(x => x.SalonId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity
+                .HasOne(x => x.Customer)
+                .WithMany(x => x.ScheduledMessages)
+                .HasForeignKey(x => x.CustomerId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity
+                .HasOne(x => x.Service)
+                .WithMany(x => x.ScheduledMessages)
+                .HasForeignKey(x => x.ServiceId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
     }
 }

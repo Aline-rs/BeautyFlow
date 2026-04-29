@@ -92,18 +92,18 @@
 
 ### Backend
 
-- [ ] T048 Create Appointment and ScheduledMessage entities.
-- [ ] T049 Create MessageStatus enum.
-- [ ] T050 Implement MessageTemplateRenderer.
-- [ ] T051 Implement AppointmentService transaction.
-- [ ] T052 Implement POST `/appointments`.
-- [ ] T053 Implement GET `/appointments`.
-- [ ] T054 Implement GET `/messages`.
-- [ ] T055 Implement GET `/messages/{id}`.
-- [ ] T056 Implement PUT `/messages/{id}`.
-- [ ] T057 Implement PATCH `/messages/{id}/mark-as-sent`.
-- [ ] T058 Implement PATCH `/messages/{id}/cancel`.
-- [ ] T059 Implement GET `/messages/{id}/whatsapp-link`.
+- [x] T048 Create Appointment and ScheduledMessage entities.
+- [x] T049 Create MessageStatus enum.
+- [x] T050 Implement MessageTemplateRenderer.
+- [x] T051 Implement AppointmentService transaction.
+- [x] T052 Implement POST `/appointments`.
+- [x] T053 Implement GET `/appointments`.
+- [x] T054 Implement GET `/messages`.
+- [x] T055 Implement GET `/messages/{id}`.
+- [x] T056 Implement PUT `/messages/{id}`.
+- [x] T057 Implement PATCH `/messages/{id}/mark-as-sent`.
+- [x] T058 Implement PATCH `/messages/{id}/cancel`.
+- [x] T059 Implement GET `/messages/{id}/whatsapp-link`.
 
 ### Frontend
 
