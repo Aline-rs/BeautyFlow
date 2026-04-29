@@ -3,21 +3,27 @@
 **Feature Branch**: `001-beautyflow-mvp`  
 **Created**: 2026-04-28  
 **Status**: Draft  
-**Input**: MVP mobile para cabeleireiros registrarem atendimentos e enviarem mensagens de retorno pelo WhatsApp.
+**Input**: MVP mobile para profissionais de beleza centralizarem suas clientes, registrarem atendimentos em um ou mais salões e enviarem mensagens de retorno pelo WhatsApp.
 
 ## User Scenarios & Testing
 
 ### Primary User Story
 
-Como cabeleireira, quero cadastrar clientes, registrar atendimentos e receber uma mensagem de retorno gerada automaticamente, para chamar a cliente no momento certo pelo WhatsApp.
+Como profissional de beleza, quero centralizar minhas clientes, registrar atendimentos realizados em diferentes salões e receber uma mensagem de retorno gerada automaticamente, para chamar a cliente no momento certo pelo WhatsApp.
 
 ### Acceptance Scenarios
 
 #### Scenario 1 — Cadastro e login
 
 **Given** uma usuária sem conta  
-**When** ela informa nome, salão, e-mail e senha  
-**Then** o sistema cria o salão, cria a usuária e permite acesso ao app.
+**When** ela informa nome, e-mail e senha  
+**Then** o sistema cria a conta profissional e permite acesso ao app.
+
+#### Scenario 1B — Vincular salão de trabalho
+
+**Given** uma profissional autenticada  
+**When** ela cadastra ou vincula um salão em que trabalha  
+**Then** o sistema passa a permitir operações contextuais naquele salão.
 
 #### Scenario 2 — Cadastro de cliente com foto
 
@@ -53,14 +59,20 @@ Como cabeleireira, quero cadastrar clientes, registrar atendimentos e receber um
 
 ### Functional Requirements
 
-- **FR-001**: O sistema deve permitir criar conta de salão.
+- **FR-001**: O sistema deve permitir criar conta de profissional.
 - **FR-002**: O sistema deve permitir login com e-mail e senha.
+- **FR-002A**: O sistema deve permitir que uma profissional esteja vinculada a um ou mais salões.
+- **FR-002B**: O sistema deve permitir selecionar o salão de trabalho atual quando necessário para operações contextuais.
 - **FR-003**: O sistema deve permitir cadastrar, editar, listar e detalhar clientes.
+- **FR-003A**: A cliente deve pertencer à profissional, não ao salão.
+- **FR-003B**: A profissional deve visualizar sua carteira de clientes independentemente do salão em que atende.
 - **FR-004**: O sistema deve permitir inserir foto da cliente.
 - **FR-005**: O sistema deve exibir iniciais quando cliente não tiver foto.
 - **FR-006**: O sistema deve permitir cadastrar, editar, listar e ativar/desativar serviços.
+- **FR-006A**: Os serviços devem pertencer ao salão, pois variam conforme o local de atendimento.
 - **FR-007**: Cada serviço deve ter prazo sugerido de retorno em dias.
 - **FR-008**: O sistema deve permitir registrar atendimento com cliente, serviço, data e observações.
+- **FR-008A**: Cada atendimento deve registrar em qual salão foi realizado.
 - **FR-009**: Ao registrar atendimento, o sistema deve criar mensagem agendada automaticamente.
 - **FR-010**: A mensagem agendada deve ter status Pending.
 - **FR-011**: O sistema deve listar mensagens por status e data.
@@ -69,12 +81,12 @@ Como cabeleireira, quero cadastrar clientes, registrar atendimentos e receber um
 - **FR-014**: O sistema deve permitir marcar mensagem como enviada.
 - **FR-015**: O sistema deve permitir cancelar mensagem.
 - **FR-016**: O sistema deve permitir configurar mensagem padrão geral.
-- **FR-017**: O sistema deve permitir editar dados do salão.
+- **FR-017**: O sistema deve permitir editar dados do perfil profissional e dos salões vinculados.
 - **FR-018**: O sistema deve permitir configurar notificações locais.
 
 ### Non-Functional Requirements
 
-- **NFR-001**: Dados devem ser isolados por SalonId.
+- **NFR-001**: Dados devem ser isolados por profissional, com validação adicional de vínculo com o salão quando a operação depender de contexto de salão.
 - **NFR-002**: Senhas devem ser armazenadas com hash seguro.
 - **NFR-003**: Rotas privadas devem exigir JWT.
 - **NFR-004**: App deve funcionar bem em telas mobile pequenas.
@@ -87,6 +99,7 @@ Como cabeleireira, quero cadastrar clientes, registrar atendimentos e receber um
 
 - Salon
 - User
+- UserSalon
 - Customer
 - Service
 - Appointment
@@ -100,7 +113,7 @@ Como cabeleireira, quero cadastrar clientes, registrar atendimentos e receber um
 - Planos de assinatura.
 - WhatsApp Cloud API.
 - Agenda com horários.
-- Multiusuário avançado.
+- Multiusuário avançado com permissões complexas por equipe.
 - Relatórios financeiros.
 
 ## Success Criteria
@@ -108,5 +121,6 @@ Como cabeleireira, quero cadastrar clientes, registrar atendimentos e receber um
 - Usuária completa fluxo principal sem ajuda técnica.
 - Atendimento gera mensagem correta.
 - Mensagem abre no WhatsApp com texto correto.
-- Dados de salões diferentes permanecem isolados.
+- A profissional acessa sua carteira de clientes de forma consolidada.
+- Operações contextuais respeitam apenas os salões aos quais a profissional está vinculada.
 - App preserva identidade visual do protótipo.

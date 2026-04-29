@@ -2,7 +2,7 @@
 
 ## 1. Objetivo
 
-Construir uma API REST em ASP.NET Core para sustentar o MVP mobile BeautyFlow, com autenticação JWT, persistência em PostgreSQL, escopo multi-tenant por salão e regras de geração de mensagens agendadas.
+Construir uma API REST em ASP.NET Core para sustentar o MVP mobile BeautyFlow, com autenticação JWT, persistência em PostgreSQL, modelo centrado na profissional e regras de geração de mensagens agendadas.
 
 ## 2. Stack
 
@@ -54,7 +54,8 @@ BeautyFlow.Infrastructure
 - Controllers finos.
 - Regra de negócio na camada Application/Domain.
 - Entidades não devem ser expostas diretamente na API.
-- Sempre filtrar dados por `SalonId`.
+- Filtrar clientes por profissional.
+- Validar vínculo profissional-salão quando a operação depender de contexto de salão.
 - Usar DTOs para request/response.
 - Validar dados no backend mesmo que frontend valide.
 - Não implementar integração real com WhatsApp no MVP.
@@ -68,10 +69,17 @@ BeautyFlow.Infrastructure
 - Refresh futuro, fora do MVP
 - Current user
 
-### Salons
+### Professional Profile
 
 - Get profile
 - Update profile
+
+### Salons
+
+- List linked salons
+- Create/link salon
+- Get selected salon profile
+- Update selected salon profile
 
 ### Customers
 
@@ -115,6 +123,7 @@ BeautyFlow.Infrastructure
 ```text
 Salon
 User
+UserSalon
 Customer
 Service
 Appointment
@@ -126,31 +135,38 @@ NotificationSettings
 ## 7. Autenticação e autorização
 
 - JWT Bearer.
-- Token deve conter `userId` e `salonId`.
+- Token deve conter `userId`.
 - Todas as rotas privadas devem exigir autenticação.
-- Todo acesso a dados deve usar o `salonId` do token.
+- Todo acesso a clientes deve usar `userId`.
+- Todo acesso contextual por salão deve validar vínculo em `UserSalon`.
 
-## 8. Multi-tenancy
+## 8. Multi-contexto profissional-salão
 
-O MVP usa multi-tenancy simples por coluna `SalonId`.
+O MVP evoluído usa:
 
-Regra obrigatória:
+- profissional como dona da carteira de clientes
+- salões como contextos de trabalho
+- tabela de vínculo `UserSalon`
+
+Regras obrigatórias:
 
 ```text
-Nenhuma consulta privada pode retornar dados sem filtrar por SalonId.
+Nenhuma consulta de clientes pode ignorar o UserId dono da carteira.
+Nenhuma operação contextual por salão pode ocorrer sem validar o vínculo UserSalon.
 ```
 
 ## 9. Geração de mensagem agendada
 
 Ao criar atendimento:
 
-1. Buscar cliente pelo id e salonId.
-2. Buscar serviço pelo id e salonId.
-3. Criar atendimento.
-4. Calcular data de envio.
-5. Resolver template.
-6. Criar ScheduledMessage com status Pending.
-7. Salvar transação.
+1. Buscar cliente pelo id e userId.
+2. Validar vínculo da profissional com o salão informado.
+3. Buscar serviço pelo id e salonId.
+4. Criar atendimento.
+5. Calcular data de envio.
+6. Resolver template.
+7. Criar ScheduledMessage com status Pending.
+8. Salvar transação.
 
 ## 10. Transações
 

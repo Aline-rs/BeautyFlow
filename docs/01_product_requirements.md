@@ -2,7 +2,7 @@
 
 ## 1. Visão geral
 
-BeautyFlow é um aplicativo mobile para cabeleireiros e salões organizarem clientes, atendimentos e mensagens de retorno. O produto ajuda o salão a aumentar recorrência e fidelização, lembrando a cliente de retornar no momento adequado para retoques, hidratações, cortes e outros serviços.
+BeautyFlow é um aplicativo mobile para profissionais de beleza organizarem suas próprias clientes, atendimentos e mensagens de retorno, mesmo quando trabalham em mais de um salão. O produto ajuda a profissional a aumentar recorrência e fidelização, lembrando a cliente de retornar no momento adequado para retoques, hidratações, cortes e outros serviços.
 
 ## 2. Problema
 
@@ -15,8 +15,9 @@ O app permite registrar um atendimento e, com base no serviço realizado, calcul
 ## 4. Público-alvo
 
 - Cabeleireiros autônomos.
-- Pequenos salões.
+- Pequenos salões como contexto operacional de trabalho.
 - Profissionais de beleza que atendem por agenda própria.
+- Profissionais que trabalham em mais de um salão e querem centralizar sua carteira.
 
 ## 5. Escopo do MVP
 
@@ -24,10 +25,11 @@ O app permite registrar um atendimento e, com base no serviço realizado, calcul
 
 - Cadastro de conta.
 - Login.
-- Perfil básico do salão.
+- Perfil da profissional.
+- Cadastro e vínculo com um ou mais salões.
 - Cadastro de clientes.
 - Upload de foto da cliente.
-- Cadastro de serviços.
+- Cadastro de serviços por salão.
 - Configuração de prazo de retorno por serviço.
 - Configuração de mensagem padrão por serviço.
 - Registro de atendimento.
@@ -60,13 +62,15 @@ O app permite registrar um atendimento e, com base no serviço realizado, calcul
 - Quer algo rápido, bonito e simples.
 - Não quer preencher formulários longos.
 - Usa WhatsApp como principal canal com clientes.
+- Pode atender em mais de um salão ao longo da semana.
+- Quer manter a carteira de clientes centralizada no próprio nome.
 
 ## 7. Jornada principal
 
 ```text
 Criar conta
 ↓
-Cadastrar serviço
+Vincular salão
 ↓
 Cadastrar cliente
 ↓
@@ -89,6 +93,7 @@ Usuária marca como enviada
 - Entrar.
 - Sair.
 - Manter sessão.
+- Gerenciar vínculo com salões.
 
 ### Clientes
 
@@ -100,10 +105,11 @@ Usuária marca como enviada
 - Ver detalhes.
 - Ver histórico de atendimentos.
 - Abrir WhatsApp.
+- Visualizar carteira consolidada da profissional, independentemente do salão.
 
 ### Serviços
 
-- Listar serviços.
+- Listar serviços do salão selecionado.
 - Criar serviço.
 - Editar serviço.
 - Ativar/desativar serviço.
@@ -114,6 +120,7 @@ Usuária marca como enviada
 
 - Registrar atendimento.
 - Selecionar cliente.
+- Selecionar salão.
 - Selecionar serviço.
 - Definir data.
 - Adicionar observação.
@@ -132,7 +139,8 @@ Usuária marca como enviada
 
 ### Configurações
 
-- Editar dados do salão.
+- Editar dados da profissional.
+- Editar dados do salão selecionado.
 - Editar mensagem padrão geral.
 - Configurar notificações locais.
 
@@ -173,15 +181,23 @@ Canceled
 Error
 ```
 
-### RN005 — Escopo por salão
+### RN005 — Dono da cliente
 
-Todo cliente, serviço, atendimento e mensagem deve pertencer a um salão.
+A cliente pertence à profissional. O salão não é dono da carteira de clientes.
 
-### RN006 — Foto da cliente
+### RN006 — Contexto de salão
+
+Serviços pertencem ao salão. Atendimentos e mensagens registram em qual salão aconteceram.
+
+### RN007 — Vínculo profissional-salão
+
+A profissional só pode registrar atendimentos em salões aos quais está vinculada.
+
+### RN008 — Foto da cliente
 
 A foto da cliente é opcional. Se não houver foto, exibir iniciais.
 
-### RN007 — WhatsApp no MVP
+### RN009 — WhatsApp no MVP
 
 O MVP deve abrir o WhatsApp com mensagem pronta. Não deve enviar automaticamente.
 
@@ -195,4 +211,4 @@ O MVP deve abrir o WhatsApp com mensagem pronta. Não deve enviar automaticament
 - Mensagem aparece como pendente.
 - Usuária consegue abrir WhatsApp com texto preenchido.
 - Usuária consegue marcar mensagem como enviada.
-- Dados de um salão não aparecem em outro salão.
+- A profissional mantém a mesma carteira de clientes mesmo atuando em mais de um salão.

@@ -13,15 +13,20 @@ namespace BeautyFlow.Api.Controllers;
 [Route("salon")]
 public sealed class SalonController : ControllerBase
 {
+    private static readonly string[] AllowedPhotoExtensions = [".jpg", ".jpeg", ".png", ".webp"];
+
     private readonly BeautyFlowDbContext _dbContext;
     private readonly ICurrentUserService _currentUserService;
+    private readonly IWebHostEnvironment _environment;
 
     public SalonController(
         BeautyFlowDbContext dbContext,
-        ICurrentUserService currentUserService)
+        ICurrentUserService currentUserService,
+        IWebHostEnvironment environment)
     {
         _dbContext = dbContext;
         _currentUserService = currentUserService;
+        _environment = environment;
     }
 
     [HttpGet("profile")]
@@ -32,7 +37,7 @@ public sealed class SalonController : ControllerBase
         var entities = await LoadProfileEntitiesAsync();
         if (entities is null)
         {
-            return NotFound(ApiResponse<object>.Failure("Salon profile was not found."));
+            return NotFound(ApiResponse<object>.Failure("Perfil do salão não foi encontrado."));
         }
 
         return Ok(MapProfile(entities.Value.salon, entities.Value.owner));
@@ -48,13 +53,13 @@ public sealed class SalonController : ControllerBase
             string.IsNullOrWhiteSpace(request.OwnerName) ||
             string.IsNullOrWhiteSpace(request.Email))
         {
-            return BadRequest(ApiResponse<object>.Failure("SalonName, OwnerName and Email are required."));
+            return BadRequest(ApiResponse<object>.Failure("Nome do salão, nome da responsável e e-mail são obrigatórios."));
         }
 
         var entities = await LoadProfileEntitiesAsync(asNoTracking: false);
         if (entities is null)
         {
-            return NotFound(ApiResponse<object>.Failure("Salon profile was not found."));
+            return NotFound(ApiResponse<object>.Failure("Perfil do salão não foi encontrado."));
         }
 
         var normalizedEmail = request.Email.Trim().ToLowerInvariant();
@@ -64,7 +69,7 @@ public sealed class SalonController : ControllerBase
 
         if (emailBelongsToAnotherUser)
         {
-            return BadRequest(ApiResponse<object>.Failure("A user with this email already exists."));
+            return BadRequest(ApiResponse<object>.Failure("Já existe uma conta cadastrada com este e-mail."));
         }
 
         entities.Value.salon.Name = request.SalonName.Trim();
@@ -74,6 +79,52 @@ public sealed class SalonController : ControllerBase
         entities.Value.owner.Name = request.OwnerName.Trim();
         entities.Value.owner.Email = normalizedEmail;
 
+        await _dbContext.SaveChangesAsync();
+
+        return Ok(MapProfile(entities.Value.salon, entities.Value.owner));
+    }
+
+    [HttpPost("profile-photo")]
+    [Consumes("multipart/form-data")]
+    [ProducesResponseType(typeof(SalonProfileDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<SalonProfileDto>> UploadProfilePhoto(IFormFile photo)
+    {
+        var entities = await LoadProfileEntitiesAsync(asNoTracking: false);
+        if (entities is null)
+        {
+            return NotFound(ApiResponse<object>.Failure("Perfil do salão não foi encontrado."));
+        }
+
+        if (photo is null || photo.Length == 0)
+        {
+            return BadRequest(ApiResponse<object>.Failure("Envie uma foto para continuar."));
+        }
+
+        var extension = Path.GetExtension(photo.FileName).ToLowerInvariant();
+        if (!AllowedPhotoExtensions.Contains(extension) ||
+            !photo.ContentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase))
+        {
+            return BadRequest(ApiResponse<object>.Failure("Somente imagens JPG, PNG ou WEBP são permitidas."));
+        }
+
+        var uploadsRoot = Path.Combine(
+            _environment.WebRootPath ?? Path.Combine(_environment.ContentRootPath, "wwwroot"),
+            "uploads",
+            "profiles");
+
+        Directory.CreateDirectory(uploadsRoot);
+
+        var fileName = $"{entities.Value.owner.Id:N}-{Guid.NewGuid():N}{extension}";
+        var filePath = Path.Combine(uploadsRoot, fileName);
+
+        await using (var stream = System.IO.File.Create(filePath))
+        {
+            await photo.CopyToAsync(stream);
+        }
+
+        entities.Value.owner.ProfilePhotoUrl = $"/uploads/profiles/{fileName}";
         await _dbContext.SaveChangesAsync();
 
         return Ok(MapProfile(entities.Value.salon, entities.Value.owner));
@@ -111,7 +162,8 @@ public sealed class SalonController : ControllerBase
             SalonName = salon.Name,
             OwnerName = owner.Name,
             Email = owner.Email,
-            Phone = salon.Phone
+            Phone = salon.Phone,
+            ProfilePhotoUrl = owner.ProfilePhotoUrl
         };
     }
 }

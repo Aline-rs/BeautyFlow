@@ -13,4 +13,5 @@ export type SalonProfile = {
   ownerName: string;
   email: string;
   phone?: string;
+  profilePhotoUrl?: string;
 };

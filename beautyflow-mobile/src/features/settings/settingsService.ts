@@ -18,6 +18,7 @@ const defaultSalonProfile: SalonProfile = {
   ownerName: 'Bella Martins',
   email: 'bellahairstudio@email.com',
   phone: '(31) 98888-0000',
+  profilePhotoUrl: undefined,
 };
 
 let mockMessageTemplate = defaultMessageTemplate;
@@ -116,6 +117,35 @@ export async function updateSalonProfile(payload: SalonProfile): Promise<SalonPr
     }
 
     mockSalonProfile = payload;
+    return mockSalonProfile;
+  }
+}
+
+export async function uploadSalonProfilePhoto(photoUri: string): Promise<SalonProfile> {
+  const formData = new FormData();
+  formData.append('photo', {
+    uri: photoUri,
+    name: `perfil-${Date.now()}.jpg`,
+    type: 'image/jpeg',
+  } as never);
+
+  try {
+    const response = await api.post<SalonProfile>('/salon/profile-photo', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data;
+  } catch (error) {
+    if (!shouldFallback(error)) {
+      throw error;
+    }
+
+    mockSalonProfile = {
+      ...mockSalonProfile,
+      profilePhotoUrl: photoUri,
+    };
+
     return mockSalonProfile;
   }
 }
