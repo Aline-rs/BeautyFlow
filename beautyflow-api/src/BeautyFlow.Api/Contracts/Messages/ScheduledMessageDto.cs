@@ -9,6 +9,7 @@ public sealed class ScheduledMessageDto
     public string CustomerWhatsapp { get; init; } = string.Empty;
     public string ServiceId { get; init; } = string.Empty;
     public string ServiceName { get; init; } = string.Empty;
+    public string ContextLabel { get; init; } = string.Empty;
     public string ScheduledForDate { get; init; } = string.Empty;
     public string MessageText { get; init; } = string.Empty;
     public string Status { get; init; } = string.Empty;

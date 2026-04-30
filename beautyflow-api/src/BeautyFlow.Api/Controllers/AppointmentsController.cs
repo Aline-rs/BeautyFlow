@@ -96,6 +96,7 @@ public sealed class AppointmentsController : ControllerBase
         var query = _dbContext.Appointments
             .AsNoTracking()
             .Include(x => x.Customer)
+            .Include(x => x.Salon)
             .Include(x => x.Service)
             .Include(x => x.ScheduledMessage)
             .Where(x => x.UserId == userId.Value);
@@ -123,6 +124,7 @@ public sealed class AppointmentsController : ControllerBase
         return await _dbContext.Appointments
             .AsNoTracking()
             .Include(x => x.Customer)
+            .Include(x => x.Salon)
             .Include(x => x.Service)
             .Include(x => x.ScheduledMessage)
             .FirstOrDefaultAsync(x => x.Id == appointmentId && x.UserId == userId);
@@ -137,6 +139,7 @@ public sealed class AppointmentsController : ControllerBase
             CustomerName = appointment.Customer.Name,
             ServiceId = appointment.ServiceId.ToString(),
             ServiceName = appointment.Service.Name,
+            ContextLabel = appointment.Salon?.Name ?? "Conta profissional",
             AppointmentDate = appointment.AppointmentDate.ToString("yyyy-MM-dd"),
             Notes = appointment.Notes,
             ScheduledMessageId = appointment.ScheduledMessage?.Id.ToString() ?? string.Empty,

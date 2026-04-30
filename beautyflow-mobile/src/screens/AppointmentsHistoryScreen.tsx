@@ -116,8 +116,8 @@ function AppointmentHistoryCard({ appointment }: { appointment: Appointment }) {
       subtitle={`${appointment.serviceName} - ${formatLongDate(appointment.appointmentDate)}`}
       extraSubtitle={
         appointment.messageStatus === 'Enviada'
-          ? 'Mensagem enviada'
-          : `Mensagem agendada para ${formatLongDate(appointment.scheduledForDate)}`
+          ? `${appointment.contextLabel} - Mensagem enviada`
+          : `${appointment.contextLabel} - Mensagem agendada para ${formatLongDate(appointment.scheduledForDate)}`
       }
       left={<Text style={styles.cardIcon}>{appointmentIconForService(appointment.serviceName)}</Text>}
       right={
