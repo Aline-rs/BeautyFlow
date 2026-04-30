@@ -49,6 +49,7 @@ public sealed class CustomersController : ControllerBase
 
         var query = _dbContext.Customers
             .AsNoTracking()
+            .Include(x => x.Salon)
             .Where(x => x.UserId == userId.Value);
 
         if (!string.IsNullOrWhiteSpace(search))
@@ -81,6 +82,7 @@ public sealed class CustomersController : ControllerBase
 
         var customer = await _dbContext.Customers
             .AsNoTracking()
+            .Include(x => x.Salon)
             .FirstOrDefaultAsync(x => x.Id == id && x.UserId == userId.Value);
 
         if (customer is null)
@@ -286,6 +288,7 @@ public sealed class CustomersController : ControllerBase
         var customerIds = customers.Select(x => x.Id).ToList();
         var appointments = await _dbContext.Appointments
             .AsNoTracking()
+            .Include(x => x.Salon)
             .Include(x => x.Service)
             .Include(x => x.ScheduledMessage)
             .Where(x => customerIds.Contains(x.CustomerId))
@@ -302,6 +305,7 @@ public sealed class CustomersController : ControllerBase
     {
         var appointments = await _dbContext.Appointments
             .AsNoTracking()
+            .Include(x => x.Salon)
             .Include(x => x.Service)
             .Include(x => x.ScheduledMessage)
             .Where(x => x.CustomerId == customer.Id)
@@ -325,6 +329,8 @@ public sealed class CustomersController : ControllerBase
             Id = customer.Id.ToString(),
             Name = customer.Name,
             Whatsapp = customer.Whatsapp,
+            ContextSalonId = customer.SalonId?.ToString(),
+            ContextLabel = customer.Salon?.Name ?? "Conta profissional",
             BirthDate = customer.BirthDate?.ToString("yyyy-MM-dd"),
             ContactPreference = customer.ContactPreference,
             Notes = customer.Notes,
@@ -339,6 +345,7 @@ public sealed class CustomersController : ControllerBase
             {
                 Id = appointment.Id.ToString(),
                 ServiceName = appointment.Service.Name,
+                ContextLabel = appointment.Salon?.Name ?? "Conta profissional",
                 AppointmentDate = appointment.AppointmentDate.ToString("yyyy-MM-dd"),
                 MessageStatus = MapMessageStatusLabel(appointment.ScheduledMessage?.Status),
                 NextContactDate = appointment.ScheduledMessage?.ScheduledForDate.ToString("yyyy-MM-dd")

@@ -64,6 +64,7 @@ export function CustomerDetailScreen({ navigation, route }: Props) {
           />
           <Text style={styles.customerName}>{customer.name}</Text>
           <Text style={styles.metaText}>{`${customer.whatsapp} - ${customer.contactPreference}`}</Text>
+          <Text style={styles.contextBadge}>{customer.contextLabel}</Text>
         </View>
 
         <AppCard style={styles.sectionCard}>
@@ -101,7 +102,7 @@ export function CustomerDetailScreen({ navigation, route }: Props) {
               item.nextContactDate
                 ? `mensagem para ${formatShortDate(item.nextContactDate)}`
                 : 'sem retorno agendado'
-            }`}
+            } - ${item.contextLabel}`}
             right={
               <AppChip
                 label={item.messageStatus}
@@ -188,6 +189,17 @@ const styles = StyleSheet.create({
     fontFamily: typography.fontFamily.body,
     fontSize: 11,
     color: colors.textSecondary,
+  },
+  contextBadge: {
+    marginTop: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 999,
+    overflow: 'hidden',
+    backgroundColor: colors.roseLight,
+    color: colors.roseDark,
+    fontFamily: typography.fontFamily.bodyBold,
+    fontSize: 11,
   },
   sectionCard: {
     marginBottom: 12,
