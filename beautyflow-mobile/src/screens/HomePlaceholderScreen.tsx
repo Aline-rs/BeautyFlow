@@ -10,13 +10,14 @@ import { colors, spacing, typography } from '../theme';
 
 export function HomePlaceholderScreen() {
   const { session } = useAuth();
-  const selectedSalon =
-    session?.salons.find((salon) => salon.id === session.selectedSalonId) ??
-    session?.salons.find((salon) => salon.isPrimary) ??
-    session?.salons[0];
+  const selectedSalon = session?.selectedSalonId
+    ? session.salons.find((salon) => salon.id === session.selectedSalonId)
+    : undefined;
   const subtitle = selectedSalon
     ? `Seu contexto atual de trabalho e ${selectedSalon.name}.`
-    : 'Sua conta profissional esta ativa. Vincule um salao apenas quando precisar organizar sua atuacao.';
+    : session && session.salons.length > 0
+      ? 'Sua conta profissional esta ativa, sem salao selecionado no momento.'
+      : 'Sua conta profissional esta ativa. Vincule um salao apenas quando precisar organizar sua atuacao.';
 
   return (
     <Screen>

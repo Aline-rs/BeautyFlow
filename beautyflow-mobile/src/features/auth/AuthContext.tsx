@@ -3,9 +3,12 @@ import { setAuthToken, setSelectedSalonId } from '../../lib/api/client';
 import { createSalon } from '../salons';
 import {
   clearToken,
+  clearSelectedSalonContext,
   getSalonSetupSkipped,
+  getSelectedSalonContext,
   getToken,
   saveSalonSetupSkipped,
+  saveSelectedSalonContext,
   saveToken,
 } from '../../lib/storage/tokenStorage';
 import { fetchCurrentSession, login, register } from './authService';
@@ -18,6 +21,7 @@ type AuthContextValue = {
   signIn: (payload: LoginPayload) => Promise<void>;
   signUp: (payload: RegisterPayload) => Promise<void>;
   createSalonLink: (payload: { name: string; phone?: string; email: string }) => Promise<void>;
+  selectSalonContext: (salonId: string | null) => Promise<void>;
   skipSalonSetup: () => Promise<void>;
   syncProfessionalProfile: (payload: { name: string; email: string; profilePhotoUrl?: string | null }) => void;
   signOut: () => Promise<void>;
@@ -37,9 +41,10 @@ export function AuthProvider({ children }: PropsWithChildren) {
 
   useEffect(() => {
     async function hydrate() {
-      const [storedToken, skippedSalonSetup] = await Promise.all([
+      const [storedToken, skippedSalonSetup, storedSelectedSalonContext] = await Promise.all([
         getToken(),
         getSalonSetupSkipped(),
+        getSelectedSalonContext(),
       ]);
 
       setHasSkippedSalonSetup(skippedSalonSetup);
@@ -52,20 +57,36 @@ export function AuthProvider({ children }: PropsWithChildren) {
           const restoredSession = await fetchCurrentSession(storedToken);
 
           if (restoredSession) {
-            setSession(restoredSession);
-            applySession(restoredSession);
+            const nextSelectedSalonId =
+              storedSelectedSalonContext === undefined
+                ? restoredSession.selectedSalonId ?? null
+                : storedSelectedSalonContext === null
+                  ? null
+                  : restoredSession.salons.some((salon) => salon.id === storedSelectedSalonContext)
+                    ? storedSelectedSalonContext
+                    : restoredSession.selectedSalonId ?? null;
 
-            if (restoredSession.salons.length > 0 && skippedSalonSetup) {
+            const nextSession: AuthSession = {
+              ...restoredSession,
+              selectedSalonId: nextSelectedSalonId,
+            };
+
+            setSession(nextSession);
+            applySession(nextSession);
+
+            if (nextSession.salons.length > 0 && skippedSalonSetup) {
               await saveSalonSetupSkipped(false);
               setHasSkippedSalonSetup(false);
             }
+
+            await saveSelectedSalonContext(nextSession.selectedSalonId ?? null);
           } else {
-            await clearToken();
+            await Promise.all([clearToken(), clearSelectedSalonContext()]);
             applySession(null);
             setSession(null);
           }
         } catch {
-          await clearToken();
+          await Promise.all([clearToken(), clearSelectedSalonContext()]);
           applySession(null);
           setSession(null);
         }
@@ -79,7 +100,10 @@ export function AuthProvider({ children }: PropsWithChildren) {
 
   async function signIn(payload: LoginPayload) {
     const nextSession = await login(payload);
-    await saveToken(nextSession.token);
+    await Promise.all([
+      saveToken(nextSession.token),
+      saveSelectedSalonContext(nextSession.selectedSalonId ?? null),
+    ]);
     await saveSalonSetupSkipped(false);
     applySession(nextSession);
     setHasSkippedSalonSetup(false);
@@ -88,7 +112,10 @@ export function AuthProvider({ children }: PropsWithChildren) {
 
   async function signUp(payload: RegisterPayload) {
     const nextSession = await register(payload);
-    await saveToken(nextSession.token);
+    await Promise.all([
+      saveToken(nextSession.token),
+      saveSelectedSalonContext(nextSession.selectedSalonId ?? null),
+    ]);
     await saveSalonSetupSkipped(false);
     applySession(nextSession);
     setHasSkippedSalonSetup(false);
@@ -117,9 +144,35 @@ export function AuthProvider({ children }: PropsWithChildren) {
     };
 
     await saveSalonSetupSkipped(false);
+    await saveSelectedSalonContext(linkedSalon.id);
     applySession(nextSession);
     setHasSkippedSalonSetup(false);
     setSession(nextSession);
+  }
+
+  async function selectSalonContext(salonId: string | null) {
+    setSession((currentSession) => {
+      if (!currentSession) {
+        return currentSession;
+      }
+
+      const isValidSalonSelection =
+        salonId === null || currentSession.salons.some((salon) => salon.id === salonId);
+
+      if (!isValidSalonSelection) {
+        return currentSession;
+      }
+
+      const nextSession = {
+        ...currentSession,
+        selectedSalonId: salonId,
+      };
+
+      applySession(nextSession);
+      return nextSession;
+    });
+
+    await saveSelectedSalonContext(salonId);
   }
 
   async function skipSalonSetup() {
@@ -146,7 +199,11 @@ export function AuthProvider({ children }: PropsWithChildren) {
   }
 
   async function signOut() {
-    await Promise.all([clearToken(), saveSalonSetupSkipped(false)]);
+    await Promise.all([
+      clearToken(),
+      clearSelectedSalonContext(),
+      saveSalonSetupSkipped(false),
+    ]);
     applySession(null);
     setHasSkippedSalonSetup(false);
     setSession(null);
@@ -161,6 +218,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
         signIn,
         signUp,
         createSalonLink,
+        selectSalonContext,
         skipSalonSetup,
         syncProfessionalProfile,
         signOut,
