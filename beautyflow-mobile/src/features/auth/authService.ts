@@ -11,6 +11,16 @@ type AuthApiResponse = {
   selectedSalonId?: AuthSession['selectedSalonId'];
 };
 
+type CurrentSessionResponse = {
+  succeeded?: boolean;
+  data?: {
+    isAuthenticated?: boolean;
+    user?: AuthSession['user'];
+    salons?: AuthSession['salons'];
+    selectedSalonId?: AuthSession['selectedSalonId'];
+  };
+};
+
 function createMockSession(
   name: string,
   email: string,
@@ -58,6 +68,33 @@ function normalizeAuthResponse(response: AuthApiResponse): AuthSession {
   }
 
   throw new Error('Resposta de autenticacao invalida.');
+}
+
+export async function fetchCurrentSession(token: string): Promise<AuthSession | null> {
+  try {
+    const response = await api.get<CurrentSessionResponse>('/auth/me');
+    const payload = response.data.data;
+
+    if (!response.data.succeeded || !payload?.isAuthenticated || !payload.user) {
+      return null;
+    }
+
+    return {
+      token,
+      user: payload.user,
+      salons: payload.salons ?? [],
+      selectedSalonId:
+        payload.selectedSalonId ??
+        payload.salons?.find((salon) => salon.isPrimary)?.id ??
+        null,
+    };
+  } catch (error) {
+    if (shouldFallbackToMock(error)) {
+      return null;
+    }
+
+    throw error;
+  }
 }
 
 export async function login(payload: LoginPayload): Promise<AuthSession> {
