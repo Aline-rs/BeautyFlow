@@ -101,18 +101,18 @@ public sealed class BeautyFlowDbContext : DbContext
         {
             entity.ToTable("services");
             entity.HasKey(x => x.Id);
+            entity.Property(x => x.UserId).IsRequired();
             entity.Property(x => x.Name).HasMaxLength(160).IsRequired();
             entity.Property(x => x.SuggestedReturnDays).IsRequired();
             entity.Property(x => x.IsActive).IsRequired();
             entity.Property(x => x.CreatedAtUtc).IsRequired();
             entity.Property(x => x.UpdatedAtUtc);
-            entity.Property(x => x.SalonId).IsRequired();
-            entity.HasIndex(x => new { x.SalonId, x.Name });
+            entity.HasIndex(x => new { x.UserId, x.Name });
 
             entity
-                .HasOne(x => x.Salon)
+                .HasOne(x => x.User)
                 .WithMany(x => x.Services)
-                .HasForeignKey(x => x.SalonId)
+                .HasForeignKey(x => x.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
 

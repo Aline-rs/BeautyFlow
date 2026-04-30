@@ -4,6 +4,7 @@ import { ServicesProvider } from '../../features/services';
 import { MoreScreen } from '../../screens/MoreScreen';
 import { MessageTemplateScreen } from '../../screens/MessageTemplateScreen';
 import { NotificationsScreen } from '../../screens/NotificationsScreen';
+import { ProfessionalProfileScreen } from '../../screens/ProfessionalProfileScreen';
 import { SalonProfileScreen } from '../../screens/SalonProfileScreen';
 import { ServiceFormScreen } from '../../screens/ServiceFormScreen';
 import { ServicesScreen } from '../../screens/ServicesScreen';
@@ -17,6 +18,7 @@ export function MoreStackNavigator() {
       <ServicesProvider>
         <Stack.Navigator screenOptions={{ headerShown: false }}>
           <Stack.Screen name="MoreMain" component={MoreScreen} />
+          <Stack.Screen name="ProfessionalProfile" component={ProfessionalProfileScreen} />
           <Stack.Screen name="SalonProfile" component={SalonProfileScreen} />
           <Stack.Screen name="Services" component={ServicesScreen} />
           <Stack.Screen name="ServiceForm" component={ServiceFormScreen} />

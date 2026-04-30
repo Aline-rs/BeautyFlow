@@ -29,15 +29,15 @@ public sealed class ServicesController : ControllerBase
     [ProducesResponseType(typeof(IReadOnlyList<ServiceDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<IReadOnlyList<ServiceDto>>> GetServices()
     {
-        var salonId = await GetAuthorizedSalonIdAsync();
-        if (salonId is null)
+        var userId = _currentUserService.UserId;
+        if (userId is null)
         {
             return Unauthorized(ApiResponse<object>.Failure("User is not authenticated."));
         }
 
         var services = await _dbContext.Services
             .AsNoTracking()
-            .Where(x => x.SalonId == salonId.Value)
+            .Where(x => x.UserId == userId.Value)
             .OrderByDescending(x => x.IsActive)
             .ThenBy(x => x.Name)
             .ToListAsync();
@@ -50,8 +50,8 @@ public sealed class ServicesController : ControllerBase
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<ServiceDto>> CreateService([FromBody] ServiceUpsertRequest request)
     {
-        var salonId = await GetAuthorizedSalonIdAsync();
-        if (salonId is null)
+        var userId = _currentUserService.UserId;
+        if (userId is null)
         {
             return Unauthorized(ApiResponse<object>.Failure("User is not authenticated."));
         }
@@ -63,7 +63,7 @@ public sealed class ServicesController : ControllerBase
 
         var service = new Service
         {
-            SalonId = salonId.Value,
+            UserId = userId.Value,
             Name = normalizedName,
             SuggestedReturnDays = request.SuggestedReturnDays,
             IsActive = request.IsActive ?? true
@@ -81,8 +81,8 @@ public sealed class ServicesController : ControllerBase
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<ServiceDto>> UpdateService(Guid id, [FromBody] ServiceUpsertRequest request)
     {
-        var salonId = await GetAuthorizedSalonIdAsync();
-        if (salonId is null)
+        var userId = _currentUserService.UserId;
+        if (userId is null)
         {
             return Unauthorized(ApiResponse<object>.Failure("User is not authenticated."));
         }
@@ -93,7 +93,7 @@ public sealed class ServicesController : ControllerBase
         }
 
         var service = await _dbContext.Services
-            .FirstOrDefaultAsync(x => x.Id == id && x.SalonId == salonId.Value);
+            .FirstOrDefaultAsync(x => x.Id == id && x.UserId == userId.Value);
 
         if (service is null)
         {
@@ -115,14 +115,14 @@ public sealed class ServicesController : ControllerBase
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<ServiceDto>> UpdateStatus(Guid id, [FromBody] UpdateServiceStatusRequest request)
     {
-        var salonId = await GetAuthorizedSalonIdAsync();
-        if (salonId is null)
+        var userId = _currentUserService.UserId;
+        if (userId is null)
         {
             return Unauthorized(ApiResponse<object>.Failure("User is not authenticated."));
         }
 
         var service = await _dbContext.Services
-            .FirstOrDefaultAsync(x => x.Id == id && x.SalonId == salonId.Value);
+            .FirstOrDefaultAsync(x => x.Id == id && x.UserId == userId.Value);
 
         if (service is null)
         {
@@ -136,21 +136,6 @@ public sealed class ServicesController : ControllerBase
 
         return Ok(MapService(service));
     }
-
-    private async Task<Guid?> GetAuthorizedSalonIdAsync()
-    {
-        var userId = _currentUserService.UserId;
-        var salonId = _currentUserService.SelectedSalonId;
-
-        if (userId is null || salonId is null)
-        {
-            return null;
-        }
-
-        var isLinked = await _dbContext.UserSalons.AnyAsync(x => x.UserId == userId.Value && x.SalonId == salonId.Value);
-        return isLinked ? salonId : null;
-    }
-
     private static bool TryValidateRequest(
         ServiceUpsertRequest request,
         out string normalizedName,

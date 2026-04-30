@@ -40,7 +40,7 @@ public sealed class AppointmentService : IAppointmentService
         var service = await _dbContext.Services
             .AsNoTracking()
             .FirstOrDefaultAsync(
-                x => x.Id == input.ServiceId && x.SalonId == salonId,
+                x => x.Id == input.ServiceId && x.UserId == userId,
                 cancellationToken);
 
         if (service is null)

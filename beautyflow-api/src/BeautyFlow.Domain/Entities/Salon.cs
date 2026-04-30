@@ -11,6 +11,5 @@ public sealed class Salon : Entity
 
     public ICollection<Appointment> Appointments { get; set; } = new List<Appointment>();
     public ICollection<ScheduledMessage> ScheduledMessages { get; set; } = new List<ScheduledMessage>();
-    public ICollection<Service> Services { get; set; } = new List<Service>();
     public ICollection<UserSalon> UserSalons { get; set; } = new List<UserSalon>();
 }

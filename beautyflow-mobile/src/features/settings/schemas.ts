@@ -12,7 +12,6 @@ export const notificationSettingsSchema = z.object({
 
 export const salonProfileSchema = z.object({
   salonName: z.string().min(3, 'Informe o nome do salao.'),
-  ownerName: z.string().min(3, 'Informe o nome da responsavel.'),
   email: z.email('Informe um e-mail valido.'),
   phone: z.string().optional(),
 });
