@@ -6,7 +6,7 @@ public interface IAppointmentService
 {
     Task<AppointmentRegistrationResult> RegisterAppointmentAsync(
         Guid userId,
-        Guid salonId,
+        Guid? salonId,
         CreateAppointmentInput input,
         CancellationToken cancellationToken = default);
 }

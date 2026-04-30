@@ -36,10 +36,22 @@ public sealed class AppointmentsController : ControllerBase
     public async Task<ActionResult<AppointmentDto>> CreateAppointment([FromBody] CreateAppointmentRequest request)
     {
         var userId = GetUserId();
-        var salonId = await GetAuthorizedSalonIdAsync();
-        if (userId is null || salonId is null)
+        if (userId is null)
         {
             return Unauthorized(ApiResponse<object>.Failure("User is not authenticated."));
+        }
+
+        Guid? salonId = null;
+        var selectedSalonId = _currentUserService.SelectedSalonId;
+        if (selectedSalonId is not null)
+        {
+            var isLinked = await _dbContext.UserSalons.AnyAsync(x => x.UserId == userId.Value && x.SalonId == selectedSalonId.Value);
+            if (!isLinked)
+            {
+                return Forbid();
+            }
+
+            salonId = selectedSalonId.Value;
         }
 
         if (!Guid.TryParse(request.CustomerId, out var customerId) ||
@@ -53,7 +65,7 @@ public sealed class AppointmentsController : ControllerBase
         {
             var result = await _appointmentService.RegisterAppointmentAsync(
                 userId.Value,
-                salonId.Value,
+                salonId,
                 new CreateAppointmentInput
                 {
                     CustomerId = customerId,
@@ -105,20 +117,6 @@ public sealed class AppointmentsController : ControllerBase
     }
 
     private Guid? GetUserId() => _currentUserService.UserId;
-
-    private async Task<Guid?> GetAuthorizedSalonIdAsync()
-    {
-        var userId = _currentUserService.UserId;
-        var salonId = _currentUserService.SelectedSalonId;
-
-        if (userId is null || salonId is null)
-        {
-            return null;
-        }
-
-        var isLinked = await _dbContext.UserSalons.AnyAsync(x => x.UserId == userId.Value && x.SalonId == salonId.Value);
-        return isLinked ? salonId : null;
-    }
 
     private async Task<Appointment?> LoadAppointmentAsync(Guid appointmentId, Guid userId)
     {
