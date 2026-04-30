@@ -2,9 +2,10 @@ using BeautyFlow.Domain.Common;
 
 namespace BeautyFlow.Domain.Entities;
 
-public sealed class Customer : SalonOwnedEntity
+public sealed class Customer : Entity
 {
     public Guid UserId { get; set; }
+    public Guid? SalonId { get; set; }
     public string Name { get; set; } = string.Empty;
     public string Whatsapp { get; set; } = string.Empty;
     public DateOnly? BirthDate { get; set; }
@@ -16,5 +17,6 @@ public sealed class Customer : SalonOwnedEntity
 
     public ICollection<Appointment> Appointments { get; set; } = new List<Appointment>();
     public ICollection<ScheduledMessage> ScheduledMessages { get; set; } = new List<ScheduledMessage>();
+    public Salon? Salon { get; set; }
     public User User { get; set; } = null!;
 }
