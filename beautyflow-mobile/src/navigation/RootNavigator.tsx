@@ -1,6 +1,7 @@
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useAuth } from '../features/auth';
+import { SalonSetupScreen } from '../screens/SalonSetupScreen';
 import { SplashView } from '../screens/SplashView';
 import { colors } from '../theme';
 import { AuthNavigator } from './AuthNavigator';
@@ -25,7 +26,11 @@ export function RootNavigator() {
         }}
       >
         {session ? (
-          <Stack.Screen name="Main" component={MainTabs} />
+          session.salons.length === 0 ? (
+            <Stack.Screen name="SalonSetup" component={SalonSetupScreen} />
+          ) : (
+            <Stack.Screen name="Main" component={MainTabs} />
+          )
         ) : (
           <Stack.Screen name="Auth" component={AuthNavigator} />
         )}

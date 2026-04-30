@@ -1,3 +1,5 @@
+import { LinkedSalon } from '../salons/types';
+
 export type LoginPayload = {
   email: string;
   password: string;
@@ -7,15 +9,6 @@ export type RegisterPayload = {
   ownerName: string;
   email: string;
   password: string;
-};
-
-export type LinkedSalon = {
-  id: string;
-  name: string;
-  phone?: string | null;
-  email: string;
-  role: string;
-  isPrimary: boolean;
 };
 
 export type AuthSession = {

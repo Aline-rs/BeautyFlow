@@ -41,7 +41,11 @@ function shouldFallbackToMock(error: unknown) {
 
 function normalizeAuthResponse(response: AuthApiResponse): AuthSession {
   if (response.data?.token) {
-    return response.data;
+    return {
+      ...response.data,
+      salons: response.data.salons ?? [],
+      selectedSalonId: response.data.selectedSalonId ?? response.data.salons?.find((salon) => salon.isPrimary)?.id ?? null,
+    };
   }
 
   if (response.token && response.user) {

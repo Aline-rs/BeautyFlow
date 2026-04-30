@@ -5,6 +5,8 @@ export const api = axios.create({
   timeout: 10000,
 });
 
+const salonHeaderName = 'X-Salon-Id';
+
 export function setAuthToken(token: string | null) {
   if (token) {
     api.defaults.headers.common.Authorization = `Bearer ${token}`;
@@ -12,4 +14,13 @@ export function setAuthToken(token: string | null) {
   }
 
   delete api.defaults.headers.common.Authorization;
+}
+
+export function setSelectedSalonId(salonId: string | null) {
+  if (salonId) {
+    api.defaults.headers.common[salonHeaderName] = salonId;
+    return;
+  }
+
+  delete api.defaults.headers.common[salonHeaderName];
 }
