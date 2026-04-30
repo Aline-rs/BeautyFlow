@@ -11,11 +11,23 @@ export type RegisterPayload = {
   password: string;
 };
 
+export type LinkedSalon = {
+  id: string;
+  name: string;
+  phone?: string | null;
+  email: string;
+  role: string;
+  isPrimary: boolean;
+};
+
 export type AuthSession = {
   token: string;
   user: {
+    id: string;
     name: string;
     email: string;
-    salonName: string;
+    profilePhotoUrl?: string | null;
   };
+  salons: LinkedSalon[];
+  selectedSalonId?: string | null;
 };

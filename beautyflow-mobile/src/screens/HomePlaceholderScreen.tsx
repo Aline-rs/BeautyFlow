@@ -11,13 +11,17 @@ import { colors, spacing, typography } from '../theme';
 
 export function HomePlaceholderScreen() {
   const { session, signOut } = useAuth();
+  const selectedSalon =
+    session?.salons.find((salon) => salon.id === session.selectedSalonId) ??
+    session?.salons.find((salon) => salon.isPrimary) ??
+    session?.salons[0];
 
   return (
     <Screen>
       <View style={styles.container}>
         <Text style={styles.title}>Home</Text>
         <Text style={styles.subtitle}>
-          Sessao ativa para {session?.user.salonName ?? 'BeautyFlow'}.
+          Sessao ativa para {selectedSalon?.name ?? session?.user.name ?? 'BeautyFlow'}.
         </Text>
 
         <View style={styles.statsRow}>

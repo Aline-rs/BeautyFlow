@@ -5,5 +5,5 @@ namespace BeautyFlow.Application.Abstractions.Auth;
 
 public interface IJwtTokenService
 {
-    AuthResponse CreateToken(User user, Salon salon);
+    AuthResponse CreateToken(User user, IReadOnlyCollection<UserSalon> userSalons, Guid? selectedSalonId);
 }

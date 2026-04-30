@@ -21,6 +21,7 @@ public sealed class AppointmentService : IAppointmentService
     }
 
     public async Task<AppointmentRegistrationResult> RegisterAppointmentAsync(
+        Guid userId,
         Guid salonId,
         CreateAppointmentInput input,
         CancellationToken cancellationToken = default)
@@ -28,7 +29,7 @@ public sealed class AppointmentService : IAppointmentService
         var customer = await _dbContext.Customers
             .AsNoTracking()
             .FirstOrDefaultAsync(
-                x => x.Id == input.CustomerId && x.SalonId == salonId,
+                x => x.Id == input.CustomerId && x.UserId == userId,
                 cancellationToken);
 
         if (customer is null)
@@ -64,6 +65,7 @@ public sealed class AppointmentService : IAppointmentService
 
         var appointment = new Appointment
         {
+            UserId = userId,
             SalonId = salonId,
             CustomerId = customer.Id,
             ServiceId = service.Id,
@@ -76,6 +78,7 @@ public sealed class AppointmentService : IAppointmentService
 
         var scheduledMessage = new ScheduledMessage
         {
+            UserId = userId,
             SalonId = salonId,
             AppointmentId = appointment.Id,
             CustomerId = customer.Id,

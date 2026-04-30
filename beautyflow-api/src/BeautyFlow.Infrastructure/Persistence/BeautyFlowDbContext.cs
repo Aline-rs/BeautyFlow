@@ -19,6 +19,7 @@ public sealed class BeautyFlowDbContext : DbContext
     public DbSet<ScheduledMessage> ScheduledMessages => Set<ScheduledMessage>();
     public DbSet<Service> Services => Set<Service>();
     public DbSet<User> Users => Set<User>();
+    public DbSet<UserSalon> UserSalons => Set<UserSalon>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -44,12 +45,31 @@ public sealed class BeautyFlowDbContext : DbContext
             entity.Property(x => x.PasswordHash).HasMaxLength(512).IsRequired();
             entity.Property(x => x.ProfilePhotoUrl).HasMaxLength(512);
             entity.Property(x => x.CreatedAtUtc).IsRequired();
-            entity.Property(x => x.SalonId).IsRequired();
             entity.HasIndex(x => x.Email).IsUnique();
+        });
+
+        modelBuilder.Entity<UserSalon>(entity =>
+        {
+            entity.ToTable("user_salons");
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.UserId).IsRequired();
+            entity.Property(x => x.SalonId).IsRequired();
+            entity.Property(x => x.Role).HasMaxLength(64).IsRequired();
+            entity.Property(x => x.IsPrimary).IsRequired();
+            entity.Property(x => x.CreatedAtUtc).IsRequired();
+            entity.Property(x => x.UpdatedAtUtc);
+            entity.HasIndex(x => new { x.UserId, x.SalonId }).IsUnique();
+            entity.HasIndex(x => new { x.UserId, x.IsPrimary });
+
+            entity
+                .HasOne(x => x.User)
+                .WithMany(x => x.UserSalons)
+                .HasForeignKey(x => x.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             entity
                 .HasOne(x => x.Salon)
-                .WithMany(x => x.Users)
+                .WithMany(x => x.UserSalons)
                 .HasForeignKey(x => x.SalonId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
@@ -65,13 +85,15 @@ public sealed class BeautyFlowDbContext : DbContext
             entity.Property(x => x.PhotoUrl).HasMaxLength(512);
             entity.Property(x => x.CreatedAtUtc).IsRequired();
             entity.Property(x => x.UpdatedAtUtc);
+            entity.Property(x => x.UserId).IsRequired();
             entity.Property(x => x.SalonId).IsRequired();
+            entity.HasIndex(x => new { x.UserId, x.Name });
             entity.HasIndex(x => new { x.SalonId, x.Name });
 
             entity
-                .HasOne(x => x.Salon)
+                .HasOne(x => x.User)
                 .WithMany(x => x.Customers)
-                .HasForeignKey(x => x.SalonId)
+                .HasForeignKey(x => x.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
 
@@ -101,10 +123,18 @@ public sealed class BeautyFlowDbContext : DbContext
             entity.Property(x => x.AppointmentDate).IsRequired();
             entity.Property(x => x.Notes).HasMaxLength(2000);
             entity.Property(x => x.CreatedAtUtc).IsRequired();
+            entity.Property(x => x.UserId).IsRequired();
             entity.Property(x => x.SalonId).IsRequired();
             entity.Property(x => x.CustomerId).IsRequired();
             entity.Property(x => x.ServiceId).IsRequired();
+            entity.HasIndex(x => new { x.UserId, x.AppointmentDate });
             entity.HasIndex(x => new { x.SalonId, x.AppointmentDate });
+
+            entity
+                .HasOne(x => x.User)
+                .WithMany(x => x.Appointments)
+                .HasForeignKey(x => x.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             entity
                 .HasOne(x => x.Salon)
@@ -146,11 +176,19 @@ public sealed class BeautyFlowDbContext : DbContext
             entity.Property(x => x.SentAtUtc);
             entity.Property(x => x.CanceledAtUtc);
             entity.Property(x => x.ErrorMessage).HasMaxLength(500);
+            entity.Property(x => x.UserId).IsRequired();
             entity.Property(x => x.SalonId).IsRequired();
             entity.Property(x => x.CustomerId).IsRequired();
             entity.Property(x => x.ServiceId).IsRequired();
             entity.Property(x => x.AppointmentId).IsRequired();
+            entity.HasIndex(x => new { x.UserId, x.ScheduledForDate, x.Status });
             entity.HasIndex(x => new { x.SalonId, x.ScheduledForDate, x.Status });
+
+            entity
+                .HasOne(x => x.User)
+                .WithMany(x => x.ScheduledMessages)
+                .HasForeignKey(x => x.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             entity
                 .HasOne(x => x.Salon)
@@ -175,16 +213,16 @@ public sealed class BeautyFlowDbContext : DbContext
         {
             entity.ToTable("message_templates");
             entity.HasKey(x => x.Id);
+            entity.Property(x => x.UserId).IsRequired();
             entity.Property(x => x.TemplateText).HasMaxLength(4000).IsRequired();
             entity.Property(x => x.CreatedAtUtc).IsRequired();
             entity.Property(x => x.UpdatedAtUtc);
-            entity.Property(x => x.SalonId).IsRequired();
-            entity.HasIndex(x => x.SalonId).IsUnique();
+            entity.HasIndex(x => x.UserId).IsUnique();
 
             entity
-                .HasOne(x => x.Salon)
+                .HasOne(x => x.User)
                 .WithOne(x => x.MessageTemplate)
-                .HasForeignKey<MessageTemplate>(x => x.SalonId)
+                .HasForeignKey<MessageTemplate>(x => x.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
 
@@ -192,18 +230,18 @@ public sealed class BeautyFlowDbContext : DbContext
         {
             entity.ToTable("notification_settings");
             entity.HasKey(x => x.Id);
+            entity.Property(x => x.UserId).IsRequired();
             entity.Property(x => x.IsEnabled).IsRequired();
             entity.Property(x => x.PreferredTime).IsRequired();
             entity.Property(x => x.ReminderMode).HasMaxLength(40).IsRequired();
             entity.Property(x => x.CreatedAtUtc).IsRequired();
             entity.Property(x => x.UpdatedAtUtc);
-            entity.Property(x => x.SalonId).IsRequired();
-            entity.HasIndex(x => x.SalonId).IsUnique();
+            entity.HasIndex(x => x.UserId).IsUnique();
 
             entity
-                .HasOne(x => x.Salon)
+                .HasOne(x => x.User)
                 .WithOne(x => x.NotificationSettings)
-                .HasForeignKey<NotificationSettings>(x => x.SalonId)
+                .HasForeignKey<NotificationSettings>(x => x.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
     }

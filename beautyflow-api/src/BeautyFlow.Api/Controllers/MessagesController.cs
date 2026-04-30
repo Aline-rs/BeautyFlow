@@ -32,13 +32,13 @@ public sealed class MessagesController : ControllerBase
         [FromQuery] string? status,
         [FromQuery] string? search)
     {
-        var salonId = GetSalonId();
-        if (salonId is null)
+        var userId = GetUserId();
+        if (userId is null)
         {
             return Unauthorized(ApiResponse<object>.Failure("User is not authenticated."));
         }
 
-        var query = BuildMessagesQuery(salonId.Value);
+        var query = BuildMessagesQuery(userId.Value);
 
         if (!string.IsNullOrWhiteSpace(status) &&
             Enum.TryParse<MessageStatus>(status, true, out var parsedStatus))
@@ -160,28 +160,25 @@ public sealed class MessagesController : ControllerBase
         });
     }
 
-    private Guid? GetSalonId()
-    {
-        return _currentUserService.SalonId;
-    }
+    private Guid? GetUserId() => _currentUserService.UserId;
 
-    private IQueryable<ScheduledMessage> BuildMessagesQuery(Guid salonId)
+    private IQueryable<ScheduledMessage> BuildMessagesQuery(Guid userId)
     {
         return _dbContext.ScheduledMessages
             .Include(x => x.Customer)
             .Include(x => x.Service)
-            .Where(x => x.SalonId == salonId);
+            .Where(x => x.UserId == userId);
     }
 
     private async Task<ScheduledMessage?> GetMessageEntityAsync(Guid id, bool asNoTracking = true)
     {
-        var salonId = GetSalonId();
-        if (salonId is null)
+        var userId = GetUserId();
+        if (userId is null)
         {
             return null;
         }
 
-        var query = BuildMessagesQuery(salonId.Value);
+        var query = BuildMessagesQuery(userId.Value);
         if (asNoTracking)
         {
             query = query.AsNoTracking();

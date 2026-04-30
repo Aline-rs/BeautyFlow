@@ -18,7 +18,7 @@ public sealed class JwtTokenService : IJwtTokenService
         _configuration = configuration;
     }
 
-    public AuthResponse CreateToken(User user, Salon salon)
+    public AuthResponse CreateToken(User user, IReadOnlyCollection<UserSalon> userSalons, Guid? selectedSalonId)
     {
         var jwtSection = _configuration.GetSection("Jwt");
         var issuer = jwtSection["Issuer"] ?? throw new InvalidOperationException("Jwt:Issuer is required.");
@@ -27,15 +27,22 @@ public sealed class JwtTokenService : IJwtTokenService
         var expiresInMinutes = int.TryParse(jwtSection["ExpiresInMinutes"], out var parsedMinutes)
             ? parsedMinutes
             : 120;
+        var effectiveSalonId = selectedSalonId
+            ?? userSalons.FirstOrDefault(x => x.IsPrimary)?.SalonId
+            ?? userSalons.FirstOrDefault()?.SalonId;
 
-        var claims = new[]
+        var claims = new List<Claim>
         {
             new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
             new Claim(JwtRegisteredClaimNames.Email, user.Email),
             new Claim(ClaimTypes.Name, user.Name),
-            new Claim(CustomClaimTypes.UserId, user.Id.ToString()),
-            new Claim(CustomClaimTypes.SalonId, salon.Id.ToString())
+            new Claim(CustomClaimTypes.UserId, user.Id.ToString())
         };
+
+        if (effectiveSalonId is not null)
+        {
+            claims.Add(new Claim(CustomClaimTypes.SelectedSalonId, effectiveSalonId.Value.ToString()));
+        }
 
         var credentials = new SigningCredentials(
             new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key)),
@@ -53,10 +60,23 @@ public sealed class JwtTokenService : IJwtTokenService
             Token = new JwtSecurityTokenHandler().WriteToken(token),
             User = new AuthUserResponse
             {
+                Id = user.Id.ToString(),
                 Name = user.Name,
                 Email = user.Email,
-                SalonName = salon.Name
-            }
+                ProfilePhotoUrl = user.ProfilePhotoUrl
+            },
+            Salons = userSalons
+                .Select(link => new AuthSalonResponse
+                {
+                    Id = link.SalonId.ToString(),
+                    Name = link.Salon.Name,
+                    Phone = link.Salon.Phone,
+                    Email = link.Salon.Email,
+                    Role = link.Role,
+                    IsPrimary = link.IsPrimary
+                })
+                .ToList(),
+            SelectedSalonId = effectiveSalonId?.ToString()
         };
     }
 }

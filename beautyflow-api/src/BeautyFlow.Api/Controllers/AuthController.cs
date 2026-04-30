@@ -64,15 +64,23 @@ public sealed class AuthController : ControllerBase
         {
             Name = request.OwnerName.Trim(),
             Email = normalizedEmail,
-            PasswordHash = _passwordHasher.HashPassword(request.Password),
-            Salon = salon
+            PasswordHash = _passwordHasher.HashPassword(request.Password)
+        };
+
+        var userSalon = new UserSalon
+        {
+            User = user,
+            Salon = salon,
+            Role = "Owner",
+            IsPrimary = true
         };
 
         _dbContext.Salons.Add(salon);
         _dbContext.Users.Add(user);
+        _dbContext.UserSalons.Add(userSalon);
         await _dbContext.SaveChangesAsync();
 
-        var response = _jwtTokenService.CreateToken(user, salon);
+        var response = _jwtTokenService.CreateToken(user, [userSalon], salon.Id);
         return Ok(ApiResponse<AuthResponse>.Success(response));
     }
 
@@ -85,7 +93,8 @@ public sealed class AuthController : ControllerBase
         var normalizedEmail = request.Email.Trim().ToLowerInvariant();
 
         var user = await _dbContext.Users
-            .Include(x => x.Salon)
+            .Include(x => x.UserSalons)
+            .ThenInclude(x => x.Salon)
             .FirstOrDefaultAsync(x => x.Email == normalizedEmail);
 
         if (user is null || !_passwordHasher.VerifyPassword(user.PasswordHash, request.Password))
@@ -93,19 +102,60 @@ public sealed class AuthController : ControllerBase
             return Unauthorized(ApiResponse<object>.Failure("Invalid credentials."));
         }
 
-        var response = _jwtTokenService.CreateToken(user, user.Salon);
+        var selectedSalonId = user.UserSalons.FirstOrDefault(x => x.IsPrimary)?.SalonId
+            ?? user.UserSalons.FirstOrDefault()?.SalonId;
+        var response = _jwtTokenService.CreateToken(user, user.UserSalons.ToList(), selectedSalonId);
         return Ok(ApiResponse<AuthResponse>.Success(response));
     }
 
     [Authorize]
     [HttpGet("me")]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
-    public ActionResult<ApiResponse<object>> Me()
+    public async Task<ActionResult<ApiResponse<object>>> Me()
     {
+        if (_currentUserService.UserId is null)
+        {
+            return Ok(ApiResponse<object>.Success(new
+            {
+                isAuthenticated = false
+            }));
+        }
+
+        var user = await _dbContext.Users
+            .AsNoTracking()
+            .Include(x => x.UserSalons)
+            .ThenInclude(x => x.Salon)
+            .FirstOrDefaultAsync(x => x.Id == _currentUserService.UserId.Value);
+
+        if (user is null)
+        {
+            return NotFound(ApiResponse<object>.Failure("User was not found."));
+        }
+
         return Ok(ApiResponse<object>.Success(new
         {
+            user = new
+            {
+                id = user.Id,
+                name = user.Name,
+                email = user.Email,
+                profilePhotoUrl = user.ProfilePhotoUrl
+            },
             userId = _currentUserService.UserId,
-            salonId = _currentUserService.SalonId,
+            selectedSalonId = _currentUserService.SelectedSalonId,
+            salons = user.UserSalons
+                .OrderByDescending(x => x.IsPrimary)
+                .ThenBy(x => x.Salon.Name)
+                .Select(x => new
+                {
+                    id = x.SalonId,
+                    name = x.Salon.Name,
+                    phone = x.Salon.Phone,
+                    email = x.Salon.Email,
+                    role = x.Role,
+                    isPrimary = x.IsPrimary
+                })
+                .ToList(),
             isAuthenticated = _currentUserService.IsAuthenticated
         }));
     }

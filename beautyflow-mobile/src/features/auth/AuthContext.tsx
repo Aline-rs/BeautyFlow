@@ -15,13 +15,27 @@ type AuthContextValue = {
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 function createSessionFromToken(token: string): AuthSession {
+  const defaultSalonId = 'persisted-salon-id';
+
   return {
     token,
     user: {
+      id: 'persisted-user-id',
       name: 'BeautyFlow',
       email: 'sessao@beautyflow.app',
-      salonName: 'Studio Bella Hair',
+      profilePhotoUrl: null,
     },
+    salons: [
+      {
+        id: defaultSalonId,
+        name: 'Studio Bella Hair',
+        phone: null,
+        email: 'studio@beautyflow.app',
+        role: 'Owner',
+        isPrimary: true,
+      },
+    ],
+    selectedSalonId: defaultSalonId,
   };
 }
 
