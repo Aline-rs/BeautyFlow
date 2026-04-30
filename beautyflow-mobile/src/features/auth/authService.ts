@@ -1,6 +1,6 @@
 import { AxiosError } from 'axios';
 import { api } from '../../lib/api/client';
-import { AuthSession, LinkedSalon, LoginPayload, RegisterPayload } from './types';
+import { AuthSession, LoginPayload, RegisterPayload } from './types';
 
 type AuthApiResponse = {
   succeeded?: boolean;
@@ -14,17 +14,7 @@ type AuthApiResponse = {
 function createMockSession(
   name: string,
   email: string,
-  salonName: string,
 ): AuthSession {
-  const defaultSalon: LinkedSalon = {
-    id: 'mock-salon-id',
-    name: salonName,
-    phone: null,
-    email,
-    role: 'Owner',
-    isPrimary: true,
-  };
-
   return {
     token: `mock-token-${Date.now()}`,
     user: {
@@ -33,8 +23,8 @@ function createMockSession(
       email,
       profilePhotoUrl: null,
     },
-    salons: [defaultSalon],
-    selectedSalonId: defaultSalon.id,
+    salons: [],
+    selectedSalonId: null,
   };
 }
 
@@ -72,7 +62,7 @@ export async function login(payload: LoginPayload): Promise<AuthSession> {
     return normalizeAuthResponse(response.data);
   } catch (error) {
     if (shouldFallbackToMock(error)) {
-      return createMockSession('Studio Bella Hair', payload.email, 'Studio Bella Hair');
+      return createMockSession('BeautyFlow', payload.email);
     }
 
     throw error;
@@ -85,7 +75,7 @@ export async function register(payload: RegisterPayload): Promise<AuthSession> {
     return normalizeAuthResponse(response.data);
   } catch (error) {
     if (shouldFallbackToMock(error)) {
-      return createMockSession(payload.ownerName, payload.email, payload.salonName);
+      return createMockSession(payload.ownerName, payload.email);
     }
 
     throw error;

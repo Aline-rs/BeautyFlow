@@ -40,7 +40,6 @@ public sealed class AuthController : ControllerBase
         var normalizedEmail = request.Email.Trim().ToLowerInvariant();
 
         if (string.IsNullOrWhiteSpace(request.OwnerName) ||
-            string.IsNullOrWhiteSpace(request.SalonName) ||
             string.IsNullOrWhiteSpace(normalizedEmail) ||
             string.IsNullOrWhiteSpace(request.Password))
         {
@@ -53,34 +52,16 @@ public sealed class AuthController : ControllerBase
             return BadRequest(ApiResponse<object>.Failure("A user with this email already exists."));
         }
 
-        var salon = new Salon
-        {
-            Name = request.SalonName.Trim(),
-            Phone = request.SalonPhone?.Trim(),
-            Email = normalizedEmail
-        };
-
         var user = new User
         {
             Name = request.OwnerName.Trim(),
             Email = normalizedEmail,
             PasswordHash = _passwordHasher.HashPassword(request.Password)
         };
-
-        var userSalon = new UserSalon
-        {
-            User = user,
-            Salon = salon,
-            Role = "Owner",
-            IsPrimary = true
-        };
-
-        _dbContext.Salons.Add(salon);
         _dbContext.Users.Add(user);
-        _dbContext.UserSalons.Add(userSalon);
         await _dbContext.SaveChangesAsync();
 
-        var response = _jwtTokenService.CreateToken(user, [userSalon], salon.Id);
+        var response = _jwtTokenService.CreateToken(user, [], null);
         return Ok(ApiResponse<AuthResponse>.Success(response));
     }
 
