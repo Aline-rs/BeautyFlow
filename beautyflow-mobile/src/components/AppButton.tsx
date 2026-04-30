@@ -33,6 +33,7 @@ export function AppButton({
   loading = false,
 }: AppButtonProps) {
   const isDisabled = disabled || loading;
+  const indicatorColor = variant === 'primary' ? '#FFFFFF' : colors.roseDark;
 
   if (variant === 'primary') {
     return (
@@ -47,8 +48,13 @@ export function AppButton({
           end={{ x: 1, y: 1 }}
           style={[styles.primaryBg, shadows.card]}
         >
-          {loading ? <ActivityIndicator color="#FFFFFF" size="small" /> : icon}
-          <Text style={styles.primaryText}>{loading ? 'Carregando...' : label}</Text>
+          <View style={styles.contentRow}>
+            <View style={styles.leadingSlot}>
+              {loading ? <ActivityIndicator color={indicatorColor} size="small" /> : icon}
+            </View>
+            <Text style={styles.primaryText}>{label}</Text>
+            <View style={styles.trailingSlot} />
+          </View>
         </LinearGradient>
       </Pressable>
     );
@@ -61,10 +67,13 @@ export function AppButton({
       style={[styles.buttonBase, styles[variant], style, isDisabled ? styles.disabled : null]}
     >
       <View style={styles.contentRow}>
-        {loading ? <ActivityIndicator color={colors.roseDark} size="small" /> : icon}
+        <View style={styles.leadingSlot}>
+          {loading ? <ActivityIndicator color={indicatorColor} size="small" /> : icon}
+        </View>
         <Text style={[styles.secondaryText, variant === 'ghost' && styles.ghostText]}>
-          {loading ? 'Carregando...' : label}
+          {label}
         </Text>
+        <View style={styles.trailingSlot} />
       </View>
     </Pressable>
   );
@@ -78,6 +87,10 @@ const styles = StyleSheet.create({
   primaryBg: {
     minHeight: 48,
     borderRadius: radius.md,
+  },
+  contentRow: {
+    minHeight: 48,
+    width: '100%',
     alignItems: 'center',
     justifyContent: 'center',
     flexDirection: 'row',
@@ -85,15 +98,13 @@ const styles = StyleSheet.create({
     paddingVertical: 13,
     paddingHorizontal: 14,
   },
-  contentRow: {
-    minHeight: 48,
-    borderRadius: radius.md,
+  leadingSlot: {
+    width: 18,
     alignItems: 'center',
     justifyContent: 'center',
-    flexDirection: 'row',
-    gap: spacing.xs,
-    paddingVertical: 13,
-    paddingHorizontal: 14,
+  },
+  trailingSlot: {
+    width: 18,
   },
   primary: {
     borderWidth: 1.5,
