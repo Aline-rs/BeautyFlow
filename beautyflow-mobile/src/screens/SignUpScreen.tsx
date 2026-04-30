@@ -24,8 +24,6 @@ export function SignUpScreen({ navigation }: Props) {
     resolver: zodResolver(signUpSchema),
     defaultValues: {
       ownerName: '',
-      salonName: '',
-      salonPhone: '',
       email: '',
       password: '',
       confirmPassword: '',
@@ -36,8 +34,6 @@ export function SignUpScreen({ navigation }: Props) {
     try {
       await signUp({
         ownerName: values.ownerName,
-        salonName: values.salonName,
-        salonPhone: values.salonPhone,
         email: values.email,
         password: values.password,
       });
@@ -63,37 +59,6 @@ export function SignUpScreen({ navigation }: Props) {
               placeholder="Seu nome completo"
               value={value}
               errorMessage={errors.ownerName?.message}
-            />
-          )}
-        />
-
-        <Controller
-          control={control}
-          name="salonName"
-          render={({ field: { onChange, onBlur, value } }) => (
-            <AppInput
-              label="Nome do salao *"
-              onBlur={onBlur}
-              onChangeText={onChange}
-              placeholder="Studio Bella Hair"
-              value={value}
-              errorMessage={errors.salonName?.message}
-            />
-          )}
-        />
-
-        <Controller
-          control={control}
-          name="salonPhone"
-          render={({ field: { onChange, onBlur, value } }) => (
-            <AppInput
-              keyboardType="phone-pad"
-              label="Telefone do salao"
-              onBlur={onBlur}
-              onChangeText={onChange}
-              placeholder="(31) 99999-9999"
-              value={value}
-              errorMessage={errors.salonPhone?.message}
             />
           )}
         />
@@ -150,6 +115,10 @@ export function SignUpScreen({ navigation }: Props) {
           )}
         />
 
+        <Text style={styles.helperText}>
+          Voce podera vincular seu primeiro salao depois de criar a conta.
+        </Text>
+
         {errors.root?.message ? <Text style={styles.formError}>{errors.root.message}</Text> : null}
 
         <View style={styles.buttons}>
@@ -178,6 +147,13 @@ const styles = StyleSheet.create({
   },
   buttons: {
     marginTop: 4,
+  },
+  helperText: {
+    marginBottom: 12,
+    color: colors.textSecondary,
+    fontFamily: typography.fontFamily.body,
+    fontSize: 12,
+    textAlign: 'center',
   },
   formError: {
     marginBottom: 12,

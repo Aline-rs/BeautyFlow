@@ -5,8 +5,6 @@ export type LoginPayload = {
 
 export type RegisterPayload = {
   ownerName: string;
-  salonName: string;
-  salonPhone?: string;
   email: string;
   password: string;
 };
