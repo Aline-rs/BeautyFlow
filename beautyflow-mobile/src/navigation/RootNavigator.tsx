@@ -11,7 +11,7 @@ import { RootStackParamList } from './types';
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export function RootNavigator() {
-  const { isHydrating, session } = useAuth();
+  const { hasSkippedSalonSetup, isHydrating, session } = useAuth();
 
   if (isHydrating) {
     return <SplashView />;
@@ -26,7 +26,7 @@ export function RootNavigator() {
         }}
       >
         {session ? (
-          session.salons.length === 0 ? (
+          session.salons.length === 0 && !hasSkippedSalonSetup ? (
             <Stack.Screen name="SalonSetup" component={SalonSetupScreen} />
           ) : (
             <Stack.Screen name="Main" component={MainTabs} />
