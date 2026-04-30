@@ -1,6 +1,6 @@
 import { useFocusEffect } from '@react-navigation/native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Pressable,
@@ -15,15 +15,22 @@ import { EmptyState } from '../components/EmptyState';
 import { ListCard } from '../components/ListCard';
 import { Screen } from '../components/Screen';
 import { TopBar } from '../components/TopBar';
+import { useAuth } from '../features/auth';
 import { useCustomers } from '../features/customers';
 import { CustomersStackParamList } from '../navigation/types';
 import { colors, radius, typography } from '../theme';
 
 type Props = NativeStackScreenProps<CustomersStackParamList, 'CustomersMain'>;
+type CustomerFilter = 'portfolio' | 'current-context';
 
 export function CustomersScreen({ navigation }: Props) {
+  const { session } = useAuth();
   const { customers, isLoading, loadCustomers } = useCustomers();
   const [search, setSearch] = useState('');
+  const [filter, setFilter] = useState<CustomerFilter>('portfolio');
+  const selectedSalon = session?.selectedSalonId
+    ? session.salons.find((salon) => salon.id === session.selectedSalonId)
+    : undefined;
 
   useFocusEffect(
     useCallback(() => {
@@ -38,6 +45,20 @@ export function CustomersScreen({ navigation }: Props) {
 
     return () => clearTimeout(timeout);
   }, [loadCustomers, search]);
+
+  useEffect(() => {
+    if (!selectedSalon && filter === 'current-context') {
+      setFilter('portfolio');
+    }
+  }, [filter, selectedSalon]);
+
+  const visibleCustomers = useMemo(() => {
+    if (filter !== 'current-context' || !selectedSalon) {
+      return customers;
+    }
+
+    return customers.filter((customer) => customer.contextSalonId === selectedSalon.id);
+  }, [customers, filter, selectedSalon]);
 
   return (
     <Screen>
@@ -58,30 +79,57 @@ export function CustomersScreen({ navigation }: Props) {
           onChangeText={setSearch}
         />
 
-        <Text style={styles.sectionLabel}>{customers.length} clientes cadastradas</Text>
+        <View style={styles.filtersRow}>
+          <Pressable
+            style={[styles.filterChip, filter === 'portfolio' ? styles.filterChipActive : null]}
+            onPress={() => setFilter('portfolio')}
+          >
+            <Text style={[styles.filterChipText, filter === 'portfolio' ? styles.filterChipTextActive : null]}>
+              Portfolio profissional
+            </Text>
+          </Pressable>
+          {selectedSalon ? (
+            <Pressable
+              style={[styles.filterChip, filter === 'current-context' ? styles.filterChipActive : null]}
+              onPress={() => setFilter('current-context')}
+            >
+              <Text style={[styles.filterChipText, filter === 'current-context' ? styles.filterChipTextActive : null]}>
+                {selectedSalon.name}
+              </Text>
+            </Pressable>
+          ) : null}
+        </View>
+
+        <Text style={styles.sectionLabel}>
+          {visibleCustomers.length} clientes {filter === 'portfolio' ? 'no portfolio profissional' : 'no contexto atual'}
+        </Text>
 
         {isLoading ? (
           <View style={styles.loadingContainer}>
             <ActivityIndicator color={colors.roseDark} />
           </View>
-        ) : customers.length === 0 ? (
+        ) : visibleCustomers.length === 0 ? (
           <EmptyState
-            title="Nenhuma cliente por aqui"
-            description="Cadastre sua primeira cliente para acompanhar retornos e historico."
+            title={filter === 'portfolio' ? 'Nenhuma cliente por aqui' : 'Nenhuma cliente neste contexto'}
+            description={
+              filter === 'portfolio'
+                ? 'Cadastre sua primeira cliente para acompanhar retornos e historico.'
+                : 'Troque o contexto do salao ou volte para o portfolio profissional para ver todas as clientes.'
+            }
           />
         ) : (
           <ScrollView contentContainerStyle={styles.listContent}>
-            {customers.map((customer) => (
+            {visibleCustomers.map((customer) => (
               <ListCard
                 key={customer.id}
                 title={customer.name}
                 subtitle={customer.whatsapp}
                 extraSubtitle={
                   customer.nextServiceName && customer.nextContactDate
-                    ? `${customer.nextServiceName} - prox. contato ${formatShortDate(
+                    ? `${customer.contextLabel} - ${customer.nextServiceName} - prox. contato ${formatShortDate(
                         customer.nextContactDate,
                       )}`
-                    : undefined
+                    : customer.contextLabel
                 }
                 left={
                   <Avatar
@@ -158,6 +206,32 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: colors.textSecondary,
     textTransform: 'uppercase',
+  },
+  filtersRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 12,
+    flexWrap: 'wrap',
+  },
+  filterChip: {
+    borderWidth: 1,
+    borderColor: colors.borderStrong,
+    borderRadius: 999,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    backgroundColor: '#FFFFFF',
+  },
+  filterChipActive: {
+    backgroundColor: colors.rose,
+    borderColor: colors.rose,
+  },
+  filterChipText: {
+    color: colors.textSecondary,
+    fontFamily: typography.fontFamily.bodyBold,
+    fontSize: 11,
+  },
+  filterChipTextActive: {
+    color: '#FFFFFF',
   },
   listContent: {
     paddingBottom: 96,

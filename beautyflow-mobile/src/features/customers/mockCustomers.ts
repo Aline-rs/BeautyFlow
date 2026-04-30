@@ -5,6 +5,8 @@ export const mockCustomers: Customer[] = [
     id: 'customer-1',
     name: 'Gabriela Alves',
     whatsapp: '(31) 99999-9999',
+    contextSalonId: 'salon-1',
+    contextLabel: 'Studio Bela',
     birthDate: '1994-07-16',
     contactPreference: 'WhatsApp',
     notes: 'Alergica a amonia. Prefere mechas balayage e finalizacao com ondas.',
@@ -18,6 +20,7 @@ export const mockCustomers: Customer[] = [
       {
         id: 'history-1',
         serviceName: 'Mechas',
+        contextLabel: 'Studio Bela',
         appointmentDate: '2026-04-01',
         messageStatus: 'Pendente',
         nextContactDate: '2026-04-16',
@@ -25,6 +28,7 @@ export const mockCustomers: Customer[] = [
       {
         id: 'history-2',
         serviceName: 'Hidratacao',
+        contextLabel: 'Conta profissional',
         appointmentDate: '2026-03-15',
         messageStatus: 'Enviada',
       },
@@ -34,6 +38,8 @@ export const mockCustomers: Customer[] = [
     id: 'customer-2',
     name: 'Juliana Martins',
     whatsapp: '(31) 98888-7777',
+    contextSalonId: null,
+    contextLabel: 'Conta profissional',
     contactPreference: 'WhatsApp',
     notes: 'Ama coloracao quente e retoque com brilho intenso.',
     initials: 'JM',
@@ -44,6 +50,7 @@ export const mockCustomers: Customer[] = [
       {
         id: 'history-3',
         serviceName: 'Coloracao',
+        contextLabel: 'Conta profissional',
         appointmentDate: '2026-03-18',
         messageStatus: 'Pendente',
         nextContactDate: '2026-04-18',
@@ -54,6 +61,8 @@ export const mockCustomers: Customer[] = [
     id: 'customer-3',
     name: 'Carla Souza',
     whatsapp: '(31) 97777-6666',
+    contextSalonId: 'salon-2',
+    contextLabel: 'Espaco Lume',
     contactPreference: 'Ligacao',
     notes: 'Prefere contato no fim da tarde.',
     initials: 'CS',
@@ -64,6 +73,7 @@ export const mockCustomers: Customer[] = [
       {
         id: 'history-4',
         serviceName: 'Escova',
+        contextLabel: 'Espaco Lume',
         appointmentDate: '2026-03-19',
         messageStatus: 'Pendente',
         nextContactDate: '2026-04-19',

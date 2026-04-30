@@ -30,6 +30,8 @@ function buildCustomer(payload: CustomerFormPayload, existing?: Customer): Custo
     id: existing?.id ?? `customer-${Date.now()}`,
     name: payload.name.trim(),
     whatsapp: payload.whatsapp.trim(),
+    contextSalonId: existing?.contextSalonId ?? null,
+    contextLabel: existing?.contextLabel ?? 'Conta profissional',
     birthDate: payload.birthDate,
     contactPreference: payload.contactPreference,
     notes: payload.notes?.trim(),
