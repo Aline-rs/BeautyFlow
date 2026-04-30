@@ -1,12 +1,16 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import * as ImagePicker from 'expo-image-picker';
+import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { AppButton } from '../components/AppButton';
 import { AppInput } from '../components/AppInput';
+import { PhotoPicker } from '../components/PhotoPicker';
 import { Screen } from '../components/Screen';
 import { TopBar } from '../components/TopBar';
 import { useAuth } from '../features/auth';
+import { uploadProfessionalProfilePhoto } from '../features/profile';
 import { SignUpFormValues, signUpSchema } from '../features/auth/schemas';
 import { AuthStackParamList } from '../navigation/types';
 import { colors, typography } from '../theme';
@@ -14,7 +18,8 @@ import { colors, typography } from '../theme';
 type Props = NativeStackScreenProps<AuthStackParamList, 'SignUp'>;
 
 export function SignUpScreen({ navigation }: Props) {
-  const { signUp } = useAuth();
+  const { signUp, syncProfessionalProfile } = useAuth();
+  const [photoPreviewUri, setPhotoPreviewUri] = useState<string | undefined>();
   const {
     control,
     handleSubmit,
@@ -37,6 +42,11 @@ export function SignUpScreen({ navigation }: Props) {
         email: values.email,
         password: values.password,
       });
+
+      if (photoPreviewUri) {
+        const profile = await uploadProfessionalProfilePhoto(photoPreviewUri);
+        syncProfessionalProfile(profile);
+      }
     } catch {
       setError('root', {
         message: 'Nao foi possivel criar a conta agora. Tente novamente em instantes.',
@@ -44,16 +54,49 @@ export function SignUpScreen({ navigation }: Props) {
     }
   }
 
+  async function handlePickProfilePhoto() {
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permission.granted) {
+      Alert.alert('Permissao necessaria', 'Permita o acesso a galeria para adicionar sua foto.');
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.8,
+    });
+
+    if (result.canceled) {
+      return;
+    }
+
+    const nextUri = result.assets[0]?.uri;
+    if (!nextUri) {
+      return;
+    }
+
+    setPhotoPreviewUri(nextUri);
+  }
+
   return (
     <Screen>
       <TopBar title="Criar conta" onBack={() => navigation.navigate('Login')} />
       <ScrollView contentContainerStyle={styles.content}>
+        <PhotoPicker
+          label="Foto de perfil"
+          helperText="Opcional. Voce tambem pode adicionar depois no seu perfil."
+          previewUri={photoPreviewUri}
+          onPress={() => void handlePickProfilePhoto()}
+        />
+
         <Controller
           control={control}
           name="ownerName"
           render={({ field: { onChange, onBlur, value } }) => (
             <AppInput
-              label="Nome da responsavel *"
+              label="Seu nome profissional *"
               onBlur={onBlur}
               onChangeText={onChange}
               placeholder="Seu nome completo"
@@ -116,7 +159,7 @@ export function SignUpScreen({ navigation }: Props) {
         />
 
         <Text style={styles.helperText}>
-          Voce podera vincular seu primeiro salao depois de criar a conta.
+          Sua conta profissional vem primeiro. O vinculo com salao pode ser feito depois, quando fizer sentido para sua rotina.
         </Text>
 
         {errors.root?.message ? <Text style={styles.formError}>{errors.root.message}</Text> : null}

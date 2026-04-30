@@ -1,5 +1,4 @@
 import { StyleSheet, Text, View } from 'react-native';
-import { AppButton } from '../components/AppButton';
 import { AppCard } from '../components/AppCard';
 import { AppChip } from '../components/AppChip';
 import { Avatar } from '../components/Avatar';
@@ -10,19 +9,20 @@ import { useAuth } from '../features/auth';
 import { colors, spacing, typography } from '../theme';
 
 export function HomePlaceholderScreen() {
-  const { session, signOut } = useAuth();
+  const { session } = useAuth();
   const selectedSalon =
     session?.salons.find((salon) => salon.id === session.selectedSalonId) ??
     session?.salons.find((salon) => salon.isPrimary) ??
     session?.salons[0];
+  const subtitle = selectedSalon
+    ? `Seu contexto atual de trabalho e ${selectedSalon.name}.`
+    : 'Sua conta profissional esta ativa. Vincule um salao apenas quando precisar organizar sua atuacao.';
 
   return (
     <Screen>
       <View style={styles.container}>
         <Text style={styles.title}>Home</Text>
-        <Text style={styles.subtitle}>
-          Sessao ativa para {selectedSalon?.name ?? session?.user.name ?? 'BeautyFlow'}.
-        </Text>
+        <Text style={styles.subtitle}>{subtitle}</Text>
 
         <View style={styles.statsRow}>
           <StatCard value="3" label="Mensagens para enviar" />
@@ -45,10 +45,6 @@ export function HomePlaceholderScreen() {
           left={<Avatar initials="GA" />}
           right={<AppChip label="Pendente" />}
         />
-
-        <View style={styles.logoutButton}>
-          <AppButton label="Sair da conta" variant="ghost" onPress={() => void signOut()} />
-        </View>
       </View>
     </Screen>
   );
@@ -91,8 +87,5 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,
-  },
-  logoutButton: {
-    marginTop: 'auto',
   },
 });

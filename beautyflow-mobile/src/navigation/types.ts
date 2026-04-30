@@ -36,6 +36,7 @@ export type MessagesStackParamList = {
 
 export type MoreStackParamList = {
   MoreMain: undefined;
+  ProfessionalProfile: undefined;
   SalonProfile: undefined;
   Services: undefined;
   ServiceForm: {

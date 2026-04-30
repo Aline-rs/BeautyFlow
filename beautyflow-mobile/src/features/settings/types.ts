@@ -10,8 +10,6 @@ export type NotificationSettings = {
 
 export type SalonProfile = {
   salonName: string;
-  ownerName: string;
   email: string;
   phone?: string;
-  profilePhotoUrl?: string;
 };

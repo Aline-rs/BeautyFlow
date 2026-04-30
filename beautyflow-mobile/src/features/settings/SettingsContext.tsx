@@ -4,7 +4,6 @@ import {
   fetchNotificationSettings,
   fetchSalonProfile,
   restoreDefaultMessageTemplate,
-  uploadSalonProfilePhoto,
   updateMessageTemplate,
   updateNotificationSettings,
   updateSalonProfile,
@@ -21,7 +20,6 @@ type SettingsContextValue = {
   resetMessageTemplate: () => Promise<MessageTemplateSettings>;
   saveNotificationSettings: (payload: NotificationSettings) => Promise<NotificationSettings>;
   saveSalonProfile: (payload: SalonProfile) => Promise<SalonProfile>;
-  saveSalonProfilePhoto: (photoUri: string) => Promise<SalonProfile>;
 };
 
 const SettingsContext = createContext<SettingsContextValue | null>(null);
@@ -73,12 +71,6 @@ export function SettingsProvider({ children }: PropsWithChildren) {
     return nextProfile;
   }, []);
 
-  const saveSalonProfilePhoto = useCallback(async (photoUri: string) => {
-    const nextProfile = await uploadSalonProfilePhoto(photoUri);
-    setSalonProfile(nextProfile);
-    return nextProfile;
-  }, []);
-
   const value = useMemo(
     () => ({
       messageTemplate,
@@ -90,7 +82,6 @@ export function SettingsProvider({ children }: PropsWithChildren) {
       resetMessageTemplate,
       saveNotificationSettings,
       saveSalonProfile,
-      saveSalonProfilePhoto,
     }),
     [
       isLoading,
@@ -102,7 +93,6 @@ export function SettingsProvider({ children }: PropsWithChildren) {
       saveMessageTemplate,
       saveNotificationSettings,
       saveSalonProfile,
-      saveSalonProfilePhoto,
     ],
   );
 

@@ -13,13 +13,15 @@ import { colors, typography } from '../theme';
 
 type Props = NativeStackScreenProps<MoreStackParamList, 'MoreMain'>;
 
-type MenuRoute = 'SalonProfile' | 'Services' | 'MessageTemplates' | 'Notifications';
+type MenuRoute = 'ProfessionalProfile' | 'SalonProfile' | 'Services' | 'MessageTemplates' | 'Notifications';
 
 const professionalMenuItems: {
   label: string;
   icon: string;
   route: MenuRoute;
 }[] = [
+  { icon: 'P', label: 'Meu perfil', route: 'ProfessionalProfile' },
+  { icon: 'C', label: 'Servicos', route: 'Services' },
   { icon: 'M', label: 'Mensagens padrao', route: 'MessageTemplates' },
   { icon: 'N', label: 'Notificacoes', route: 'Notifications' },
 ];
@@ -30,7 +32,6 @@ const salonMenuItems: {
   route: MenuRoute;
 }[] = [
   { icon: 'S', label: 'Meu salao', route: 'SalonProfile' },
-  { icon: 'C', label: 'Servicos', route: 'Services' },
 ];
 
 export function MoreScreen({ navigation }: Props) {
@@ -53,7 +54,11 @@ export function MoreScreen({ navigation }: Props) {
   return (
     <Screen>
       <View style={styles.hero}>
-        <Avatar initials={buildInitials(session?.user.name ?? 'BF')} size={64} />
+        <Avatar
+          initials={buildInitials(session?.user.name ?? 'BF')}
+          size={64}
+          source={session?.user.profilePhotoUrl ? { uri: session.user.profilePhotoUrl } : undefined}
+        />
         <Text style={styles.heroEyebrow}>Profissional BeautyFlow</Text>
         <Text style={styles.heroTitle}>{session?.user.name ?? 'BeautyFlow'}</Text>
         <Text style={styles.heroSubtitle}>{session?.user.email ?? 'sessao@beautyflow.app'}</Text>

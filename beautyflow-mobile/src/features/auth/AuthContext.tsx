@@ -19,6 +19,7 @@ type AuthContextValue = {
   signUp: (payload: RegisterPayload) => Promise<void>;
   createSalonLink: (payload: { name: string; phone?: string; email: string }) => Promise<void>;
   skipSalonSetup: () => Promise<void>;
+  syncProfessionalProfile: (payload: { name: string; email: string; profilePhotoUrl?: string | null }) => void;
   signOut: () => Promise<void>;
 };
 
@@ -119,6 +120,24 @@ export function AuthProvider({ children }: PropsWithChildren) {
     setHasSkippedSalonSetup(true);
   }
 
+  function syncProfessionalProfile(payload: { name: string; email: string; profilePhotoUrl?: string | null }) {
+    setSession((currentSession) => {
+      if (!currentSession) {
+        return currentSession;
+      }
+
+      return {
+        ...currentSession,
+        user: {
+          ...currentSession.user,
+          name: payload.name,
+          email: payload.email,
+          profilePhotoUrl: payload.profilePhotoUrl ?? currentSession.user.profilePhotoUrl ?? null,
+        },
+      };
+    });
+  }
+
   async function signOut() {
     await Promise.all([clearToken(), saveSalonSetupSkipped(false)]);
     applySession(null);
@@ -136,6 +155,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
         signUp,
         createSalonLink,
         skipSalonSetup,
+        syncProfessionalProfile,
         signOut,
       }}
     >

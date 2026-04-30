@@ -15,5 +15,6 @@ public sealed class User : Entity
     public MessageTemplate? MessageTemplate { get; set; }
     public NotificationSettings? NotificationSettings { get; set; }
     public ICollection<ScheduledMessage> ScheduledMessages { get; set; } = new List<ScheduledMessage>();
+    public ICollection<Service> Services { get; set; } = new List<Service>();
     public ICollection<UserSalon> UserSalons { get; set; } = new List<UserSalon>();
 }
