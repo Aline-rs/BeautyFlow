@@ -1,16 +1,24 @@
 import { PropsWithChildren, createContext, useContext, useEffect, useState } from 'react';
 import { setAuthToken, setSelectedSalonId } from '../../lib/api/client';
 import { createSalon } from '../salons';
-import { clearToken, getToken, saveToken } from '../../lib/storage/tokenStorage';
+import {
+  clearToken,
+  getSalonSetupSkipped,
+  getToken,
+  saveSalonSetupSkipped,
+  saveToken,
+} from '../../lib/storage/tokenStorage';
 import { login, register } from './authService';
 import { AuthSession, LoginPayload, RegisterPayload } from './types';
 
 type AuthContextValue = {
   session: AuthSession | null;
   isHydrating: boolean;
+  hasSkippedSalonSetup: boolean;
   signIn: (payload: LoginPayload) => Promise<void>;
   signUp: (payload: RegisterPayload) => Promise<void>;
   createSalonLink: (payload: { name: string; phone?: string; email: string }) => Promise<void>;
+  skipSalonSetup: () => Promise<void>;
   signOut: () => Promise<void>;
 };
 
@@ -38,10 +46,16 @@ function applySession(session: AuthSession | null) {
 export function AuthProvider({ children }: PropsWithChildren) {
   const [session, setSession] = useState<AuthSession | null>(null);
   const [isHydrating, setIsHydrating] = useState(true);
+  const [hasSkippedSalonSetup, setHasSkippedSalonSetup] = useState(false);
 
   useEffect(() => {
     async function hydrate() {
-      const storedToken = await getToken();
+      const [storedToken, skippedSalonSetup] = await Promise.all([
+        getToken(),
+        getSalonSetupSkipped(),
+      ]);
+
+      setHasSkippedSalonSetup(skippedSalonSetup);
 
       if (storedToken) {
         const restoredSession = createSessionFromToken(storedToken);
@@ -58,14 +72,18 @@ export function AuthProvider({ children }: PropsWithChildren) {
   async function signIn(payload: LoginPayload) {
     const nextSession = await login(payload);
     await saveToken(nextSession.token);
+    await saveSalonSetupSkipped(false);
     applySession(nextSession);
+    setHasSkippedSalonSetup(false);
     setSession(nextSession);
   }
 
   async function signUp(payload: RegisterPayload) {
     const nextSession = await register(payload);
     await saveToken(nextSession.token);
+    await saveSalonSetupSkipped(false);
     applySession(nextSession);
+    setHasSkippedSalonSetup(false);
     setSession(nextSession);
   }
 
@@ -90,13 +108,21 @@ export function AuthProvider({ children }: PropsWithChildren) {
       selectedSalonId: linkedSalon.id,
     };
 
+    await saveSalonSetupSkipped(false);
     applySession(nextSession);
+    setHasSkippedSalonSetup(false);
     setSession(nextSession);
   }
 
+  async function skipSalonSetup() {
+    await saveSalonSetupSkipped(true);
+    setHasSkippedSalonSetup(true);
+  }
+
   async function signOut() {
-    await clearToken();
+    await Promise.all([clearToken(), saveSalonSetupSkipped(false)]);
     applySession(null);
+    setHasSkippedSalonSetup(false);
     setSession(null);
   }
 
@@ -105,9 +131,11 @@ export function AuthProvider({ children }: PropsWithChildren) {
       value={{
         session,
         isHydrating,
+        hasSkippedSalonSetup,
         signIn,
         signUp,
         createSalonLink,
+        skipSalonSetup,
         signOut,
       }}
     >

@@ -19,7 +19,7 @@ const salonSetupSchema = z.object({
 type SalonSetupValues = z.infer<typeof salonSetupSchema>;
 
 export function SalonSetupScreen() {
-  const { session, createSalonLink, signOut } = useAuth();
+  const { session, createSalonLink, signOut, skipSalonSetup } = useAuth();
   const {
     control,
     handleSubmit,
@@ -109,6 +109,12 @@ export function SalonSetupScreen() {
           {errors.root?.message ? <Text style={styles.formError}>{errors.root.message}</Text> : null}
 
           <AppButton label="Salvar e continuar" onPress={handleSubmit(onSubmit)} loading={isSubmitting} />
+          <AppButton
+            label="Continuar sem salao"
+            variant="secondary"
+            onPress={() => void skipSalonSetup()}
+            disabled={isSubmitting}
+          />
           <AppButton label="Sair da conta" variant="ghost" onPress={() => void signOut()} disabled={isSubmitting} />
         </AppCard>
       </View>
