@@ -22,10 +22,15 @@ public sealed class AppointmentService : IAppointmentService
 
     public async Task<AppointmentRegistrationResult> RegisterAppointmentAsync(
         Guid userId,
-        Guid salonId,
+        Guid? salonId,
         CreateAppointmentInput input,
         CancellationToken cancellationToken = default)
     {
+        var user = await _dbContext.Users
+            .AsNoTracking()
+            .FirstOrDefaultAsync(x => x.Id == userId, cancellationToken)
+            ?? throw new InvalidOperationException("User was not found.");
+
         var customer = await _dbContext.Customers
             .AsNoTracking()
             .FirstOrDefaultAsync(
@@ -48,14 +53,18 @@ public sealed class AppointmentService : IAppointmentService
             throw new InvalidOperationException("Service was not found.");
         }
 
-        var salon = await _dbContext.Salons
-            .AsNoTracking()
-            .FirstOrDefaultAsync(x => x.Id == salonId, cancellationToken)
-            ?? throw new InvalidOperationException("Salon was not found.");
+        Salon? salon = null;
+        if (salonId is not null)
+        {
+            salon = await _dbContext.Salons
+                .AsNoTracking()
+                .FirstOrDefaultAsync(x => x.Id == salonId.Value, cancellationToken)
+                ?? throw new InvalidOperationException("Salon was not found.");
+        }
 
         var scheduledForDate = input.AppointmentDate.AddDays(service.SuggestedReturnDays);
         var messageText = _messageTemplateRenderer.RenderFollowUpMessage(
-            salon.Name,
+            salon?.Name ?? user.Name,
             customer.Name,
             service.Name,
             service.SuggestedReturnDays,

@@ -129,7 +129,6 @@ public sealed class BeautyFlowDbContext : DbContext
             entity.Property(x => x.Notes).HasMaxLength(2000);
             entity.Property(x => x.CreatedAtUtc).IsRequired();
             entity.Property(x => x.UserId).IsRequired();
-            entity.Property(x => x.SalonId).IsRequired();
             entity.Property(x => x.CustomerId).IsRequired();
             entity.Property(x => x.ServiceId).IsRequired();
             entity.HasIndex(x => new { x.UserId, x.AppointmentDate });
@@ -145,7 +144,7 @@ public sealed class BeautyFlowDbContext : DbContext
                 .HasOne(x => x.Salon)
                 .WithMany(x => x.Appointments)
                 .HasForeignKey(x => x.SalonId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.SetNull);
 
             entity
                 .HasOne(x => x.Customer)
@@ -182,7 +181,6 @@ public sealed class BeautyFlowDbContext : DbContext
             entity.Property(x => x.CanceledAtUtc);
             entity.Property(x => x.ErrorMessage).HasMaxLength(500);
             entity.Property(x => x.UserId).IsRequired();
-            entity.Property(x => x.SalonId).IsRequired();
             entity.Property(x => x.CustomerId).IsRequired();
             entity.Property(x => x.ServiceId).IsRequired();
             entity.Property(x => x.AppointmentId).IsRequired();
@@ -199,7 +197,7 @@ public sealed class BeautyFlowDbContext : DbContext
                 .HasOne(x => x.Salon)
                 .WithMany(x => x.ScheduledMessages)
                 .HasForeignKey(x => x.SalonId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.SetNull);
 
             entity
                 .HasOne(x => x.Customer)
