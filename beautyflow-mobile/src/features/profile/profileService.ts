@@ -2,13 +2,11 @@ import { AxiosError } from 'axios';
 import { api } from '../../lib/api/client';
 import { ProfessionalProfile } from './types';
 
-const defaultProfile: ProfessionalProfile = {
+let mockProfile: ProfessionalProfile = {
   name: 'BeautyFlow',
   email: 'sessao@beautyflow.app',
   profilePhotoUrl: undefined,
 };
-
-let mockProfile = defaultProfile;
 
 function shouldFallback(error: unknown) {
   if (!__DEV__) {
@@ -21,13 +19,19 @@ function shouldFallback(error: unknown) {
   return !status || status === 404 || status >= 500;
 }
 
-export async function fetchProfessionalProfile(): Promise<ProfessionalProfile> {
+export async function fetchProfessionalProfile(
+  fallbackProfile?: ProfessionalProfile,
+): Promise<ProfessionalProfile> {
   try {
     const response = await api.get<ProfessionalProfile>('/profile');
     return response.data;
   } catch (error) {
     if (!shouldFallback(error)) {
       throw error;
+    }
+
+    if (fallbackProfile) {
+      mockProfile = fallbackProfile;
     }
 
     return mockProfile;
