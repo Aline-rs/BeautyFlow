@@ -8,7 +8,7 @@ import {
   saveSalonSetupSkipped,
   saveToken,
 } from '../../lib/storage/tokenStorage';
-import { login, register } from './authService';
+import { fetchCurrentSession, login, register } from './authService';
 import { AuthSession, LoginPayload, RegisterPayload } from './types';
 
 type AuthContextValue = {
@@ -24,20 +24,6 @@ type AuthContextValue = {
 };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
-
-function createSessionFromToken(token: string): AuthSession {
-  return {
-    token,
-    user: {
-      id: 'persisted-user-id',
-      name: 'BeautyFlow',
-      email: 'sessao@beautyflow.app',
-      profilePhotoUrl: null,
-    },
-    salons: [],
-    selectedSalonId: null,
-  };
-}
 
 function applySession(session: AuthSession | null) {
   setAuthToken(session?.token ?? null);
@@ -59,9 +45,30 @@ export function AuthProvider({ children }: PropsWithChildren) {
       setHasSkippedSalonSetup(skippedSalonSetup);
 
       if (storedToken) {
-        const restoredSession = createSessionFromToken(storedToken);
-        setSession(restoredSession);
-        applySession(restoredSession);
+        setAuthToken(storedToken);
+        setSelectedSalonId(null);
+
+        try {
+          const restoredSession = await fetchCurrentSession(storedToken);
+
+          if (restoredSession) {
+            setSession(restoredSession);
+            applySession(restoredSession);
+
+            if (restoredSession.salons.length > 0 && skippedSalonSetup) {
+              await saveSalonSetupSkipped(false);
+              setHasSkippedSalonSetup(false);
+            }
+          } else {
+            await clearToken();
+            applySession(null);
+            setSession(null);
+          }
+        } catch {
+          await clearToken();
+          applySession(null);
+          setSession(null);
+        }
       }
 
       setIsHydrating(false);
