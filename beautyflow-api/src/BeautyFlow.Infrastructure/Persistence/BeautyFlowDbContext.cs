@@ -86,7 +86,6 @@ public sealed class BeautyFlowDbContext : DbContext
             entity.Property(x => x.CreatedAtUtc).IsRequired();
             entity.Property(x => x.UpdatedAtUtc);
             entity.Property(x => x.UserId).IsRequired();
-            entity.Property(x => x.SalonId).IsRequired();
             entity.HasIndex(x => new { x.UserId, x.Name });
             entity.HasIndex(x => new { x.SalonId, x.Name });
 
@@ -95,6 +94,12 @@ public sealed class BeautyFlowDbContext : DbContext
                 .WithMany(x => x.Customers)
                 .HasForeignKey(x => x.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            entity
+                .HasOne(x => x.Salon)
+                .WithMany(x => x.Customers)
+                .HasForeignKey(x => x.SalonId)
+                .OnDelete(DeleteBehavior.SetNull);
         });
 
         modelBuilder.Entity<Service>(entity =>

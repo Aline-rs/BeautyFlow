@@ -10,6 +10,7 @@ public sealed class Salon : Entity
     public DateTime CreatedAtUtc { get; set; } = DateTime.UtcNow;
 
     public ICollection<Appointment> Appointments { get; set; } = new List<Appointment>();
+    public ICollection<Customer> Customers { get; set; } = new List<Customer>();
     public ICollection<ScheduledMessage> ScheduledMessages { get; set; } = new List<ScheduledMessage>();
     public ICollection<UserSalon> UserSalons { get; set; } = new List<UserSalon>();
 }

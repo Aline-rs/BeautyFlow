@@ -98,7 +98,7 @@ public sealed class CustomersController : ControllerBase
     {
         var userId = GetUserId();
         var salonId = GetSalonId();
-        if (userId is null || salonId is null)
+        if (userId is null)
         {
             return Unauthorized(ApiResponse<object>.Failure("User is not authenticated."));
         }
@@ -108,16 +108,22 @@ public sealed class CustomersController : ControllerBase
             return errorResult!;
         }
 
-        var hasSalonLink = await _dbContext.UserSalons.AnyAsync(x => x.UserId == userId.Value && x.SalonId == salonId.Value);
-        if (!hasSalonLink)
+        Guid? authorizedSalonId = null;
+        if (salonId is not null)
         {
-            return Forbid();
+            var hasSalonLink = await _dbContext.UserSalons.AnyAsync(x => x.UserId == userId.Value && x.SalonId == salonId.Value);
+            if (!hasSalonLink)
+            {
+                return Forbid();
+            }
+
+            authorizedSalonId = salonId.Value;
         }
 
         var customer = new Customer
         {
             UserId = userId.Value,
-            SalonId = salonId.Value,
+            SalonId = authorizedSalonId,
             Name = normalizedName,
             Whatsapp = normalizedWhatsapp,
             BirthDate = birthDate,
