@@ -2,7 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useFocusEffect } from '@react-navigation/native';
 import * as ImagePicker from 'expo-image-picker';
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { AppButton } from '../components/AppButton';
@@ -29,6 +29,14 @@ export function ProfessionalProfileScreen({ navigation }: Props) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [photoPreviewUri, setPhotoPreviewUri] = useState<string | undefined>();
+  const sessionProfile = useMemo(
+    () => ({
+      name: session?.user.name ?? '',
+      email: session?.user.email ?? '',
+      profilePhotoUrl: session?.user.profilePhotoUrl ?? undefined,
+    }),
+    [session?.user.email, session?.user.name, session?.user.profilePhotoUrl],
+  );
   const {
     control,
     handleSubmit,
@@ -37,8 +45,8 @@ export function ProfessionalProfileScreen({ navigation }: Props) {
   } = useForm<ProfessionalProfileFormValues>({
     resolver: zodResolver(professionalProfileSchema),
     defaultValues: {
-      name: '',
-      email: '',
+      name: sessionProfile.name,
+      email: sessionProfile.email,
     },
   });
 
@@ -46,8 +54,14 @@ export function ProfessionalProfileScreen({ navigation }: Props) {
     useCallback(() => {
       async function hydrate() {
         setIsLoading(true);
+        setPhotoPreviewUri(sessionProfile.profilePhotoUrl);
+        reset({
+          name: sessionProfile.name,
+          email: sessionProfile.email,
+        });
+
         try {
-          const profile = await fetchProfessionalProfile();
+          const profile = await fetchProfessionalProfile(sessionProfile);
           setPhotoPreviewUri(profile.profilePhotoUrl ?? undefined);
           reset({
             name: profile.name,
@@ -60,7 +74,7 @@ export function ProfessionalProfileScreen({ navigation }: Props) {
       }
 
       void hydrate();
-    }, [reset, syncProfessionalProfile]),
+    }, [reset, sessionProfile, syncProfessionalProfile]),
   );
 
   async function handlePickProfilePhoto() {
@@ -166,7 +180,9 @@ export function ProfessionalProfileScreen({ navigation }: Props) {
           )}
         />
 
-        {isLoading ? <Text style={styles.loadingText}>Carregando perfil...</Text> : null}
+        <View style={styles.statusRow}>
+          <Text style={styles.loadingText}>{isLoading ? 'Carregando perfil...' : ' '}</Text>
+        </View>
 
         <AppButton
           label="Salvar alteracoes"
@@ -212,7 +228,13 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   loadingText: {
-    marginBottom: 12,
     color: colors.textSecondary,
+    fontFamily: typography.fontFamily.body,
+    fontSize: 12,
+  },
+  statusRow: {
+    minHeight: 20,
+    marginBottom: 12,
+    justifyContent: 'center',
   },
 });
