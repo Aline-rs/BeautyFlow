@@ -4,6 +4,7 @@ export type Appointment = {
   customerName: string;
   serviceId: string;
   serviceName: string;
+  contextLabel: string;
   appointmentDate: string;
   notes?: string;
   scheduledMessageId: string;
@@ -27,6 +28,7 @@ export type ScheduledMessage = {
   customerWhatsapp: string;
   serviceId: string;
   serviceName: string;
+  contextLabel: string;
   scheduledForDate: string;
   messageText: string;
   status: 'Pendente' | 'Enviada' | 'Cancelada' | 'Erro';

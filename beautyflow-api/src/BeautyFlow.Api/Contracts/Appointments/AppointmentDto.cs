@@ -7,6 +7,7 @@ public sealed class AppointmentDto
     public string CustomerName { get; init; } = string.Empty;
     public string ServiceId { get; init; } = string.Empty;
     public string ServiceName { get; init; } = string.Empty;
+    public string ContextLabel { get; init; } = string.Empty;
     public string AppointmentDate { get; init; } = string.Empty;
     public string? Notes { get; init; }
     public string ScheduledMessageId { get; init; } = string.Empty;

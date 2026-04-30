@@ -126,6 +126,7 @@ function MessageCard({
             <Text style={styles.messageSubtitle}>
               {message.serviceName} - Enviar em: {formatLongDate(message.scheduledForDate)}
             </Text>
+            <Text style={styles.messageContext}>{message.contextLabel}</Text>
           </View>
         </View>
 
@@ -245,6 +246,18 @@ const styles = StyleSheet.create({
     fontFamily: typography.fontFamily.body,
     fontSize: 10,
     color: colors.textSecondary,
+  },
+  messageContext: {
+    marginTop: 4,
+    alignSelf: 'flex-start',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 999,
+    overflow: 'hidden',
+    backgroundColor: colors.roseLight,
+    color: colors.roseDark,
+    fontFamily: typography.fontFamily.bodyBold,
+    fontSize: 10,
   },
   divider: {
     height: 1,

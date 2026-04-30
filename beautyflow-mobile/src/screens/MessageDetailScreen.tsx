@@ -121,6 +121,7 @@ export function MessageDetailScreen({ navigation, route }: Props) {
             <View>
               <Text style={styles.metaLabel}>Servico</Text>
               <Text style={styles.summaryValue}>{message.serviceName}</Text>
+              <Text style={styles.contextValue}>{message.contextLabel}</Text>
             </View>
             <View style={styles.summaryRight}>
               <Text style={styles.metaLabel}>Enviar em</Text>
@@ -228,6 +229,12 @@ const styles = StyleSheet.create({
     fontFamily: typography.fontFamily.bodyBold,
     fontSize: 13,
     color: colors.textMain,
+  },
+  contextValue: {
+    marginTop: 6,
+    color: colors.roseDark,
+    fontFamily: typography.fontFamily.bodyBold,
+    fontSize: 11,
   },
   highlightValue: {
     marginTop: 2,

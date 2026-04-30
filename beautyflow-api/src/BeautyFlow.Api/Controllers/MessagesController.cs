@@ -166,6 +166,7 @@ public sealed class MessagesController : ControllerBase
     {
         return _dbContext.ScheduledMessages
             .Include(x => x.Customer)
+            .Include(x => x.Salon)
             .Include(x => x.Service)
             .Where(x => x.UserId == userId);
     }
@@ -198,6 +199,7 @@ public sealed class MessagesController : ControllerBase
             CustomerWhatsapp = message.Customer.Whatsapp,
             ServiceId = message.ServiceId.ToString(),
             ServiceName = message.Service.Name,
+            ContextLabel = message.Salon?.Name ?? "Conta profissional",
             ScheduledForDate = message.ScheduledForDate.ToString("yyyy-MM-dd"),
             MessageText = message.MessageText,
             Status = CustomersController.MapMessageStatusLabel(message.Status),
