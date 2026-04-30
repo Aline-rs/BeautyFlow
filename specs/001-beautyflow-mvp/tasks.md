@@ -163,22 +163,22 @@
 
 ## Phase 9 - Professional-Centric Data Model
 
-- [~] T099 Redefine the product scope from salon-owned customers to professional-owned customers in specs and docs.
-- [~] T100 Refactor backend domain so `User` becomes a global professional entity instead of a `SalonOwnedEntity`.
-- [~] T101 Create `UserSalon` entity and persistence mapping for professional-to-salon links.
-- [~] T102 Refactor auth flow so register creates a professional account first and salon linking becomes a separate flow.
-- [~] T103 Refactor JWT and current-user context to use `UserId` as the primary identity claim.
-- [~] T104 Add backend support to create, list and select salons linked to the professional.
-- [~] T105 Refactor `Customer` ownership from `SalonId` to `UserId`.
-- [~] T106 Refactor customer queries and authorization to use professional ownership.
-- [~] T107 Keep `Service` as a salon-owned entity and require salon context for service operations.
-- [~] T108 Refactor `Appointment` to reference professional, salon, customer and service together.
-- [~] T109 Refactor `ScheduledMessage` to derive from the appointment while preserving professional ownership and salon context.
-- [~] T110 Update settings ownership rules so professional settings and salon settings are clearly separated.
-- [~] T111 Update mobile auth/session flow to support multi-salon professionals.
-- [ ] T112 Add mobile UX for linking, listing and selecting salons when a context is required.
-- [ ] T113 Update customer screens and filters to present a professional-wide customer portfolio.
-- [ ] T114 Add migration strategy from the current salon-centric schema to the professional-centric schema.
+- [x] T099 Redefine the product scope from salon-owned customers to professional-owned customers in specs and docs.
+- [x] T100 Refactor backend domain so `User` becomes a global professional entity instead of a `SalonOwnedEntity`.
+- [x] T101 Create `UserSalon` entity and persistence mapping for professional-to-salon links.
+- [x] T102 Refactor auth flow so register creates a professional account first and salon linking becomes a separate flow.
+- [x] T103 Refactor JWT and current-user context to use `UserId` as the primary identity claim.
+- [x] T104 Add backend support to create, list and select salons linked to the professional.
+- [x] T105 Refactor `Customer` ownership from `SalonId` to `UserId`.
+- [x] T106 Refactor customer queries and authorization to use professional ownership.
+- [x] T107 Refactor `Service` ownership to the professional and remove hard dependency on salon context for CRUD.
+- [x] T108 Refactor `Appointment` to reference professional, salon, customer and service together.
+- [x] T109 Refactor `ScheduledMessage` to derive from the appointment while preserving professional ownership and optional salon context.
+- [x] T110 Update settings ownership rules so professional settings and salon settings are clearly separated.
+- [x] T111 Update mobile auth/session flow to support multi-salon professionals.
+- [x] T112 Add mobile UX for linking, listing and selecting salons when a context is required.
+- [x] T113 Update customer screens and filters to present a professional-wide customer portfolio.
+- [x] T114 Add migration strategy from the current salon-centric schema to the professional-centric schema.
 - [ ] T115 Add regression tests covering professional ownership, `UserSalon` validation and cross-salon access rules.
 
 ## MVP Closeout Priority List

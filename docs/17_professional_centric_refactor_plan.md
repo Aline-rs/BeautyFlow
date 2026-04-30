@@ -6,332 +6,93 @@ Evolve BeautyFlow from a salon-centric MVP into a professional-centric product w
 
 - the professional owns the customer portfolio
 - the professional can work in multiple salons
-- the salon becomes an operational context, not the owner of customers
+- the salon becomes operational context instead of data owner
 
-## Product Truth After Refactor
+## Product truth after refactor
 
-- `User` represents the professional account.
-- `Customer` belongs to the professional.
-- `Salon` represents a workplace context.
-- `UserSalon` defines which salons a professional can operate in.
-- `Service` belongs to the salon.
-- `Appointment` belongs to the professional and records the salon where it happened.
-- `ScheduledMessage` derives from the appointment and preserves both professional ownership and salon context.
+- `User` is the professional account
+- `Customer` belongs to the professional
+- `Service` belongs to the professional
+- `Salon` is an optional workplace context
+- `UserSalon` validates where the professional can operate
+- `Appointment` belongs to the professional and may store salon context
+- `ScheduledMessage` derives from the appointment and may store salon context
+- `MessageTemplate` and `NotificationSettings` belong to the professional
 
-## Target Data Model
+## Current target model
 
 ### Core entities
 
 - `User`
-  - `Id`
-  - `Name`
-  - `Email`
-  - `PasswordHash`
-  - `ProfilePhotoUrl`
-  - timestamps
-
 - `Salon`
-  - `Id`
-  - `Name`
-  - `Phone`
-  - `Email`
-  - timestamps
-
 - `UserSalon`
-  - `Id`
-  - `UserId`
-  - `SalonId`
-  - `Role`
-  - `IsPrimary`
-  - timestamps
-
 - `Customer`
-  - `Id`
   - `UserId`
-  - `Name`
-  - `Whatsapp`
-  - `BirthDate`
-  - `ContactPreference`
-  - `PhotoUrl`
-  - `Notes`
-  - timestamps
-
+  - `SalonId?`
 - `Service`
-  - `Id`
-  - `SalonId`
-  - `Name`
-  - `SuggestedReturnDays`
-  - `IsActive`
-  - timestamps
-
+  - `UserId`
 - `Appointment`
-  - `Id`
   - `UserId`
-  - `SalonId`
-  - `CustomerId`
-  - `ServiceId`
-  - `AppointmentDate`
-  - `Notes`
-  - timestamps
-
+  - `SalonId?`
 - `ScheduledMessage`
-  - `Id`
   - `UserId`
-  - `SalonId`
-  - `AppointmentId`
-  - `CustomerId`
-  - `ServiceId`
-  - `ScheduledForDate`
-  - `MessageText`
-  - `Status`
-  - timestamps
+  - `SalonId?`
 
-### Settings ownership
+## Authorization rules
 
-Recommended MVP ownership:
+- identity is always `UserId`
+- customer operations authorize by professional ownership
+- service operations authorize by professional ownership
+- salon context, when present, must be validated through `UserSalon`
+- appointment and message flows may run without selected salon
 
-- `NotificationSettings` belongs to `User`
-- `MessageTemplate` belongs to `User`
+## Mobile session model
 
-Future option:
-
-- salon-level overrides when a workplace has custom wording rules
-
-## Authorization Model
-
-### Identity
-
-- JWT should use `UserId` as the primary identity claim.
-- `SalonId` should no longer be the permanent tenant claim.
-
-### Context rules
-
-- Customer operations:
-  - authorize by `UserId`
-- Salon-context operations:
-  - require selected `SalonId`
-  - validate `UserSalon`
-- Appointment creation:
-  - customer must belong to current user
-  - service must belong to selected salon
-  - selected salon must be linked to current user
-
-## API Refactor Plan
-
-### Auth
-
-Keep:
-
-- `POST /auth/register`
-- `POST /auth/login`
-- `GET /auth/me`
-
-Refactor behavior:
-
-- register creates only the professional account
-- login returns user session plus linked salons
-- `/auth/me` returns:
-  - user profile
-  - linked salons
-  - optional preferred salon
-
-### Professional profile
-
-Add or repurpose:
-
-- `GET /profile`
-- `PUT /profile`
-- `POST /profile/photo`
-
-### Salons
-
-Add:
-
-- `GET /salons`
-- `POST /salons`
-- `POST /salons/{id}/link` only if linking existing salon is needed
-- `GET /salon/profile`
-- `PUT /salon/profile`
-
-Context handling options:
-
-1. Header-based:
-   - `X-Salon-Id`
-2. Query-based for selected endpoints
-3. Request-body-based for commands such as appointment creation
-
-Recommended approach:
-
-- use `X-Salon-Id` for contextual reads
-- use explicit `salonId` in command payloads when it is part of the business event
-
-### Customers
-
-Refactor:
-
-- `GET /customers`
-- `GET /customers/{id}`
-- `POST /customers`
-- `PUT /customers/{id}`
-- `POST /customers/{id}/photo`
-
-New rule:
-
-- no customer endpoint should rely on salon ownership
-
-### Services
-
-Keep service ownership by salon.
-
-Refactor:
-
-- all service endpoints require salon context validation via `UserSalon`
-
-### Appointments
-
-Refactor create payload to include `salonId`.
-
-Validation order:
-
-1. validate user identity
-2. validate `UserSalon`
-3. validate customer ownership by user
-4. validate service ownership by salon
-5. create appointment and scheduled message
-
-### Messages
-
-Message queries can support:
-
-- consolidated professional view
-- optional salon filter
-
-Recommended MVP:
-
-- default to professional-wide list
-- allow salon filter when useful
-
-## Mobile Refactor Plan
-
-### Session model
-
-Auth session should store:
+Auth session stores:
 
 - token
 - professional profile
 - linked salons
-- selected salon id
+- selected salon id, which can also be `null`
 
-### UX changes
-
-Add:
-
-- salon linking flow
-- salon selector
-- professional profile separate from salon profile
-
-Refactor:
-
-- customer screens show full portfolio
-- appointment form requires salon selection before service selection
-- services screen depends on selected salon
-- salon profile screen edits current salon context
-
-### Navigation changes
-
-Recommended additions:
-
-- `SalonSelectorScreen` or salon switcher in top bar
-- `ProfessionalProfileScreen`
-- `LinkedSalonsScreen`
-
-## Database Migration Strategy
-
-### Phase A - additive migration
-
-- create `user_salons`
-- add `user_id` to `customers`
-- add `user_id` to `appointments`
-- add `user_id` to `scheduled_messages`
-- add `profile_photo_url` to `users`
-
-### Phase B - backfill
-
-Using current schema:
-
-- set `customers.user_id` from current owner user associated with `customers.salon_id`
-- set `appointments.user_id` from current salon-linked user
-- set `scheduled_messages.user_id` from appointment or salon-linked user
-- create `user_salons` rows from current `users.salon_id`
-
-### Phase C - behavioral cutover
-
-- move reads from `SalonId` ownership to `UserId` ownership where applicable
-- switch auth and current-user context
-
-### Phase D - cleanup
-
-- remove `users.salon_id`
-- review obsolete indexes
-- rename docs and tests to new ownership rules
-
-## Testing Strategy
-
-### Backend
-
-- auth tests for multi-salon user session
-- `UserSalon` validation tests
-- customer ownership tests
-- cross-user access denial tests
-- service access limited to linked salons
-- appointment creation validation matrix
-
-### Frontend
-
-- salon selection behavior
-- customer portfolio rendering
-- appointment flow with salon-dependent services
-- persisted session hydration with linked salons
-
-## Rollout Order
-
-1. Update documentation and tasks
-2. Introduce additive schema changes
-3. Refactor auth/session contracts
-4. Introduce `UserSalon` validation
-5. Refactor customer ownership
-6. Refactor appointment and message ownership
-7. Update mobile session and salon selector UX
-8. Remove legacy salon-centric assumptions
-
-## Risks
-
-- migration complexity for existing data
-- temporary overlap between old and new ownership rules
-- auth/session contract changes affecting mobile startup
-- hidden assumptions in filters, tests and mocks
-
-## Recommended Execution Slices
+## Implemented slices
 
 ### Slice 1 - foundation
 
 - `UserSalon`
-- JWT/user context refactor
-- docs and tests scaffolding
+- auth and JWT centered on `UserId`
+- register creates only the professional account
+- professional profile separated from salon profile
 
-### Slice 2 - customer ownership
+### Slice 2 - portfolio ownership
 
-- move customers to `UserId`
-- update customer API and mobile flows
+- customer ownership by professional
+- service ownership by professional
+- professional-wide customer portfolio with optional salon context labels
 
-### Slice 3 - salon-context operations
+### Slice 3 - contextual operations
 
-- salon list/select
-- service access by selected salon
-- appointment refactor
+- optional salon context for customers
+- optional salon context for appointments
+- optional salon context for scheduled messages
+- mobile salon context selector with persisted choice
 
-### Slice 4 - messages and settings
+### Slice 4 - contextual UX
 
-- professional-wide messages
-- user-owned templates/settings
-- final cleanup
+- messages show whether they came from `Conta profissional` or a selected salon
+- appointments history shows the same context
+- customers can be filtered by full portfolio or current salon context
+
+## Remaining work
+
+- automated regression tests for professional ownership and `UserSalon`
+- cleanup of old mock fallback paths
+- final spec/checklist sync across every closeout artifact
+
+## Notes about services
+
+The original plan assumed salon-owned services. The implemented product direction changed after product clarification:
+
+- the professional is the protagonist
+- services can exist without active salon context
+- salon remains metadata for organization, not a hard dependency for service CRUD
