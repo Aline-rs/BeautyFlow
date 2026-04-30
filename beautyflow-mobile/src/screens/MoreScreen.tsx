@@ -35,20 +35,19 @@ const salonMenuItems: {
 ];
 
 export function MoreScreen({ navigation }: Props) {
-  const { session, signOut } = useAuth();
-  const { loadSettings, salonProfile } = useSettings();
+  const { session, selectSalonContext, signOut } = useAuth();
+  const { loadSettings } = useSettings();
   const hasSalon = (session?.salons.length ?? 0) > 0;
-  const selectedSalon =
-    session?.salons.find((salon) => salon.id === session.selectedSalonId) ??
-    session?.salons.find((salon) => salon.isPrimary) ??
-    session?.salons[0];
+  const selectedSalon = session?.selectedSalonId
+    ? session.salons.find((salon) => salon.id === session.selectedSalonId)
+    : undefined;
 
   useFocusEffect(
     useCallback(() => {
-      if (hasSalon) {
+      if (selectedSalon) {
         void loadSettings();
       }
-    }, [hasSalon, loadSettings]),
+    }, [loadSettings, selectedSalon]),
   );
 
   return (
@@ -85,17 +84,49 @@ export function MoreScreen({ navigation }: Props) {
           <>
             <Text style={styles.sectionLabel}>Contexto de salao</Text>
             <AppCard style={styles.contextCard}>
-              <Text style={styles.contextTitle}>{selectedSalon?.name ?? salonProfile?.salonName ?? 'Seu salao atual'}</Text>
-              <Text style={styles.contextCopy}>
-                {selectedSalon?.email ?? salonProfile?.email ?? 'Use este contexto para servicos e atendimentos.'}
+              <Text style={styles.contextTitle}>
+                {selectedSalon?.name ?? 'Contexto profissional ativo'}
               </Text>
-              <View style={styles.contextActions}>
-                {salonMenuItems.map((item) => (
-                  <Pressable key={item.route} style={styles.contextAction} onPress={() => navigation.navigate(item.route)}>
-                    <Text style={styles.contextActionIcon}>{item.icon}</Text>
-                    <Text style={styles.contextActionLabel}>{item.label}</Text>
+              <Text style={styles.contextCopy}>
+                {selectedSalon?.email ??
+                  'Voce pode atuar sem salao ativo ou escolher abaixo em qual salao quer organizar seus atendimentos.'}
+              </Text>
+              <View style={styles.contextSwitcher}>
+                <Pressable
+                  style={[
+                    styles.contextOption,
+                    !selectedSalon ? styles.contextOptionActive : null,
+                  ]}
+                  onPress={() => void selectSalonContext(null)}
+                >
+                  <Text style={styles.contextOptionTitle}>Conta profissional</Text>
+                  <Text style={styles.contextOptionCopy}>Sem salao ativo</Text>
+                </Pressable>
+
+                {session?.salons.map((salon) => (
+                  <Pressable
+                    key={salon.id}
+                    style={[
+                      styles.contextOption,
+                      selectedSalon?.id === salon.id ? styles.contextOptionActive : null,
+                    ]}
+                    onPress={() => void selectSalonContext(salon.id)}
+                  >
+                    <Text style={styles.contextOptionTitle}>{salon.name}</Text>
+                    <Text style={styles.contextOptionCopy}>{salon.role}</Text>
                   </Pressable>
                 ))}
+              </View>
+
+              <View style={styles.contextActions}>
+                {selectedSalon
+                  ? salonMenuItems.map((item) => (
+                      <Pressable key={item.route} style={styles.contextAction} onPress={() => navigation.navigate(item.route)}>
+                        <Text style={styles.contextActionIcon}>{item.icon}</Text>
+                        <Text style={styles.contextActionLabel}>{item.label}</Text>
+                      </Pressable>
+                    ))
+                  : null}
               </View>
             </AppCard>
           </>
@@ -216,6 +247,33 @@ const styles = StyleSheet.create({
   },
   contextActions: {
     gap: 8,
+  },
+  contextSwitcher: {
+    gap: 8,
+    marginBottom: 8,
+  },
+  contextOption: {
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 14,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    backgroundColor: '#FFFFFF',
+  },
+  contextOptionActive: {
+    borderColor: colors.borderStrong,
+    backgroundColor: colors.roseLight,
+  },
+  contextOptionTitle: {
+    color: colors.textMain,
+    fontFamily: typography.fontFamily.bodyBold,
+    fontSize: 13,
+  },
+  contextOptionCopy: {
+    marginTop: 4,
+    color: colors.textSecondary,
+    fontFamily: typography.fontFamily.body,
+    fontSize: 11,
   },
   contextAction: {
     flexDirection: 'row',
