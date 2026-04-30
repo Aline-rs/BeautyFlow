@@ -38,8 +38,8 @@ public sealed class CustomersController : ControllerBase
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20)
     {
-        var salonId = GetSalonId();
-        if (salonId is null)
+        var userId = GetUserId();
+        if (userId is null)
         {
             return Unauthorized(ApiResponse<object>.Failure("User is not authenticated."));
         }
@@ -49,7 +49,7 @@ public sealed class CustomersController : ControllerBase
 
         var query = _dbContext.Customers
             .AsNoTracking()
-            .Where(x => x.SalonId == salonId.Value);
+            .Where(x => x.UserId == userId.Value);
 
         if (!string.IsNullOrWhiteSpace(search))
         {
@@ -73,15 +73,15 @@ public sealed class CustomersController : ControllerBase
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<CustomerDto>> GetCustomer(Guid id)
     {
-        var salonId = GetSalonId();
-        if (salonId is null)
+        var userId = GetUserId();
+        if (userId is null)
         {
             return Unauthorized(ApiResponse<object>.Failure("User is not authenticated."));
         }
 
         var customer = await _dbContext.Customers
             .AsNoTracking()
-            .FirstOrDefaultAsync(x => x.Id == id && x.SalonId == salonId.Value);
+            .FirstOrDefaultAsync(x => x.Id == id && x.UserId == userId.Value);
 
         if (customer is null)
         {
@@ -96,8 +96,9 @@ public sealed class CustomersController : ControllerBase
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<CustomerDto>> CreateCustomer([FromBody] CustomerUpsertRequest request)
     {
+        var userId = GetUserId();
         var salonId = GetSalonId();
-        if (salonId is null)
+        if (userId is null || salonId is null)
         {
             return Unauthorized(ApiResponse<object>.Failure("User is not authenticated."));
         }
@@ -107,8 +108,15 @@ public sealed class CustomersController : ControllerBase
             return errorResult!;
         }
 
+        var hasSalonLink = await _dbContext.UserSalons.AnyAsync(x => x.UserId == userId.Value && x.SalonId == salonId.Value);
+        if (!hasSalonLink)
+        {
+            return Forbid();
+        }
+
         var customer = new Customer
         {
+            UserId = userId.Value,
             SalonId = salonId.Value,
             Name = normalizedName,
             Whatsapp = normalizedWhatsapp,
@@ -130,8 +138,8 @@ public sealed class CustomersController : ControllerBase
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<CustomerDto>> UpdateCustomer(Guid id, [FromBody] CustomerUpsertRequest request)
     {
-        var salonId = GetSalonId();
-        if (salonId is null)
+        var userId = GetUserId();
+        if (userId is null)
         {
             return Unauthorized(ApiResponse<object>.Failure("User is not authenticated."));
         }
@@ -142,7 +150,7 @@ public sealed class CustomersController : ControllerBase
         }
 
         var customer = await _dbContext.Customers
-            .FirstOrDefaultAsync(x => x.Id == id && x.SalonId == salonId.Value);
+            .FirstOrDefaultAsync(x => x.Id == id && x.UserId == userId.Value);
 
         if (customer is null)
         {
@@ -171,14 +179,14 @@ public sealed class CustomersController : ControllerBase
     Guid id,
     IFormFile photo)
     {
-        var salonId = GetSalonId();
-        if (salonId is null)
+        var userId = GetUserId();
+        if (userId is null)
         {
             return Unauthorized(ApiResponse<object>.Failure("User is not authenticated."));
         }
 
         var customer = await _dbContext.Customers
-            .FirstOrDefaultAsync(x => x.Id == id && x.SalonId == salonId.Value);
+            .FirstOrDefaultAsync(x => x.Id == id && x.UserId == userId.Value);
 
         if (customer is null)
         {
@@ -332,10 +340,9 @@ public sealed class CustomersController : ControllerBase
         };
     }
 
-    private Guid? GetSalonId()
-    {
-        return _currentUserService.SalonId;
-    }
+    private Guid? GetSalonId() => _currentUserService.SelectedSalonId;
+
+    private Guid? GetUserId() => _currentUserService.UserId;
 
     private string? BuildAbsoluteUrl(string? relativeUrl)
     {

@@ -1,12 +1,14 @@
 import { AxiosError } from 'axios';
 import { api } from '../../lib/api/client';
-import { AuthSession, LoginPayload, RegisterPayload } from './types';
+import { AuthSession, LinkedSalon, LoginPayload, RegisterPayload } from './types';
 
 type AuthApiResponse = {
   succeeded?: boolean;
   data?: AuthSession;
   token?: string;
   user?: AuthSession['user'];
+  salons?: AuthSession['salons'];
+  selectedSalonId?: AuthSession['selectedSalonId'];
 };
 
 function createMockSession(
@@ -14,13 +16,25 @@ function createMockSession(
   email: string,
   salonName: string,
 ): AuthSession {
+  const defaultSalon: LinkedSalon = {
+    id: 'mock-salon-id',
+    name: salonName,
+    phone: null,
+    email,
+    role: 'Owner',
+    isPrimary: true,
+  };
+
   return {
     token: `mock-token-${Date.now()}`,
     user: {
+      id: 'mock-user-id',
       name,
       email,
-      salonName,
+      profilePhotoUrl: null,
     },
+    salons: [defaultSalon],
+    selectedSalonId: defaultSalon.id,
   };
 }
 
@@ -44,6 +58,8 @@ function normalizeAuthResponse(response: AuthApiResponse): AuthSession {
     return {
       token: response.token,
       user: response.user,
+      salons: response.salons ?? [],
+      selectedSalonId: response.selectedSalonId ?? response.salons?.find((salon) => salon.isPrimary)?.id ?? null,
     };
   }
 

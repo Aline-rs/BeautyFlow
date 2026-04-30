@@ -32,15 +32,15 @@ public sealed class SettingsController : ControllerBase
     [ProducesResponseType(typeof(MessageTemplateDto), StatusCodes.Status200OK)]
     public async Task<ActionResult<MessageTemplateDto>> GetMessageTemplate()
     {
-        var salonId = GetSalonId();
-        if (salonId is null)
+        var userId = GetUserId();
+        if (userId is null)
         {
             return Unauthorized(ApiResponse<object>.Failure("User is not authenticated."));
         }
 
         var template = await _dbContext.MessageTemplates
             .AsNoTracking()
-            .FirstOrDefaultAsync(x => x.SalonId == salonId.Value);
+            .FirstOrDefaultAsync(x => x.UserId == userId.Value);
 
         return Ok(new MessageTemplateDto
         {
@@ -53,8 +53,8 @@ public sealed class SettingsController : ControllerBase
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<MessageTemplateDto>> UpdateMessageTemplate([FromBody] UpdateMessageTemplateRequest request)
     {
-        var salonId = GetSalonId();
-        if (salonId is null)
+        var userId = GetUserId();
+        if (userId is null)
         {
             return Unauthorized(ApiResponse<object>.Failure("User is not authenticated."));
         }
@@ -65,13 +65,13 @@ public sealed class SettingsController : ControllerBase
         }
 
         var template = await _dbContext.MessageTemplates
-            .FirstOrDefaultAsync(x => x.SalonId == salonId.Value);
+            .FirstOrDefaultAsync(x => x.UserId == userId.Value);
 
         if (template is null)
         {
             template = new MessageTemplate
             {
-                SalonId = salonId.Value,
+                UserId = userId.Value,
                 TemplateText = request.TemplateText.Trim()
             };
 
@@ -95,15 +95,15 @@ public sealed class SettingsController : ControllerBase
     [ProducesResponseType(typeof(NotificationSettingsDto), StatusCodes.Status200OK)]
     public async Task<ActionResult<NotificationSettingsDto>> GetNotifications()
     {
-        var salonId = GetSalonId();
-        if (salonId is null)
+        var userId = GetUserId();
+        if (userId is null)
         {
             return Unauthorized(ApiResponse<object>.Failure("User is not authenticated."));
         }
 
         var settings = await _dbContext.NotificationSettings
             .AsNoTracking()
-            .FirstOrDefaultAsync(x => x.SalonId == salonId.Value);
+            .FirstOrDefaultAsync(x => x.UserId == userId.Value);
 
         return Ok(MapNotificationSettings(settings));
     }
@@ -113,8 +113,8 @@ public sealed class SettingsController : ControllerBase
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<NotificationSettingsDto>> UpdateNotifications([FromBody] UpdateNotificationSettingsRequest request)
     {
-        var salonId = GetSalonId();
-        if (salonId is null)
+        var userId = GetUserId();
+        if (userId is null)
         {
             return Unauthorized(ApiResponse<object>.Failure("User is not authenticated."));
         }
@@ -130,13 +130,13 @@ public sealed class SettingsController : ControllerBase
         }
 
         var settings = await _dbContext.NotificationSettings
-            .FirstOrDefaultAsync(x => x.SalonId == salonId.Value);
+            .FirstOrDefaultAsync(x => x.UserId == userId.Value);
 
         if (settings is null)
         {
             settings = new NotificationSettings
             {
-                SalonId = salonId.Value,
+                UserId = userId.Value,
                 IsEnabled = request.IsEnabled,
                 PreferredTime = preferredTime,
                 ReminderMode = request.ReminderMode.Trim()
@@ -157,10 +157,7 @@ public sealed class SettingsController : ControllerBase
         return Ok(MapNotificationSettings(settings));
     }
 
-    private Guid? GetSalonId()
-    {
-        return _currentUserService.SalonId;
-    }
+    private Guid? GetUserId() => _currentUserService.UserId;
 
     private static NotificationSettingsDto MapNotificationSettings(NotificationSettings? settings)
     {

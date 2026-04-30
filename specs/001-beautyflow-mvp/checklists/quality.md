@@ -23,8 +23,9 @@
 - [ ] Controllers do not contain complex business logic.
 - [ ] DTOs are used for request/response.
 - [ ] Password is hashed.
-- [ ] JWT contains SalonId.
-- [ ] Queries filter by SalonId.
+- [ ] JWT contains UserId as the primary identity claim.
+- [ ] Salon-context endpoints validate professional-to-salon linkage.
+- [ ] Professional-owned queries filter by UserId.
 - [ ] Appointment creation is transactional.
 - [ ] Message status transitions are controlled.
 - [ ] Upload validates file type and size.

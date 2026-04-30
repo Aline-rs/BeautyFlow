@@ -132,7 +132,7 @@ public sealed class SalonController : ControllerBase
 
     private async Task<(Domain.Entities.Salon salon, Domain.Entities.User owner)?> LoadProfileEntitiesAsync(bool asNoTracking = true)
     {
-        var salonId = _currentUserService.SalonId;
+        var salonId = _currentUserService.SelectedSalonId;
         var userId = _currentUserService.UserId;
 
         if (salonId is null || userId is null)
@@ -140,8 +140,17 @@ public sealed class SalonController : ControllerBase
             return null;
         }
 
+        var isLinked = await _dbContext.UserSalons
+            .AsNoTracking()
+            .AnyAsync(x => x.UserId == userId.Value && x.SalonId == salonId.Value);
+
+        if (!isLinked)
+        {
+            return null;
+        }
+
         var salons = _dbContext.Salons.Where(x => x.Id == salonId.Value);
-        var users = _dbContext.Users.Where(x => x.Id == userId.Value && x.SalonId == salonId.Value);
+        var users = _dbContext.Users.Where(x => x.Id == userId.Value);
 
         if (asNoTracking)
         {

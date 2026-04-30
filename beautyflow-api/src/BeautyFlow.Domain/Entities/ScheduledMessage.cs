@@ -5,6 +5,7 @@ namespace BeautyFlow.Domain.Entities;
 
 public sealed class ScheduledMessage : SalonOwnedEntity
 {
+    public Guid UserId { get; set; }
     public Guid AppointmentId { get; set; }
     public Guid CustomerId { get; set; }
     public Guid ServiceId { get; set; }
@@ -17,6 +18,7 @@ public sealed class ScheduledMessage : SalonOwnedEntity
     public DateTime? CanceledAtUtc { get; set; }
     public string? ErrorMessage { get; set; }
 
+    public User User { get; set; } = null!;
     public Salon Salon { get; set; } = null!;
     public Appointment Appointment { get; set; } = null!;
     public Customer Customer { get; set; } = null!;

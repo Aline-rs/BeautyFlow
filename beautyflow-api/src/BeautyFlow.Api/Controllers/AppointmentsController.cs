@@ -35,8 +35,9 @@ public sealed class AppointmentsController : ControllerBase
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<AppointmentDto>> CreateAppointment([FromBody] CreateAppointmentRequest request)
     {
-        var salonId = GetSalonId();
-        if (salonId is null)
+        var userId = GetUserId();
+        var salonId = await GetAuthorizedSalonIdAsync();
+        if (userId is null || salonId is null)
         {
             return Unauthorized(ApiResponse<object>.Failure("User is not authenticated."));
         }
@@ -51,6 +52,7 @@ public sealed class AppointmentsController : ControllerBase
         try
         {
             var result = await _appointmentService.RegisterAppointmentAsync(
+                userId.Value,
                 salonId.Value,
                 new CreateAppointmentInput
                 {
@@ -60,7 +62,7 @@ public sealed class AppointmentsController : ControllerBase
                     Notes = request.Notes
                 });
 
-            var createdAppointment = await LoadAppointmentAsync(result.AppointmentId, salonId.Value);
+            var createdAppointment = await LoadAppointmentAsync(result.AppointmentId, userId.Value);
             return CreatedAtAction(nameof(GetAppointments), new { id = result.AppointmentId }, MapAppointment(createdAppointment!));
         }
         catch (InvalidOperationException exception)
@@ -73,8 +75,8 @@ public sealed class AppointmentsController : ControllerBase
     [ProducesResponseType(typeof(IReadOnlyList<AppointmentDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<IReadOnlyList<AppointmentDto>>> GetAppointments([FromQuery] string? search)
     {
-        var salonId = GetSalonId();
-        if (salonId is null)
+        var userId = GetUserId();
+        if (userId is null)
         {
             return Unauthorized(ApiResponse<object>.Failure("User is not authenticated."));
         }
@@ -84,7 +86,7 @@ public sealed class AppointmentsController : ControllerBase
             .Include(x => x.Customer)
             .Include(x => x.Service)
             .Include(x => x.ScheduledMessage)
-            .Where(x => x.SalonId == salonId.Value);
+            .Where(x => x.UserId == userId.Value);
 
         if (!string.IsNullOrWhiteSpace(search))
         {
@@ -102,19 +104,30 @@ public sealed class AppointmentsController : ControllerBase
         return Ok(appointments.Select(MapAppointment).ToList());
     }
 
-    private Guid? GetSalonId()
+    private Guid? GetUserId() => _currentUserService.UserId;
+
+    private async Task<Guid?> GetAuthorizedSalonIdAsync()
     {
-        return _currentUserService.SalonId;
+        var userId = _currentUserService.UserId;
+        var salonId = _currentUserService.SelectedSalonId;
+
+        if (userId is null || salonId is null)
+        {
+            return null;
+        }
+
+        var isLinked = await _dbContext.UserSalons.AnyAsync(x => x.UserId == userId.Value && x.SalonId == salonId.Value);
+        return isLinked ? salonId : null;
     }
 
-    private async Task<Appointment?> LoadAppointmentAsync(Guid appointmentId, Guid salonId)
+    private async Task<Appointment?> LoadAppointmentAsync(Guid appointmentId, Guid userId)
     {
         return await _dbContext.Appointments
             .AsNoTracking()
             .Include(x => x.Customer)
             .Include(x => x.Service)
             .Include(x => x.ScheduledMessage)
-            .FirstOrDefaultAsync(x => x.Id == appointmentId && x.SalonId == salonId);
+            .FirstOrDefaultAsync(x => x.Id == appointmentId && x.UserId == userId);
     }
 
     private static AppointmentDto MapAppointment(Appointment appointment)
