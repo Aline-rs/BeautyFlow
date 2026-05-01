@@ -197,3 +197,53 @@ export async function uploadCustomerPhoto(customerId: string, photoUri: string):
     return updatedCustomer;
   }
 }
+
+type AppointmentCustomerSyncPayload = {
+  appointmentId: string;
+  customerId: string;
+  serviceName: string;
+  serviceNames: string[];
+  contextLabel: string;
+  appointmentDate: string;
+  nextContactDate?: string;
+  messageStatus: Customer['history'][number]['messageStatus'];
+};
+
+export function syncMockCustomerAfterAppointment(payload: AppointmentCustomerSyncPayload) {
+  mockDatabase = mockDatabase.map((customer) => {
+    if (customer.id !== payload.customerId) {
+      return customer;
+    }
+
+    const nextServiceName = payload.serviceNames.length > 0
+      ? payload.serviceNames.join(' + ')
+      : payload.serviceName;
+    const lastAppointmentLabel = `${nextServiceName} - ${formatShortDate(payload.appointmentDate)}`;
+
+    return {
+      ...customer,
+      contextLabel: payload.contextLabel || customer.contextLabel,
+      nextServiceName,
+      nextContactDate: payload.nextContactDate,
+      lastAppointmentLabel,
+      history: [
+        {
+          id: payload.appointmentId,
+          serviceName: nextServiceName,
+          contextLabel: payload.contextLabel || customer.contextLabel,
+          appointmentDate: payload.appointmentDate,
+          messageStatus: payload.messageStatus,
+          nextContactDate: payload.nextContactDate,
+        },
+        ...customer.history.filter((item) => item.id !== payload.appointmentId),
+      ],
+    };
+  });
+}
+
+function formatShortDate(date: string) {
+  return new Intl.DateTimeFormat('pt-BR', {
+    day: '2-digit',
+    month: '2-digit',
+  }).format(new Date(`${date}T12:00:00`));
+}
