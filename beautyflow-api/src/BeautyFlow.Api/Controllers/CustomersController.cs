@@ -99,7 +99,6 @@ public sealed class CustomersController : ControllerBase
     public async Task<ActionResult<CustomerDto>> CreateCustomer([FromBody] CustomerUpsertRequest request)
     {
         var userId = GetUserId();
-        var salonId = GetSalonId();
         if (userId is null)
         {
             return Unauthorized(ApiResponse<object>.Failure("User is not authenticated."));
@@ -110,22 +109,21 @@ public sealed class CustomersController : ControllerBase
             return errorResult!;
         }
 
-        Guid? authorizedSalonId = null;
-        if (salonId is not null)
+        var authorizedSalonId = await ResolveAuthorizedSalonIdAsync(userId.Value, request.SalonId);
+        if (authorizedSalonId.IsForbidden)
         {
-            var hasSalonLink = await _dbContext.UserSalons.AnyAsync(x => x.UserId == userId.Value && x.SalonId == salonId.Value);
-            if (!hasSalonLink)
-            {
-                return Forbid();
-            }
+            return Forbid();
+        }
 
-            authorizedSalonId = salonId.Value;
+        if (authorizedSalonId.ErrorMessage is not null)
+        {
+            return BadRequest(ApiResponse<object>.Failure(authorizedSalonId.ErrorMessage));
         }
 
         var customer = new Customer
         {
             UserId = userId.Value,
-            SalonId = authorizedSalonId,
+            SalonId = authorizedSalonId.SalonId,
             Name = normalizedName,
             Whatsapp = normalizedWhatsapp,
             BirthDate = birthDate,
@@ -165,8 +163,20 @@ public sealed class CustomersController : ControllerBase
             return NotFound(ApiResponse<object>.Failure("Customer was not found."));
         }
 
+        var authorizedSalonId = await ResolveAuthorizedSalonIdAsync(userId.Value, request.SalonId);
+        if (authorizedSalonId.IsForbidden)
+        {
+            return Forbid();
+        }
+
+        if (authorizedSalonId.ErrorMessage is not null)
+        {
+            return BadRequest(ApiResponse<object>.Failure(authorizedSalonId.ErrorMessage));
+        }
+
         customer.Name = normalizedName;
         customer.Whatsapp = normalizedWhatsapp;
+        customer.SalonId = authorizedSalonId.SalonId;
         customer.BirthDate = birthDate;
         customer.ContactPreference = NormalizeContactPreference(request.ContactPreference);
         customer.Notes = NormalizeOptionalText(request.Notes);
@@ -353,9 +363,25 @@ public sealed class CustomersController : ControllerBase
         };
     }
 
-    private Guid? GetSalonId() => _currentUserService.SelectedSalonId;
-
     private Guid? GetUserId() => _currentUserService.UserId;
+
+    private async Task<AuthorizedSalonResult> ResolveAuthorizedSalonIdAsync(Guid userId, string? rawSalonId)
+    {
+        if (string.IsNullOrWhiteSpace(rawSalonId))
+        {
+            return AuthorizedSalonResult.None();
+        }
+
+        if (!Guid.TryParse(rawSalonId, out var salonId))
+        {
+            return AuthorizedSalonResult.Invalid("SalonId must be a valid guid.");
+        }
+
+        var hasSalonLink = await _dbContext.UserSalons.AnyAsync(x => x.UserId == userId && x.SalonId == salonId);
+        return hasSalonLink
+            ? AuthorizedSalonResult.Success(salonId)
+            : AuthorizedSalonResult.Forbidden();
+    }
 
     private string? BuildAbsoluteUrl(string? relativeUrl)
     {
@@ -395,5 +421,13 @@ public sealed class CustomersController : ControllerBase
     private static string? NormalizeOptionalText(string? value)
     {
         return string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+    }
+
+    private sealed record AuthorizedSalonResult(Guid? SalonId, bool IsForbidden, string? ErrorMessage)
+    {
+        public static AuthorizedSalonResult None() => new(null, false, null);
+        public static AuthorizedSalonResult Success(Guid salonId) => new(salonId, false, null);
+        public static AuthorizedSalonResult Forbidden() => new(null, true, null);
+        public static AuthorizedSalonResult Invalid(string errorMessage) => new(null, false, errorMessage);
     }
 }

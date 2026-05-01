@@ -3,17 +3,19 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import * as ImagePicker from 'expo-image-picker';
 import { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { Alert, ScrollView, StyleSheet, Text } from 'react-native';
+import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { AppButton } from '../components/AppButton';
+import { AppCard } from '../components/AppCard';
 import { AppInput } from '../components/AppInput';
 import { AppSelect } from '../components/AppSelect';
 import { AppTextarea } from '../components/AppTextarea';
 import { PhotoPicker } from '../components/PhotoPicker';
 import { Screen } from '../components/Screen';
 import { TopBar } from '../components/TopBar';
+import { useAuth } from '../features/auth';
 import { CustomerFormValues, customerSchema, useCustomers } from '../features/customers';
 import { CustomersStackParamList } from '../navigation/types';
-import { colors } from '../theme';
+import { colors, typography } from '../theme';
 
 const contactOptions: CustomerFormValues['contactPreference'][] = [
   'WhatsApp',
@@ -25,9 +27,11 @@ type Props = NativeStackScreenProps<CustomersStackParamList, 'CustomerForm'>;
 
 export function CustomerFormScreen({ navigation, route }: Props) {
   const customerId = route.params?.customerId;
+  const { session } = useAuth();
   const { getCustomerById, saveCustomer } = useCustomers();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(Boolean(customerId));
+  const [isSalonDropdownOpen, setIsSalonDropdownOpen] = useState(false);
   const {
     control,
     handleSubmit,
@@ -40,6 +44,7 @@ export function CustomerFormScreen({ navigation, route }: Props) {
     defaultValues: {
       name: '',
       whatsapp: '',
+      salonId: '',
       birthDate: '',
       contactPreference: 'WhatsApp',
       notes: '',
@@ -48,7 +53,14 @@ export function CustomerFormScreen({ navigation, route }: Props) {
   });
 
   const selectedPreference = watch('contactPreference');
+  const selectedSalonId = watch('salonId');
   const photoUrl = watch('photoUrl');
+  const salonOptions = [
+    { id: '', label: 'Nao informar agora' },
+    ...(session?.salons.map((salon) => ({ id: salon.id, label: salon.name })) ?? []),
+  ];
+  const selectedSalonLabel =
+    salonOptions.find((option) => option.id === selectedSalonId)?.label ?? 'Nao informar agora';
 
   useEffect(() => {
     async function loadCustomer() {
@@ -62,6 +74,7 @@ export function CustomerFormScreen({ navigation, route }: Props) {
         reset({
           name: customer.name,
           whatsapp: customer.whatsapp,
+          salonId: customer.contextSalonId ?? '',
           birthDate: customer.birthDate ?? '',
           contactPreference: customer.contactPreference,
           notes: customer.notes ?? '',
@@ -103,6 +116,7 @@ export function CustomerFormScreen({ navigation, route }: Props) {
         {
           name: values.name,
           whatsapp: values.whatsapp,
+          salonId: values.salonId || undefined,
           birthDate: values.birthDate || undefined,
           contactPreference: values.contactPreference,
           notes: values.notes || undefined,
@@ -165,6 +179,54 @@ export function CustomerFormScreen({ navigation, route }: Props) {
             />
           )}
         />
+
+        <Controller
+          control={control}
+          name="salonId"
+          render={() => (
+            <View>
+              <AppSelect
+                label="Salao da cliente"
+                value={selectedSalonLabel}
+                onPress={() => setIsSalonDropdownOpen((current) => !current)}
+              />
+
+              {isSalonDropdownOpen ? (
+                <AppCard style={styles.dropdownCard}>
+                  {salonOptions.map((option, index) => {
+                    const isSelected = option.id === selectedSalonId;
+
+                    return (
+                      <Pressable
+                        key={option.id || 'no-salon'}
+                        style={[
+                          styles.dropdownOption,
+                          index === salonOptions.length - 1 ? styles.dropdownOptionLast : null,
+                        ]}
+                        onPress={() => {
+                          setValue('salonId', option.id);
+                          setIsSalonDropdownOpen(false);
+                        }}
+                      >
+                        <View>
+                          <Text style={styles.dropdownOptionTitle}>{option.label}</Text>
+                          <Text style={styles.dropdownOptionCopy}>
+                            {option.id ? 'Cliente vinculada a este salao.' : 'Cliente sem salao informado.'}
+                          </Text>
+                        </View>
+                        {isSelected ? <Text style={styles.dropdownCheck}>OK</Text> : null}
+                      </Pressable>
+                    );
+                  })}
+                </AppCard>
+              ) : null}
+            </View>
+          )}
+        />
+
+        <Text style={styles.helperText}>
+          Opcional. Use esse campo apenas para indicar em qual salao essa cliente costuma ser atendida.
+        </Text>
 
         <Controller
           control={control}
@@ -232,5 +294,46 @@ const styles = StyleSheet.create({
   infoText: {
     marginBottom: 12,
     color: colors.textSecondary,
+  },
+  helperText: {
+    marginTop: -4,
+    marginBottom: 12,
+    color: colors.textSecondary,
+  },
+  dropdownCard: {
+    marginTop: -4,
+    marginBottom: 12,
+    paddingVertical: 4,
+    paddingHorizontal: 0,
+    overflow: 'hidden',
+  },
+  dropdownOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
+    paddingHorizontal: 13,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  dropdownOptionLast: {
+    borderBottomWidth: 0,
+  },
+  dropdownOptionTitle: {
+    color: colors.textMain,
+    fontFamily: typography.fontFamily.bodyBold,
+    fontSize: 13,
+  },
+  dropdownOptionCopy: {
+    marginTop: 2,
+    color: colors.textSecondary,
+    fontFamily: typography.fontFamily.body,
+    fontSize: 11,
+  },
+  dropdownCheck: {
+    color: colors.roseDark,
+    fontFamily: typography.fontFamily.bodyBold,
+    fontSize: 12,
   },
 });
