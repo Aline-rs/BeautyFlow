@@ -1,6 +1,6 @@
 import { AxiosError } from 'axios';
 import { api } from '../../lib/api/client';
-import { fetchCustomerById } from '../customers/customersService';
+import { fetchCustomerById, syncMockCustomerAfterAppointment } from '../customers/customersService';
 import { fetchServiceById } from '../services/servicesService';
 import { mockAppointments, prependMockAppointment, prependMockMessage } from './mockStore';
 import { Appointment, CreateAppointmentPayload, ScheduledMessage } from './types';
@@ -119,6 +119,16 @@ export async function createAppointment(payload: CreateAppointmentPayload): Prom
 
     prependMockAppointment(nextAppointment);
     prependMockMessage(nextMessage);
+    syncMockCustomerAfterAppointment({
+      appointmentId: nextAppointment.id,
+      customerId: payload.customerId,
+      serviceName: triggerService.name,
+      serviceNames,
+      contextLabel,
+      appointmentDate: payload.appointmentDate,
+      nextContactDate: scheduledForDate,
+      messageStatus: 'Pendente',
+    });
     return nextAppointment;
   }
 }
