@@ -46,6 +46,8 @@ export function CustomerDetailScreen({ navigation, route }: Props) {
   const currentCustomer = customer;
 
   function openAppointmentForm(appointmentId?: string) {
+    const mode = appointmentId ? 'edit' : 'create';
+
     navigation
       .getParent()
       ?.getParent()
@@ -54,6 +56,7 @@ export function CustomerDetailScreen({ navigation, route }: Props) {
         params: {
           screen: 'AppointmentForm',
           params: {
+            mode,
             customerId: currentCustomer.id,
             appointmentId,
           },

@@ -42,7 +42,8 @@ function todayIsoDate() {
 
 export function AppointmentFormScreen({ navigation, route }: Props) {
   const presetCustomerId = route.params?.customerId;
-  const editingAppointmentId = route.params?.appointmentId;
+  const formMode = route.params?.mode ?? 'create';
+  const editingAppointmentId = formMode === 'edit' ? route.params?.appointmentId : undefined;
   const isEditing = Boolean(editingAppointmentId);
   const { getAppointmentById, saveAppointment } = useAppointments();
   const [customers, setCustomers] = useState<Customer[]>([]);
@@ -102,16 +103,19 @@ export function AppointmentFormScreen({ navigation, route }: Props) {
             }
           }
 
-          if (!selectedCustomerId && nextCustomers.length > 0) {
-            setValue('customerId', presetCustomerId ?? nextCustomers[0].id);
-          }
+          reset({
+            customerId: presetCustomerId ?? nextCustomers[0]?.id ?? '',
+            serviceIds: [],
+            appointmentDate: todayIsoDate(),
+            notes: '',
+          });
         } finally {
           setIsLoadingOptions(false);
         }
       }
 
       void loadOptions();
-    }, [editingAppointmentId, getAppointmentById, presetCustomerId, reset, selectedCustomerId, setValue]),
+    }, [editingAppointmentId, getAppointmentById, presetCustomerId, reset]),
   );
 
   const selectedCustomer = useMemo(
