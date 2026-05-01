@@ -98,27 +98,21 @@ export function AppointmentsHistoryScreen({ navigation }: Props) {
             ))}
           </View>
 
-          <View style={styles.filtersRow}>
-            <Pressable
-              style={[styles.filterChip, selectedSalonId === 'all' ? styles.filterChipActive : null]}
-              onPress={() => setSelectedSalonId('all')}
-            >
-              <Text style={[styles.filterChipText, selectedSalonId === 'all' ? styles.filterChipTextActive : null]}>
-                Todos os saloes
-              </Text>
-            </Pressable>
-            {session?.salons.map((salon) => (
-              <Pressable
-                key={salon.id}
-                style={[styles.filterChip, selectedSalonId === salon.id ? styles.filterChipActive : null]}
-                onPress={() => setSelectedSalonId(salon.id)}
-              >
-                <Text style={[styles.filterChipText, selectedSalonId === salon.id ? styles.filterChipTextActive : null]}>
-                  {salon.name}
-                </Text>
-              </Pressable>
-            ))}
-          </View>
+          {session?.salons.length ? (
+            <View style={styles.filtersRow}>
+              {session.salons.map((salon) => (
+                <Pressable
+                  key={salon.id}
+                  style={[styles.filterChip, selectedSalonId === salon.id ? styles.filterChipActive : null]}
+                  onPress={() => setSelectedSalonId((current) => (current === salon.id ? 'all' : salon.id))}
+                >
+                  <Text style={[styles.filterChipText, selectedSalonId === salon.id ? styles.filterChipTextActive : null]}>
+                    {salon.name}
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
+          ) : null}
         </View>
 
         {isLoading ? (
