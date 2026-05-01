@@ -94,23 +94,31 @@ export function CustomerDetailScreen({ navigation, route }: Props) {
         </AppCard>
 
         <Text style={styles.sectionLabel}>Historico</Text>
-        {customer.history.map((item) => (
-          <ListCard
-            key={item.id}
-            title={item.serviceName}
-            subtitle={`${formatLongDate(item.appointmentDate)} - ${
-              item.nextContactDate
-                ? `mensagem para ${formatShortDate(item.nextContactDate)}`
-                : 'sem retorno agendado'
-            } - ${item.contextLabel}`}
-            right={
-              <AppChip
-                label={item.messageStatus}
-                variant={item.messageStatus === 'Enviada' ? 'sent' : 'pending'}
-              />
-            }
-          />
-        ))}
+        {customer.history.length === 0 ? (
+          <AppCard style={styles.sectionCard}>
+            <Text style={styles.metaParagraph}>
+              Esta cliente ainda nao tem atendimentos registrados.
+            </Text>
+          </AppCard>
+        ) : (
+          customer.history.map((item) => (
+            <ListCard
+              key={item.id}
+              title={item.serviceName}
+              subtitle={`${formatLongDate(item.appointmentDate)} - ${
+                item.nextContactDate
+                  ? `mensagem para ${formatShortDate(item.nextContactDate)}`
+                  : 'sem retorno agendado'
+              } - ${item.contextLabel}`}
+              right={
+                <AppChip
+                  label={item.messageStatus}
+                  variant={item.messageStatus === 'Enviada' ? 'sent' : 'pending'}
+                />
+              }
+            />
+          ))
+        )}
 
         <AppButton
           label="Registrar atendimento"
@@ -176,12 +184,12 @@ const styles = StyleSheet.create({
   },
   profileHeader: {
     alignItems: 'center',
-    marginBottom: 15,
+    marginBottom: 18,
   },
   customerName: {
-    marginTop: 8,
+    marginTop: 10,
     fontFamily: typography.fontFamily.title,
-    fontSize: 20,
+    fontSize: 22,
     color: colors.roseDark,
   },
   metaText: {
