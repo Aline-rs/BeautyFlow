@@ -30,6 +30,7 @@ export type CustomerFormPayload = {
   name: string;
   whatsapp: string;
   salonId?: string;
+  salonLabel?: string;
   birthDate?: string;
   contactPreference: ContactPreference;
   notes?: string;

@@ -27,13 +27,16 @@ function shouldFallback(error: unknown) {
 
 function buildCustomer(payload: CustomerFormPayload, existing?: Customer): Customer {
   const contextSalonId = payload.salonId ?? null;
+  const contextLabel = contextSalonId
+    ? payload.salonLabel?.trim() || existing?.contextLabel || 'Salao vinculado'
+    : 'Conta profissional';
 
   return {
     id: existing?.id ?? `customer-${Date.now()}`,
     name: payload.name.trim(),
     whatsapp: payload.whatsapp.trim(),
     contextSalonId,
-    contextLabel: contextSalonId ? existing?.contextLabel ?? 'Salao vinculado' : 'Conta profissional',
+    contextLabel,
     birthDate: payload.birthDate,
     contactPreference: payload.contactPreference,
     notes: payload.notes?.trim(),
@@ -85,7 +88,15 @@ export async function fetchCustomerById(customerId: string): Promise<Customer | 
 
 export async function createCustomer(payload: CustomerFormPayload): Promise<Customer> {
   try {
-    const response = await api.post<Customer>('/customers', payload);
+    const response = await api.post<Customer>('/customers', {
+      name: payload.name,
+      whatsapp: payload.whatsapp,
+      salonId: payload.salonId,
+      birthDate: payload.birthDate,
+      contactPreference: payload.contactPreference,
+      notes: payload.notes,
+      photoUrl: payload.photoUrl,
+    });
     return response.data;
   } catch (error) {
     if (!shouldFallback(error)) {
@@ -103,7 +114,15 @@ export async function updateCustomer(
   payload: CustomerFormPayload,
 ): Promise<Customer> {
   try {
-    const response = await api.put<Customer>(`/customers/${customerId}`, payload);
+    const response = await api.put<Customer>(`/customers/${customerId}`, {
+      name: payload.name,
+      whatsapp: payload.whatsapp,
+      salonId: payload.salonId,
+      birthDate: payload.birthDate,
+      contactPreference: payload.contactPreference,
+      notes: payload.notes,
+      photoUrl: payload.photoUrl,
+    });
     return response.data;
   } catch (error) {
     if (!shouldFallback(error)) {
