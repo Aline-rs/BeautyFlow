@@ -1,10 +1,9 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import * as ImagePicker from 'expo-image-picker';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { Alert, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { AppButton } from '../components/AppButton';
 import { AppCard } from '../components/AppCard';
 import { AppInput } from '../components/AppInput';
@@ -23,6 +22,21 @@ const contactOptions: CustomerFormValues['contactPreference'][] = [
   'Ligacao',
   'SMS',
 ];
+
+const monthOptions = [
+  { value: 1, label: 'Jan' },
+  { value: 2, label: 'Fev' },
+  { value: 3, label: 'Mar' },
+  { value: 4, label: 'Abr' },
+  { value: 5, label: 'Mai' },
+  { value: 6, label: 'Jun' },
+  { value: 7, label: 'Jul' },
+  { value: 8, label: 'Ago' },
+  { value: 9, label: 'Set' },
+  { value: 10, label: 'Out' },
+  { value: 11, label: 'Nov' },
+  { value: 12, label: 'Dez' },
+] as const;
 
 type Props = NativeStackScreenProps<CustomersStackParamList, 'CustomerForm'>;
 type OpenDropdown = 'salon' | 'contact' | 'birthDate' | null;
@@ -54,17 +68,15 @@ export function CustomerFormScreen({ navigation, route }: Props) {
     },
   });
 
-  const selectedPreference = watch('contactPreference');
-  const selectedSalonId = watch('salonId');
-  const birthDate = watch('birthDate');
   const photoUrl = watch('photoUrl');
   const salonOptions = [
     { id: '', label: 'Nao informar agora' },
     ...(session?.salons.map((salon) => ({ id: salon.id, label: salon.name })) ?? []),
   ];
-  const selectedSalonLabel =
-    salonOptions.find((option) => option.id === selectedSalonId)?.label ?? 'Nao informar agora';
-  const formattedBirthDate = birthDate ? formatBirthDate(birthDate) : '';
+  const yearOptions = useMemo(() => {
+    const currentYear = new Date().getFullYear();
+    return Array.from({ length: 80 }, (_, index) => currentYear - index);
+  }, []);
 
   useEffect(() => {
     async function loadCustomer() {
@@ -116,12 +128,16 @@ export function CustomerFormScreen({ navigation, route }: Props) {
     setIsSubmitting(true);
 
     try {
+      const selectedSalonLabel = values.salonId
+        ? salonOptions.find((option) => option.id === values.salonId)?.label
+        : undefined;
+
       const savedCustomer = await saveCustomer(
         {
           name: values.name,
           whatsapp: values.whatsapp,
           salonId: values.salonId || undefined,
-          salonLabel: values.salonId ? selectedSalonLabel : undefined,
+          salonLabel: selectedSalonLabel,
           birthDate: values.birthDate || undefined,
           contactPreference: values.contactPreference,
           notes: values.notes || undefined,
@@ -138,18 +154,6 @@ export function CustomerFormScreen({ navigation, route }: Props) {
     } finally {
       setIsSubmitting(false);
     }
-  }
-
-  function handleBirthDateChange(event: DateTimePickerEvent, selectedDate?: Date) {
-    if (Platform.OS === 'android') {
-      setOpenDropdown(null);
-    }
-
-    if (event.type === 'dismissed' || !selectedDate) {
-      return;
-    }
-
-    setValue('birthDate', toIsoDate(selectedDate));
   }
 
   return (
@@ -178,6 +182,7 @@ export function CustomerFormScreen({ navigation, route }: Props) {
               placeholder="Nome completo"
               value={value}
               onBlur={onBlur}
+              onFocus={() => setOpenDropdown(null)}
               onChangeText={onChange}
               errorMessage={errors.name?.message}
             />
@@ -194,6 +199,7 @@ export function CustomerFormScreen({ navigation, route }: Props) {
               keyboardType="phone-pad"
               value={value}
               onBlur={onBlur}
+              onFocus={() => setOpenDropdown(null)}
               onChangeText={onChange}
               errorMessage={errors.whatsapp?.message}
             />
@@ -203,18 +209,18 @@ export function CustomerFormScreen({ navigation, route }: Props) {
         <Controller
           control={control}
           name="salonId"
-          render={() => (
+          render={({ field: { value, onChange } }) => (
             <View>
               <AppSelect
                 label="Salao da cliente"
-                value={selectedSalonLabel}
+                value={salonOptions.find((option) => option.id === value)?.label ?? 'Nao informar agora'}
                 onPress={() => setOpenDropdown((current) => (current === 'salon' ? null : 'salon'))}
               />
 
               {openDropdown === 'salon' ? (
                 <AppCard style={styles.dropdownCard}>
                   {salonOptions.map((option, index) => {
-                    const isSelected = option.id === selectedSalonId;
+                    const isSelected = option.id === value;
 
                     return (
                       <Pressable
@@ -224,7 +230,7 @@ export function CustomerFormScreen({ navigation, route }: Props) {
                           index === salonOptions.length - 1 ? styles.dropdownOptionLast : null,
                         ]}
                         onPress={() => {
-                          setValue('salonId', option.id);
+                          onChange(option.id);
                           setOpenDropdown(null);
                         }}
                       >
@@ -248,67 +254,147 @@ export function CustomerFormScreen({ navigation, route }: Props) {
           Use esse campo apenas para indicar em qual salao essa cliente costuma ser atendida. Voce pode cadastrar um novo salao no menu Mais.
         </Text>
 
-        <View>
-          <AppSelect
-            label="Data de nascimento"
-            value={formattedBirthDate || undefined}
-            placeholder="Selecionar data"
-            onPress={() => setOpenDropdown((current) => (current === 'birthDate' ? null : 'birthDate'))}
-          />
+        <Controller
+          control={control}
+          name="birthDate"
+          render={({ field: { value, onChange } }) => {
+            const birthParts = getBirthDateParts(value);
+            const maxDay = getDaysInMonth(birthParts.year, birthParts.month);
 
-          {openDropdown === 'birthDate' ? (
-            <AppCard style={styles.datePickerCard}>
-              <View style={styles.datePickerHeader}>
-                <Text style={styles.dropdownOptionTitle}>Escolha a data</Text>
-                {birthDate ? (
-                  <Pressable onPress={() => {
-                    setValue('birthDate', '');
-                    setOpenDropdown(null);
-                  }}>
-                    <Text style={styles.clearAction}>Limpar</Text>
-                  </Pressable>
+            return (
+              <View>
+                <AppSelect
+                  label="Data de nascimento"
+                  value={value ? formatBirthDate(value) : undefined}
+                  placeholder="Selecionar data"
+                  onPress={() => setOpenDropdown((current) => (current === 'birthDate' ? null : 'birthDate'))}
+                />
+
+                {openDropdown === 'birthDate' ? (
+                  <AppCard style={styles.datePickerCard}>
+                    <View style={styles.datePickerHeader}>
+                      <Text style={styles.dropdownOptionTitle}>Escolha a data</Text>
+                      <Pressable
+                        onPress={() => {
+                          onChange('');
+                          setOpenDropdown(null);
+                        }}
+                      >
+                        <Text style={styles.clearAction}>Limpar</Text>
+                      </Pressable>
+                    </View>
+
+                    <Text style={styles.dateSectionLabel}>Mes</Text>
+                    <View style={styles.monthGrid}>
+                      {monthOptions.map((month) => (
+                        <Pressable
+                          key={month.value}
+                          style={[styles.dateChip, birthParts.month === month.value ? styles.dateChipActive : null]}
+                          onPress={() =>
+                            onChange(
+                              buildIsoDate(
+                                birthParts.year,
+                                month.value,
+                                Math.min(birthParts.day, getDaysInMonth(birthParts.year, month.value)),
+                              ),
+                            )
+                          }
+                        >
+                          <Text style={[styles.dateChipText, birthParts.month === month.value ? styles.dateChipTextActive : null]}>
+                            {month.label}
+                          </Text>
+                        </Pressable>
+                      ))}
+                    </View>
+
+                    <Text style={styles.dateSectionLabel}>Ano</Text>
+                    <ScrollView
+                      horizontal
+                      showsHorizontalScrollIndicator={false}
+                      contentContainerStyle={styles.yearRow}
+                    >
+                      {yearOptions.map((year) => (
+                        <Pressable
+                          key={year}
+                          style={[styles.dateChip, styles.yearChip, birthParts.year === year ? styles.dateChipActive : null]}
+                          onPress={() =>
+                            onChange(
+                              buildIsoDate(
+                                year,
+                                birthParts.month,
+                                Math.min(birthParts.day, getDaysInMonth(year, birthParts.month)),
+                              ),
+                            )
+                          }
+                        >
+                          <Text style={[styles.dateChipText, birthParts.year === year ? styles.dateChipTextActive : null]}>
+                            {year}
+                          </Text>
+                        </Pressable>
+                      ))}
+                    </ScrollView>
+
+                    <Text style={styles.dateSectionLabel}>Dia</Text>
+                    <View style={styles.dayGrid}>
+                      {Array.from({ length: maxDay }, (_, index) => {
+                        const day = index + 1;
+                        const isSelected = birthParts.day === day;
+
+                        return (
+                          <Pressable
+                            key={day}
+                            style={[styles.dayChip, isSelected ? styles.dateChipActive : null]}
+                            onPress={() => onChange(buildIsoDate(birthParts.year, birthParts.month, day))}
+                          >
+                            <Text style={[styles.dateChipText, isSelected ? styles.dateChipTextActive : null]}>
+                              {String(day).padStart(2, '0')}
+                            </Text>
+                          </Pressable>
+                        );
+                      })}
+                    </View>
+                  </AppCard>
                 ) : null}
               </View>
-              <DateTimePicker
-                value={birthDate ? parseIsoDate(birthDate) : new Date(1995, 0, 1)}
-                mode="date"
-                display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-                maximumDate={new Date()}
-                onChange={handleBirthDateChange}
+            );
+          }}
+        />
+
+        <Controller
+          control={control}
+          name="contactPreference"
+          render={({ field: { value, onChange } }) => (
+            <View>
+              <AppSelect
+                label="Preferencia de contato"
+                value={value}
+                onPress={() => setOpenDropdown((current) => (current === 'contact' ? null : 'contact'))}
               />
-            </AppCard>
-          ) : null}
-        </View>
 
-        <View>
-          <AppSelect
-            label="Preferencia de contato"
-            value={selectedPreference}
-            onPress={() => setOpenDropdown((current) => (current === 'contact' ? null : 'contact'))}
-          />
+              {openDropdown === 'contact' ? (
+                <AppCard style={styles.dropdownCard}>
+                  {contactOptions.map((option, index) => {
+                    const isSelected = option === value;
 
-          {openDropdown === 'contact' ? (
-            <AppCard style={styles.dropdownCard}>
-              {contactOptions.map((option, index) => {
-                const isSelected = option === selectedPreference;
-
-                return (
-                  <Pressable
-                    key={option}
-                    style={[styles.dropdownOption, index === contactOptions.length - 1 ? styles.dropdownOptionLast : null]}
-                    onPress={() => {
-                      setValue('contactPreference', option);
-                      setOpenDropdown(null);
-                    }}
-                  >
-                    <Text style={styles.dropdownOptionTitle}>{option}</Text>
-                    {isSelected ? <Text style={styles.dropdownCheck}>OK</Text> : null}
-                  </Pressable>
-                );
-              })}
-            </AppCard>
-          ) : null}
-        </View>
+                    return (
+                      <Pressable
+                        key={option}
+                        style={[styles.dropdownOption, index === contactOptions.length - 1 ? styles.dropdownOptionLast : null]}
+                        onPress={() => {
+                          onChange(option);
+                          setOpenDropdown(null);
+                        }}
+                      >
+                        <Text style={styles.dropdownOptionTitle}>{option}</Text>
+                        {isSelected ? <Text style={styles.dropdownCheck}>OK</Text> : null}
+                      </Pressable>
+                    );
+                  })}
+                </AppCard>
+              ) : null}
+            </View>
+          )}
+        />
 
         <Controller
           control={control}
@@ -319,6 +405,7 @@ export function CustomerFormScreen({ navigation, route }: Props) {
               placeholder="Alergias, preferencias, historico importante..."
               value={value}
               onBlur={onBlur}
+              onFocus={() => setOpenDropdown(null)}
               onChangeText={onChange}
             />
           )}
@@ -342,16 +429,33 @@ export function CustomerFormScreen({ navigation, route }: Props) {
   );
 }
 
-function toIsoDate(date: Date) {
-  return date.toISOString().slice(0, 10);
-}
-
-function parseIsoDate(date: string) {
-  return new Date(`${date}T00:00:00`);
-}
-
 function formatBirthDate(date: string) {
-  return new Intl.DateTimeFormat('pt-BR').format(parseIsoDate(date));
+  return new Intl.DateTimeFormat('pt-BR').format(new Date(`${date}T12:00:00`));
+}
+
+function getBirthDateParts(date?: string) {
+  if (!date) {
+    return {
+      day: 1,
+      month: 1,
+      year: 1995,
+    };
+  }
+
+  const [year, month, day] = date.split('-').map((part) => Number(part));
+  return {
+    day: day || 1,
+    month: month || 1,
+    year: year || 1995,
+  };
+}
+
+function buildIsoDate(year: number, month: number, day: number) {
+  return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+}
+
+function getDaysInMonth(year: number, month: number) {
+  return new Date(year, month, 0).getDate();
 }
 
 const styles = StyleSheet.create({
@@ -385,7 +489,7 @@ const styles = StyleSheet.create({
     marginTop: -4,
     marginBottom: 12,
     paddingTop: 12,
-    paddingBottom: 4,
+    paddingBottom: 12,
     paddingHorizontal: 12,
   },
   datePickerHeader: {
@@ -393,6 +497,65 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+  },
+  dateSectionLabel: {
+    marginBottom: 8,
+    color: colors.textSecondary,
+    fontFamily: typography.fontFamily.bodyBold,
+    fontSize: 10,
+    textTransform: 'uppercase',
+  },
+  monthGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginBottom: 12,
+  },
+  yearRow: {
+    gap: 8,
+    paddingBottom: 4,
+    marginBottom: 12,
+  },
+  dayGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  dateChip: {
+    minWidth: 56,
+    borderWidth: 1,
+    borderColor: colors.borderStrong,
+    borderRadius: 999,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#FFFFFF',
+  },
+  dayChip: {
+    width: '14.9%',
+    borderWidth: 1,
+    borderColor: colors.borderStrong,
+    borderRadius: 12,
+    paddingVertical: 9,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#FFFFFF',
+  },
+  yearChip: {
+    minWidth: 74,
+  },
+  dateChipActive: {
+    backgroundColor: colors.rose,
+    borderColor: colors.rose,
+  },
+  dateChipText: {
+    color: colors.textMain,
+    fontFamily: typography.fontFamily.bodyBold,
+    fontSize: 12,
+  },
+  dateChipTextActive: {
+    color: '#FFFFFF',
   },
   dropdownOption: {
     flexDirection: 'row',
