@@ -1,12 +1,12 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Controller, useForm } from 'react-hook-form';
 import { z } from 'zod';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text } from 'react-native';
 import { AppButton } from '../components/AppButton';
 import { AppCard } from '../components/AppCard';
 import { AppInput } from '../components/AppInput';
 import { EmptyState } from '../components/EmptyState';
-import { Screen } from '../components/Screen';
+import { KeyboardScrollScreen } from '../components/KeyboardScrollScreen';
 import { useAuth } from '../features/auth';
 import { colors, spacing, typography } from '../theme';
 
@@ -49,8 +49,7 @@ export function SalonSetupScreen() {
   }
 
   return (
-    <Screen>
-      <View style={styles.container}>
+    <KeyboardScrollScreen contentContainerStyle={styles.container}>
         <EmptyState
           title="Seu primeiro salao"
           description="Sua conta profissional ja esta pronta. Agora vamos cadastrar o primeiro salao para liberar servicos, atendimentos e configuracoes."
@@ -117,8 +116,7 @@ export function SalonSetupScreen() {
           />
           <AppButton label="Sair da conta" variant="ghost" onPress={() => void signOut()} disabled={isSubmitting} />
         </AppCard>
-      </View>
-    </Screen>
+    </KeyboardScrollScreen>
   );
 }
 

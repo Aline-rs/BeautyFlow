@@ -3,11 +3,11 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import * as ImagePicker from 'expo-image-picker';
 import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, StyleSheet, Text, View } from 'react-native';
 import { AppButton } from '../components/AppButton';
 import { AppInput } from '../components/AppInput';
+import { KeyboardScrollScreen } from '../components/KeyboardScrollScreen';
 import { PhotoPicker } from '../components/PhotoPicker';
-import { Screen } from '../components/Screen';
 import { TopBar } from '../components/TopBar';
 import { useAuth } from '../features/auth';
 import { uploadProfessionalProfilePhoto } from '../features/profile';
@@ -81,9 +81,10 @@ export function SignUpScreen({ navigation }: Props) {
   }
 
   return (
-    <Screen>
-      <TopBar title="Criar conta" onBack={() => navigation.navigate('Login')} />
-      <ScrollView contentContainerStyle={styles.content}>
+    <KeyboardScrollScreen
+      header={<TopBar title="Criar conta" onBack={() => navigation.navigate('Login')} />}
+      contentContainerStyle={styles.content}
+    >
         <PhotoPicker
           label="Foto de perfil"
           helperText="Opcional. Voce tambem pode adicionar depois no seu perfil."
@@ -177,8 +178,7 @@ export function SignUpScreen({ navigation }: Props) {
             disabled={isSubmitting}
           />
         </View>
-      </ScrollView>
-    </Screen>
+    </KeyboardScrollScreen>
   );
 }
 

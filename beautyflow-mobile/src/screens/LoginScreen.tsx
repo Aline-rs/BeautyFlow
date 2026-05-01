@@ -4,7 +4,7 @@ import { Controller, useForm } from 'react-hook-form';
 import { StyleSheet, Text, View } from 'react-native';
 import { AppButton } from '../components/AppButton';
 import { AppInput } from '../components/AppInput';
-import { Screen } from '../components/Screen';
+import { KeyboardScrollScreen } from '../components/KeyboardScrollScreen';
 import { useAuth } from '../features/auth';
 import { LoginFormValues, loginSchema } from '../features/auth/schemas';
 import { AuthStackParamList } from '../navigation/types';
@@ -38,8 +38,8 @@ export function LoginScreen({ navigation }: Props) {
   }
 
   return (
-    <Screen>
-      <View style={styles.content}>
+    <KeyboardScrollScreen contentContainerStyle={styles.content}>
+      <View>
         <View style={styles.header}>
           <Text style={styles.flower}>*</Text>
           <Text style={styles.title}>Bem-vinda de volta</Text>
@@ -97,13 +97,12 @@ export function LoginScreen({ navigation }: Props) {
           </Text>
         </Text>
       </View>
-    </Screen>
+    </KeyboardScrollScreen>
   );
 }
 
 const styles = StyleSheet.create({
   content: {
-    flex: 1,
     justifyContent: 'center',
     paddingVertical: 28,
     paddingHorizontal: 22,

@@ -3,12 +3,12 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useFocusEffect } from '@react-navigation/native';
 import { useCallback, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
 import { AppButton } from '../components/AppButton';
 import { AppCard } from '../components/AppCard';
 import { AppInput } from '../components/AppInput';
 import { AppSelect } from '../components/AppSelect';
-import { Screen } from '../components/Screen';
+import { KeyboardScrollScreen } from '../components/KeyboardScrollScreen';
 import { TopBar } from '../components/TopBar';
 import {
   NotificationSettingsFormValues,
@@ -79,9 +79,10 @@ export function NotificationsScreen({ navigation }: Props) {
   }
 
   return (
-    <Screen>
-      <TopBar title="Notificacoes" onBack={() => navigation.goBack()} />
-      <ScrollView contentContainerStyle={styles.content}>
+    <KeyboardScrollScreen
+      header={<TopBar title="Notificacoes" onBack={() => navigation.goBack()} />}
+      contentContainerStyle={styles.content}
+    >
         <AppCard style={styles.highlightCard}>
           <Text style={styles.sectionLabel}>Lembretes internos</Text>
           <Text style={styles.cardCopy}>
@@ -130,8 +131,7 @@ export function NotificationsScreen({ navigation }: Props) {
           onPress={handleSubmit(onSubmit)}
           loading={isSubmitting}
         />
-      </ScrollView>
-    </Screen>
+    </KeyboardScrollScreen>
   );
 }
 

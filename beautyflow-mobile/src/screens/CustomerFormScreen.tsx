@@ -3,14 +3,14 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import * as ImagePicker from 'expo-image-picker';
 import { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
 import { AppButton } from '../components/AppButton';
 import { AppCard } from '../components/AppCard';
 import { AppInput } from '../components/AppInput';
 import { AppSelect } from '../components/AppSelect';
 import { AppTextarea } from '../components/AppTextarea';
+import { KeyboardScrollScreen } from '../components/KeyboardScrollScreen';
 import { PhotoPicker } from '../components/PhotoPicker';
-import { Screen } from '../components/Screen';
 import { TopBar } from '../components/TopBar';
 import { useAuth } from '../features/auth';
 import { CustomerFormValues, customerSchema, useCustomers } from '../features/customers';
@@ -137,12 +137,15 @@ export function CustomerFormScreen({ navigation, route }: Props) {
   }
 
   return (
-    <Screen>
-      <TopBar
-        title={customerId ? 'Editar cliente' : 'Nova cliente'}
-        onBack={() => navigation.goBack()}
-      />
-      <ScrollView contentContainerStyle={styles.content}>
+    <KeyboardScrollScreen
+      header={
+        <TopBar
+          title={customerId ? 'Editar cliente' : 'Nova cliente'}
+          onBack={() => navigation.goBack()}
+        />
+      }
+      contentContainerStyle={styles.content}
+    >
         <PhotoPicker
           label="Foto da cliente"
           helperText="Adicione uma foto para reconhecer a cliente mais rapido."
@@ -281,8 +284,7 @@ export function CustomerFormScreen({ navigation, route }: Props) {
           onPress={() => navigation.goBack()}
           disabled={isSubmitting}
         />
-      </ScrollView>
-    </Screen>
+    </KeyboardScrollScreen>
   );
 }
 
