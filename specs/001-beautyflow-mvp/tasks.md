@@ -183,70 +183,137 @@
 
 ## MVP Closeout Priority List
 
-### P1 - Complete the real Home flow
+### P1 - Cross-app structural fixes
 
-- [ ] P101 Replace `HomePlaceholderScreen` with a production `HomeScreen`.
-- [ ] P102 Match the Home visual layout to `design-reference/beautyflow_mvp_mobile_prototype.html`.
-- [ ] P103 Show real metrics for pending messages, upcoming follow-ups and appointments.
-- [ ] P104 Add working navigation from Home to `AppointmentForm` and `Messages`.
+- [ ] P101 Make `Screen`, `TopBar`, and root layout safe-area aware so top titles and actions are not covered by notch or camera cutout.
+- [ ] P102 Add consistent keyboard avoidance behavior for all long forms and text-input flows.
+- [ ] P103 Replace bottom-tab initials with meaningful icons for `Inicio`, `Clientes`, `Atendimentos`, `Mensagens`, and `Mais`.
+- [ ] P104 Recheck top spacing and keyboard behavior on real-device navigation flows after the shared layout changes.
 
-### P2 - Remove mock fallbacks from integrated mobile flows
+### P2 - Build the real Home experience
 
-- [ ] P105 Remove mock auth fallback from `src/features/auth/authService.ts`.
-- [ ] P106 Remove mock customer fallback from `src/features/customers/customersService.ts`.
-- [ ] P107 Remove mock service fallback from `src/features/services/servicesService.ts`.
-- [ ] P108 Remove mock appointment fallback from `src/features/appointments/appointmentsService.ts`.
-- [ ] P109 Remove mock message fallback from `src/features/appointments/messagesService.ts`.
-- [ ] P110 Remove mock settings fallback from `src/features/settings/settingsService.ts`.
+- [ ] P105 Replace `HomePlaceholderScreen` with a production `HomeScreen`.
+- [ ] P106 Match the Home visual layout to `design-reference/beautyflow_mvp_mobile_prototype.html`.
+- [ ] P107 Change the Home greeting copy to `Ola {primeiroNome}, seja bem vindo de volta!`.
+- [ ] P108 Add a clickable card with the quantity of salons and navigate it to `Saloes e clientes`.
+- [ ] P109 Add a card with the quantity of customers cadastradas.
+- [ ] P110 Make the `Mensagens para enviar` and `clientes com retorno proximo` cards clickable and route them to their corresponding screens.
+- [ ] P111 Remove the `Componentes base` card from Home.
+- [ ] P112 Add a weekly activity summary for the professional using real or integrated data.
 
-### P3 - Close remaining visual and UX gaps
+### P3 - Improve customer discovery and customer form UX
 
-- [ ] P111 Review `CustomersScreen` against the HTML prototype and adjust spacing, hierarchy and states.
-- [ ] P112 Review `CustomerFormScreen` and `CustomerDetailScreen` against the HTML prototype.
-- [ ] P113 Review `ServicesScreen` and `ServiceFormScreen` against the HTML prototype.
-- [ ] P114 Review `AppointmentFormScreen` and `AppointmentsHistoryScreen` against the HTML prototype.
-- [ ] P115 Review `MessagesScreen` and `MessageDetailScreen` against the HTML prototype.
-- [ ] P116 Review `MoreScreen`, `SalonProfileScreen`, `MessageTemplateScreen` and `NotificationsScreen` against the HTML prototype.
-- [ ] P117 Add a visible loading/fallback experience while fonts load instead of returning `null` in `App.tsx`.
+- [ ] P113 Add live customer search suggestions to `CustomersScreen`.
+- [ ] P114 Rename the `Portfolio profissional` filter chip to `Todas`.
+- [ ] P115 Update the customer-count copy to `{} clientes cadastradas` and to `{} clientes vinculadas ao salao` when a salon filter is active.
+- [ ] P116 Remove the top `+ Nova` button from `CustomersScreen` and keep only the floating create action.
+- [ ] P117 Update the salon helper text in `CustomerFormScreen` to explain salon classification and mention the `Mais` menu.
+- [ ] P118 Align the customer birth-date field behavior with the appointment date-selection pattern.
+- [ ] P119 Convert all selectable customer-form fields to explicit dropdown interactions.
+- [ ] P120 Review `CustomersScreen`, `CustomerFormScreen`, and `CustomerDetailScreen` against the HTML prototype and adjust spacing, hierarchy, and states.
 
-### P4 - Finish missing functional gaps in forms and flows
+### P4 - Refine appointments list and redesign register-appointment flow
 
-- [ ] P118 Confirm customer photo selection, preview and persistence work end-to-end.
-- [ ] P119 Confirm appointment return-date calculation is correct and timezone-safe.
-- [ ] P120 Confirm message text editing persists correctly.
-- [ ] P121 Confirm WhatsApp link generation works correctly in list and detail flows.
-- [ ] P122 Decide and implement whether service-level default message content is required in `ServiceFormScreen`.
+- [ ] P121 Remove the top `+ Novo` button from `AppointmentsHistoryScreen` and add a floating `+` action like `Clientes`.
+- [ ] P122 Move appointment filter chips below the search bar.
+- [ ] P123 Remove the `Com retorno` appointment filter chip.
+- [ ] P124 Add a `Mes passado` appointment filter chip.
+- [ ] P125 Add a salon filter chip to appointments so the professional can view attendances by salon.
+- [ ] P126 Show customer profile photo on appointment cards when available and fallback to centered initials otherwise.
+- [ ] P127 Convert all selectable fields in `AppointmentFormScreen` to dropdown interactions.
+- [ ] P128 Replace manual appointment-date typing with a calendar picker.
+- [ ] P129 Remove the message-preview card from `AppointmentFormScreen`.
+- [ ] P130 Decide the persistence model for multi-service appointments.
+- [ ] P131 Implement multi-service selection in appointment registration.
+- [ ] P132 Schedule the follow-up message date using the selected service with the longest recurrence window.
+- [ ] P133 Review `AppointmentFormScreen` and `AppointmentsHistoryScreen` against the HTML prototype.
 
-### P5 - Fix environment and runtime readiness
+### P5 - Improve messages visibility, editing, and filtering
 
-- [ ] P123 Replace the fixed mobile API `baseURL` with environment-aware configuration.
-- [ ] P124 Validate mobile-to-local API communication for emulator and physical device scenarios.
-- [ ] P125 Validate uploaded customer photo URLs resolve correctly from the mobile app.
+- [ ] P134 Remove the `Erro` filter chip from `MessagesScreen`.
+- [ ] P135 Add a `Canceladas` filter chip to `MessagesScreen`.
+- [ ] P136 Show customer profile photo on message cards and message detail when available, with initials fallback otherwise.
+- [ ] P137 Allow editing message text directly in `MessageDetailScreen`.
+- [ ] P138 Add a `Salvar texto` action in `MessageDetailScreen` and persist the edited text.
+- [ ] P139 Review `MessagesScreen` and `MessageDetailScreen` against the HTML prototype.
 
-### P6 - Add automated test coverage
+### P6 - Align More, Profile, and Salons and Customers with the professional-first product scope
 
-- [ ] P126 Create backend unit tests for date calculation and template rendering.
-- [ ] P127 Create backend integration tests for auth flows.
-- [ ] P128 Create backend integration tests for customer CRUD.
-- [ ] P129 Create backend integration tests for appointment creation and scheduled message generation.
-- [ ] P130 Create backend tests for professional ownership and salon-context isolation across protected resources.
-- [ ] P131 Create frontend tests for template replacement.
-- [ ] P132 Create frontend tests for WhatsApp URL generation.
-- [ ] P133 Create frontend tests for return-date calculation.
+- [ ] P140 Remove `Professional BeautyFlow` from `MoreScreen`.
+- [ ] P141 Show the professional's full name in the hero area instead of the generic product name.
+- [ ] P142 Remove `Conta Professional` copy from `MoreScreen`.
+- [ ] P143 Replace `P`, `S`, `C`, `M`, and `N` menu initials with meaningful icons.
+- [ ] P144 Remove the salon-organization copy and salon-summary card from `MoreScreen`.
+- [ ] P145 Remove the `Adicionar foto de perfil` card from `ProfessionalProfileScreen`.
+- [ ] P146 Add a pencil affordance over the profile photo in `ProfessionalProfileScreen`.
+- [ ] P147 Fix profile-form editing behavior so fields can be cleared and edited normally.
+- [ ] P148 Stabilize the `Salvar alteracoes` button in `ProfessionalProfileScreen` and remove the `carregando perfil` text.
+- [ ] P149 Remove the `Sem salao informado` card from `SalonsScreen`.
+- [ ] P150 Rename the salons hero title to `Classifique seu atendimento`.
+- [ ] P151 Update the salons hero copy to `Cadastre saloes para identificar onde cada cliente costuma ser atendida.`
+- [ ] P152 Show customer profile photo in salon customer rows when available, with initials fallback otherwise.
 
-### P7 - Security and hardening review
+### P7 - Polish service management
 
-- [ ] P134 Review authorization on all private endpoints.
-- [ ] P135 Review upload validation and file handling security.
-- [ ] P136 Remove dead code and temporary compatibility paths no longer needed after integration cleanup.
-- [ ] P137 Recheck shared components for regressions after closeout changes.
+- [ ] P153 Remove the top `+ Novo` button from `ServicesScreen` and keep only the floating create action.
+- [ ] P154 Sort the services list alphabetically.
+- [ ] P155 Allow assigning an emoji or icon to a service in `ServiceFormScreen`.
+- [ ] P156 Display the chosen emoji or icon on the left side of the service card in `ServicesScreen`.
+- [ ] P157 Remove the `variaveis disponiveis` card from `ServiceFormScreen`.
+- [ ] P158 Convert the `Status` field in `ServiceFormScreen` to a dropdown.
+- [ ] P159 Add an `Excluir servico` action when editing an existing service.
+- [ ] P160 Preserve historical appointment records when a service is deleted or deactivated.
+- [ ] P161 Review `ServicesScreen` and `ServiceFormScreen` against the HTML prototype.
 
-### P8 - Final validation and documentation
+### P8 - Clarify message templates and audit notifications
 
-- [ ] P138 Run TypeScript check on the mobile app.
-- [ ] P139 Run lint on the mobile app.
-- [ ] P140 Run backend automated tests.
-- [ ] P141 Execute full manual MVP navigation and regression validation.
-- [ ] P142 Compare final mobile UI visually against the HTML prototype screen by screen.
-- [ ] P143 Update `README.md` with final local setup and run instructions.
-- [ ] P144 Sync `specs/001-beautyflow-mvp/checklists/tasks.md` with the real project status.
+- [ ] P162 Resolve the salon placeholder in message templates using the salon linked to the customer whenever one exists.
+- [ ] P163 Give the message-template text field a distinct editable background.
+- [ ] P164 Audit whether the notifications screen triggers OS permission requests on the device.
+- [ ] P165 Document which notification is actually sent today, how it is configured, and whether it is local, push, or placeholder-only.
+- [ ] P166 Decide whether notifications should be completed, simplified, or hidden for MVP honesty.
+
+### P9 - Remove temporary mobile fallbacks and close remaining runtime gaps
+
+- [ ] P167 Remove mock auth fallback from `src/features/auth/authService.ts`.
+- [ ] P168 Remove mock customer fallback from `src/features/customers/customersService.ts`.
+- [ ] P169 Remove mock service fallback from `src/features/services/servicesService.ts`.
+- [ ] P170 Remove mock appointment fallback from `src/features/appointments/appointmentsService.ts`.
+- [ ] P171 Remove mock message fallback from `src/features/appointments/messagesService.ts`.
+- [ ] P172 Remove mock settings fallback from `src/features/settings/settingsService.ts`.
+- [ ] P173 Replace the fixed mobile API `baseURL` with environment-aware configuration.
+- [ ] P174 Validate mobile-to-local API communication for emulator and physical-device scenarios.
+- [ ] P175 Validate uploaded customer photo URLs resolve correctly from the mobile app.
+
+### P10 - Functional checks and automated coverage
+
+- [ ] P176 Confirm customer photo selection, preview, and persistence work end-to-end.
+- [ ] P177 Confirm appointment return-date calculation is correct and timezone-safe.
+- [ ] P178 Confirm message text editing persists correctly.
+- [ ] P179 Confirm WhatsApp link generation works correctly in list and detail flows.
+- [ ] P180 Decide whether service-level default message content is required in `ServiceFormScreen` and implement it if approved.
+- [ ] P181 Create backend unit tests for date calculation and template rendering.
+- [ ] P182 Create backend integration tests for auth flows.
+- [ ] P183 Create backend integration tests for customer CRUD.
+- [ ] P184 Create backend integration tests for appointment creation and scheduled message generation.
+- [ ] P185 Create backend tests for professional ownership and salon-context isolation across protected resources.
+- [ ] P186 Create frontend tests for template replacement.
+- [ ] P187 Create frontend tests for WhatsApp URL generation.
+- [ ] P188 Create frontend tests for return-date calculation.
+
+### P11 - Security, hardening, and cleanup
+
+- [ ] P189 Review authorization on all private endpoints.
+- [ ] P190 Review upload validation and file-handling security.
+- [ ] P191 Remove dead code and temporary compatibility paths no longer needed after the integration cleanup.
+- [ ] P192 Recheck shared components for regressions after the closeout changes.
+
+### P12 - Final validation and closeout documentation
+
+- [ ] P193 Run TypeScript check on the mobile app.
+- [ ] P194 Run lint on the mobile app.
+- [ ] P195 Run backend automated tests.
+- [ ] P196 Execute full manual MVP navigation and regression validation on device.
+- [ ] P197 Compare the final mobile UI visually against the HTML prototype screen by screen.
+- [ ] P198 Update `README.md` with final local setup and run instructions.
+- [ ] P199 Sync `specs/001-beautyflow-mvp/checklists/tasks.md` with the real project status.
