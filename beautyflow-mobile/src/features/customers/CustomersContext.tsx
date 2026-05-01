@@ -3,6 +3,7 @@ import {
   createCustomer,
   fetchCustomerById,
   fetchCustomers,
+  uploadCustomerPhoto,
   updateCustomer,
 } from './customersService';
 import { Customer, CustomerFormPayload } from './types';
@@ -54,9 +55,21 @@ export function CustomersProvider({ children }: PropsWithChildren) {
   }, [customers]);
 
   const saveCustomer = useCallback(async (payload: CustomerFormPayload, customerId?: string) => {
-    const savedCustomer = customerId
-      ? await updateCustomer(customerId, payload)
-      : await createCustomer(payload);
+    const basePayload = isLocalPhotoAsset(payload.photoUrl)
+      ? {
+          ...payload,
+          photoUrl: undefined,
+        }
+      : payload;
+
+    const savedBaseCustomer = customerId
+      ? await updateCustomer(customerId, basePayload)
+      : await createCustomer(basePayload);
+
+    const savedCustomer =
+      payload.photoUrl && isLocalPhotoAsset(payload.photoUrl)
+        ? await uploadCustomerPhoto(savedBaseCustomer.id, payload.photoUrl)
+        : savedBaseCustomer;
 
     setCustomers((currentCustomers) => {
       const hasCustomer = currentCustomers.some((customer) => customer.id === savedCustomer.id);
@@ -85,6 +98,19 @@ export function CustomersProvider({ children }: PropsWithChildren) {
   );
 
   return <CustomersContext.Provider value={value}>{children}</CustomersContext.Provider>;
+}
+
+function isLocalPhotoAsset(photoUrl?: string) {
+  if (!photoUrl) {
+    return false;
+  }
+
+  return (
+    photoUrl.startsWith('file://') ||
+    photoUrl.startsWith('content://') ||
+    photoUrl.startsWith('ph://') ||
+    photoUrl.startsWith('assets-library://')
+  );
 }
 
 export function useCustomers() {

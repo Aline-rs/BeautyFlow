@@ -154,3 +154,46 @@ export async function updateCustomer(
     return updatedCustomer;
   }
 }
+
+export async function uploadCustomerPhoto(customerId: string, photoUri: string): Promise<Customer> {
+  try {
+    const formData = new FormData();
+    const fileName = photoUri.split('/').pop() ?? `${customerId}.jpg`;
+    const extension = fileName.includes('.') ? fileName.split('.').pop() : 'jpg';
+    const normalizedType = extension?.toLowerCase() === 'png' ? 'image/png' : 'image/jpeg';
+
+    formData.append('photo', {
+      uri: photoUri,
+      name: fileName,
+      type: normalizedType,
+    } as never);
+
+    const response = await api.post<Customer>(`/customers/${customerId}/photo`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+
+    return response.data;
+  } catch (error) {
+    if (!shouldFallback(error)) {
+      throw error;
+    }
+
+    const current = mockDatabase.find((customer) => customer.id === customerId);
+    if (!current) {
+      throw new Error('Cliente nao encontrada.');
+    }
+
+    const updatedCustomer: Customer = {
+      ...current,
+      photoUrl: photoUri,
+    };
+
+    mockDatabase = mockDatabase.map((customer) =>
+      customer.id === customerId ? updatedCustomer : customer,
+    );
+
+    return updatedCustomer;
+  }
+}
