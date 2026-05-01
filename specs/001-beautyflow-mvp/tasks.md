@@ -185,21 +185,21 @@
 
 ### P1 - Cross-app structural fixes
 
-- [ ] P101 Make `Screen`, `TopBar`, and root layout safe-area aware so top titles and actions are not covered by notch or camera cutout.
-- [ ] P102 Add consistent keyboard avoidance behavior for all long forms and text-input flows.
-- [ ] P103 Replace bottom-tab initials with meaningful icons for `Inicio`, `Clientes`, `Atendimentos`, `Mensagens`, and `Mais`.
-- [ ] P104 Recheck top spacing and keyboard behavior on real-device navigation flows after the shared layout changes.
+- [x] P101 Make `Screen`, `TopBar`, and root layout safe-area aware so top titles and actions are not covered by notch or camera cutout.
+- [x] P102 Add consistent keyboard avoidance behavior for all long forms and text-input flows.
+- [x] P103 Replace bottom-tab initials with meaningful icons for `Inicio`, `Clientes`, `Atendimentos`, `Mensagens`, and `Mais`.
+- [x] P104 Recheck top spacing and keyboard behavior on real-device navigation flows after the shared layout changes.
 
 ### P2 - Build the real Home experience
 
-- [ ] P105 Replace `HomePlaceholderScreen` with a production `HomeScreen`.
-- [ ] P106 Match the Home visual layout to `design-reference/beautyflow_mvp_mobile_prototype.html`.
-- [ ] P107 Change the Home greeting copy to `Ola {primeiroNome}, seja bem vindo de volta!`.
-- [ ] P108 Add a clickable card with the quantity of salons and navigate it to `Saloes e clientes`.
-- [ ] P109 Add a card with the quantity of customers cadastradas.
-- [ ] P110 Make the `Mensagens para enviar` and `clientes com retorno proximo` cards clickable and route them to their corresponding screens.
-- [ ] P111 Remove the `Componentes base` card from Home.
-- [ ] P112 Add a weekly activity summary for the professional using real or integrated data.
+- [x] P105 Replace `HomePlaceholderScreen` with a production `HomeScreen`.
+- [x] P106 Match the Home visual layout to `design-reference/beautyflow_mvp_mobile_prototype.html`.
+- [x] P107 Change the Home greeting copy to `Ola {primeiroNome}, seja bem vindo de volta!`.
+- [x] P108 Add a clickable card with the quantity of salons and navigate it to `Saloes e clientes`.
+- [x] P109 Add a card with the quantity of customers cadastradas.
+- [x] P110 Make the `Mensagens para enviar` and `clientes com retorno proximo` cards clickable and route them to their corresponding screens.
+- [x] P111 Remove the `Componentes base` card from Home.
+- [x] P112 Add a weekly activity summary for the professional using real or integrated data.
 
 ### P3 - Improve customer discovery and customer form UX
 
