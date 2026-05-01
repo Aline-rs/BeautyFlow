@@ -20,7 +20,13 @@ type AuthContextValue = {
   hasSkippedSalonSetup: boolean;
   signIn: (payload: LoginPayload) => Promise<void>;
   signUp: (payload: RegisterPayload) => Promise<void>;
-  createSalonLink: (payload: { name: string; phone?: string; email: string }) => Promise<void>;
+  createSalonLink: (payload: {
+    name: string;
+    phone?: string;
+    email: string;
+    makePrimary?: boolean;
+    selectCreatedSalon?: boolean;
+  }) => Promise<void>;
   selectSalonContext: (salonId: string | null) => Promise<void>;
   skipSalonSetup: () => Promise<void>;
   syncProfessionalProfile: (payload: { name: string; email: string; profilePhotoUrl?: string | null }) => void;
@@ -122,7 +128,13 @@ export function AuthProvider({ children }: PropsWithChildren) {
     setSession(nextSession);
   }
 
-  async function createSalonLink(payload: { name: string; phone?: string; email: string }) {
+  async function createSalonLink(payload: {
+    name: string;
+    phone?: string;
+    email: string;
+    makePrimary?: boolean;
+    selectCreatedSalon?: boolean;
+  }) {
     if (!session) {
       throw new Error('Session is required to create a salon.');
     }
@@ -131,20 +143,23 @@ export function AuthProvider({ children }: PropsWithChildren) {
       name: payload.name,
       phone: payload.phone,
       email: payload.email,
-      makePrimary: true,
+      makePrimary: payload.makePrimary ?? true,
     });
+
+    const shouldMakePrimary = payload.makePrimary ?? true;
+    const shouldSelectCreatedSalon = payload.selectCreatedSalon ?? shouldMakePrimary;
 
     const nextSession: AuthSession = {
       ...session,
       salons: [linkedSalon, ...session.salons.filter((salon) => salon.id !== linkedSalon.id)].map((salon) => ({
         ...salon,
-        isPrimary: salon.id === linkedSalon.id,
+        isPrimary: shouldMakePrimary ? salon.id === linkedSalon.id : salon.id === linkedSalon.id ? linkedSalon.isPrimary : salon.isPrimary,
       })),
-      selectedSalonId: linkedSalon.id,
+      selectedSalonId: shouldSelectCreatedSalon ? linkedSalon.id : session.selectedSalonId ?? null,
     };
 
     await saveSalonSetupSkipped(false);
-    await saveSelectedSalonContext(linkedSalon.id);
+    await saveSelectedSalonContext(nextSession.selectedSalonId ?? null);
     applySession(nextSession);
     setHasSkippedSalonSetup(false);
     setSession(nextSession);

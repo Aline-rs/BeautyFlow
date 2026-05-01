@@ -26,12 +26,14 @@ function shouldFallback(error: unknown) {
 }
 
 function buildCustomer(payload: CustomerFormPayload, existing?: Customer): Customer {
+  const contextSalonId = payload.salonId ?? null;
+
   return {
     id: existing?.id ?? `customer-${Date.now()}`,
     name: payload.name.trim(),
     whatsapp: payload.whatsapp.trim(),
-    contextSalonId: existing?.contextSalonId ?? null,
-    contextLabel: existing?.contextLabel ?? 'Conta profissional',
+    contextSalonId,
+    contextLabel: contextSalonId ? existing?.contextLabel ?? 'Salao vinculado' : 'Conta profissional',
     birthDate: payload.birthDate,
     contactPreference: payload.contactPreference,
     notes: payload.notes?.trim(),

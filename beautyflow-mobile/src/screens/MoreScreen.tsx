@@ -1,19 +1,15 @@
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { useFocusEffect } from '@react-navigation/native';
-import { useCallback } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { AppButton } from '../components/AppButton';
 import { AppCard } from '../components/AppCard';
 import { Avatar } from '../components/Avatar';
 import { Screen } from '../components/Screen';
 import { useAuth } from '../features/auth';
-import { useSettings } from '../features/settings';
 import { MoreStackParamList } from '../navigation/types';
 import { colors, typography } from '../theme';
 
 type Props = NativeStackScreenProps<MoreStackParamList, 'MoreMain'>;
 
-type MenuRoute = 'ProfessionalProfile' | 'SalonProfile' | 'Services' | 'MessageTemplates' | 'Notifications';
+type MenuRoute = 'ProfessionalProfile' | 'Salons' | 'Services' | 'MessageTemplates' | 'Notifications';
 
 const professionalMenuItems: {
   label: string;
@@ -21,34 +17,15 @@ const professionalMenuItems: {
   route: MenuRoute;
 }[] = [
   { icon: 'P', label: 'Meu perfil', route: 'ProfessionalProfile' },
+  { icon: 'S', label: 'Saloes e clientes', route: 'Salons' },
   { icon: 'C', label: 'Servicos', route: 'Services' },
   { icon: 'M', label: 'Mensagens padrao', route: 'MessageTemplates' },
   { icon: 'N', label: 'Notificacoes', route: 'Notifications' },
 ];
 
-const salonMenuItems: {
-  label: string;
-  icon: string;
-  route: MenuRoute;
-}[] = [
-  { icon: 'S', label: 'Meu salao', route: 'SalonProfile' },
-];
-
 export function MoreScreen({ navigation }: Props) {
-  const { session, selectSalonContext, signOut } = useAuth();
-  const { loadSettings } = useSettings();
+  const { session, signOut } = useAuth();
   const hasSalon = (session?.salons.length ?? 0) > 0;
-  const selectedSalon = session?.selectedSalonId
-    ? session.salons.find((salon) => salon.id === session.selectedSalonId)
-    : undefined;
-
-  useFocusEffect(
-    useCallback(() => {
-      if (selectedSalon) {
-        void loadSettings();
-      }
-    }, [loadSettings, selectedSalon]),
-  );
 
   return (
     <Screen>
@@ -80,71 +57,19 @@ export function MoreScreen({ navigation }: Props) {
           ))}
         </AppCard>
 
-        {hasSalon ? (
-          <>
-            <Text style={styles.sectionLabel}>Contexto de salao</Text>
-            <AppCard style={styles.contextCard}>
-              <Text style={styles.contextTitle}>
-                {selectedSalon?.name ?? 'Contexto profissional ativo'}
-              </Text>
-              <Text style={styles.contextCopy}>
-                {selectedSalon?.email ??
-                  'Voce pode atuar sem salao ativo ou escolher abaixo em qual salao quer organizar seus atendimentos.'}
-              </Text>
-              <View style={styles.contextSwitcher}>
-                <Pressable
-                  style={[
-                    styles.contextOption,
-                    !selectedSalon ? styles.contextOptionActive : null,
-                  ]}
-                  onPress={() => void selectSalonContext(null)}
-                >
-                  <Text style={styles.contextOptionTitle}>Conta profissional</Text>
-                  <Text style={styles.contextOptionCopy}>Sem salao ativo</Text>
-                </Pressable>
-
-                {session?.salons.map((salon) => (
-                  <Pressable
-                    key={salon.id}
-                    style={[
-                      styles.contextOption,
-                      selectedSalon?.id === salon.id ? styles.contextOptionActive : null,
-                    ]}
-                    onPress={() => void selectSalonContext(salon.id)}
-                  >
-                    <Text style={styles.contextOptionTitle}>{salon.name}</Text>
-                    <Text style={styles.contextOptionCopy}>{salon.role}</Text>
-                  </Pressable>
-                ))}
-              </View>
-
-              <View style={styles.contextActions}>
-                {selectedSalon
-                  ? salonMenuItems.map((item) => (
-                      <Pressable key={item.route} style={styles.contextAction} onPress={() => navigation.navigate(item.route)}>
-                        <Text style={styles.contextActionIcon}>{item.icon}</Text>
-                        <Text style={styles.contextActionLabel}>{item.label}</Text>
-                      </Pressable>
-                    ))
-                  : null}
-              </View>
-            </AppCard>
-          </>
-        ) : (
-          <>
-            <Text style={styles.sectionLabel}>Salao opcional</Text>
-            <AppCard style={styles.contextCard}>
-              <Text style={styles.contextTitle}>Sem salao vinculado</Text>
-              <Text style={styles.contextCopy}>
-                Voce pode seguir usando sua conta profissional e vincular um salao apenas quando fizer sentido para seu trabalho.
-              </Text>
-              <AppButton
-                label="Vincular um salao agora"
-                onPress={() => navigation.getParent()?.navigate('SalonSetup' as never)}
-              />
-            </AppCard>
-          </>
-        )}
+        <Text style={styles.sectionLabel}>Organizacao por salao</Text>
+        <AppCard style={styles.contextCard}>
+          <Text style={styles.contextTitle}>
+            {hasSalon ? `${session?.salons.length ?? 0} saloes cadastrados` : 'Nenhum salao cadastrado'}
+          </Text>
+          <Text style={styles.contextCopy}>
+            No MVP, o salao serve para classificar suas clientes. Abra a lista de saloes para criar novos cadastros e ver quais clientes pertencem a cada um.
+          </Text>
+          <Pressable style={styles.contextAction} onPress={() => navigation.navigate('Salons')}>
+            <Text style={styles.contextActionIcon}>S</Text>
+            <Text style={styles.contextActionLabel}>Abrir saloes e clientes</Text>
+          </Pressable>
+        </AppCard>
 
         <Pressable style={styles.signOutButton} onPress={() => void signOut()}>
           <Text style={styles.signOutText}>Sair da conta</Text>
@@ -245,43 +170,12 @@ const styles = StyleSheet.create({
     fontSize: 12,
     lineHeight: 18,
   },
-  contextActions: {
-    gap: 8,
-  },
-  contextSwitcher: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  contextOption: {
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 14,
-    paddingHorizontal: 12,
-    paddingVertical: 12,
-    backgroundColor: '#FFFFFF',
-  },
-  contextOptionActive: {
-    borderColor: colors.borderStrong,
-    backgroundColor: colors.roseLight,
-  },
-  contextOptionTitle: {
-    color: colors.textMain,
-    fontFamily: typography.fontFamily.bodyBold,
-    fontSize: 13,
-  },
-  contextOptionCopy: {
-    marginTop: 4,
-    color: colors.textSecondary,
-    fontFamily: typography.fontFamily.body,
-    fontSize: 11,
-  },
   contextAction: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
+    marginTop: 4,
     paddingVertical: 10,
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
   },
   contextActionIcon: {
     width: 18,
