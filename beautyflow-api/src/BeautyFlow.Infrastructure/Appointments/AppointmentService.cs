@@ -54,11 +54,13 @@ public sealed class AppointmentService : IAppointmentService
         }
 
         Salon? salon = null;
-        if (salonId is not null)
+        var effectiveSalonId = salonId ?? customer.SalonId;
+
+        if (effectiveSalonId is not null)
         {
             salon = await _dbContext.Salons
                 .AsNoTracking()
-                .FirstOrDefaultAsync(x => x.Id == salonId.Value, cancellationToken)
+                .FirstOrDefaultAsync(x => x.Id == effectiveSalonId.Value, cancellationToken)
                 ?? throw new InvalidOperationException("Salon was not found.");
         }
 
@@ -75,7 +77,7 @@ public sealed class AppointmentService : IAppointmentService
         var appointment = new Appointment
         {
             UserId = userId,
-            SalonId = salonId,
+            SalonId = effectiveSalonId,
             CustomerId = customer.Id,
             ServiceId = service.Id,
             AppointmentDate = input.AppointmentDate,
@@ -88,7 +90,7 @@ public sealed class AppointmentService : IAppointmentService
         var scheduledMessage = new ScheduledMessage
         {
             UserId = userId,
-            SalonId = salonId,
+            SalonId = effectiveSalonId,
             AppointmentId = appointment.Id,
             CustomerId = customer.Id,
             ServiceId = service.Id,
