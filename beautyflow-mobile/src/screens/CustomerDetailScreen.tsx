@@ -1,7 +1,7 @@
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useFocusEffect } from '@react-navigation/native';
 import { useCallback, useState } from 'react';
-import { Linking, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { AppButton } from '../components/AppButton';
 import { AppCard } from '../components/AppCard';
 import { AppChip } from '../components/AppChip';
@@ -43,6 +43,23 @@ export function CustomerDetailScreen({ navigation, route }: Props) {
     );
   }
 
+  const currentCustomer = customer;
+
+  function openAppointmentForm() {
+    navigation
+      .getParent()
+      ?.getParent()
+      ?.navigate('Main', {
+        screen: 'AppointmentsTab',
+        params: {
+          screen: 'AppointmentForm',
+          params: {
+            customerId: currentCustomer.id,
+          },
+        },
+      });
+  }
+
   return (
     <Screen>
       <TopBar
@@ -51,34 +68,34 @@ export function CustomerDetailScreen({ navigation, route }: Props) {
         rightLabel="Editar"
         onRightPress={() =>
           navigation.navigate('CustomerForm', {
-            customerId: customer.id,
+            customerId: currentCustomer.id,
           })
         }
       />
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.profileHeader}>
           <Avatar
-            initials={customer.initials}
+            initials={currentCustomer.initials}
             size={76}
-            source={customer.photoUrl ? { uri: customer.photoUrl } : undefined}
+            source={currentCustomer.photoUrl ? { uri: currentCustomer.photoUrl } : undefined}
           />
-          <Text style={styles.customerName}>{customer.name}</Text>
-          <Text style={styles.metaText}>{`${customer.whatsapp} - ${customer.contactPreference}`}</Text>
-          <Text style={styles.contextBadge}>{customer.contextLabel}</Text>
+          <Text style={styles.customerName}>{currentCustomer.name}</Text>
+          <Text style={styles.metaText}>{`${currentCustomer.whatsapp} - ${currentCustomer.contactPreference}`}</Text>
+          <Text style={styles.contextBadge}>{currentCustomer.contextLabel}</Text>
         </View>
 
         <AppCard style={styles.sectionCard}>
           <View style={styles.summaryBlock}>
             <Text style={styles.metaText}>Ultimo atendimento</Text>
-            <Text style={styles.summaryTitle}>{customer.lastAppointmentLabel ?? 'Sem historico'}</Text>
+            <Text style={styles.summaryTitle}>{currentCustomer.lastAppointmentLabel ?? 'Sem historico'}</Text>
           </View>
           <View style={styles.divider} />
           <View style={styles.summaryRow}>
             <View>
               <Text style={styles.metaText}>Proximo contato</Text>
               <Text style={styles.highlightTitle}>
-                {customer.nextContactDate
-                  ? formatLongDate(customer.nextContactDate)
+                {currentCustomer.nextContactDate
+                  ? formatLongDate(currentCustomer.nextContactDate)
                   : 'A definir'}
               </Text>
             </View>
@@ -89,19 +106,27 @@ export function CustomerDetailScreen({ navigation, route }: Props) {
         <AppCard style={styles.sectionCard}>
           <Text style={styles.sectionLabel}>Observacoes</Text>
           <Text style={styles.metaParagraph}>
-            {customer.notes ?? 'Nenhuma observacao registrada para esta cliente.'}
+            {currentCustomer.notes ?? 'Nenhuma observacao registrada para esta cliente.'}
           </Text>
         </AppCard>
 
-        <Text style={styles.sectionLabel}>Historico</Text>
-        {customer.history.length === 0 ? (
+        <View style={styles.historyHeader}>
+          <Text style={[styles.sectionLabel, styles.historyLabel]}>Historico</Text>
+          <Pressable style={styles.historyAction} onPress={openAppointmentForm}>
+            <Text style={styles.historyActionText}>+ Atendimento</Text>
+          </Pressable>
+        </View>
+        {currentCustomer.history.length === 0 ? (
           <AppCard style={styles.sectionCard}>
             <Text style={styles.metaParagraph}>
               Esta cliente ainda nao tem atendimentos registrados.
             </Text>
+            <Pressable style={styles.emptyHistoryAction} onPress={openAppointmentForm}>
+              <Text style={styles.emptyHistoryActionText}>Registrar primeiro atendimento</Text>
+            </Pressable>
           </AppCard>
         ) : (
-          customer.history.map((item) => (
+          currentCustomer.history.map((item) => (
             <ListCard
               key={item.id}
               title={item.serviceName}
@@ -122,25 +147,12 @@ export function CustomerDetailScreen({ navigation, route }: Props) {
 
         <AppButton
           label="Registrar atendimento"
-          onPress={() =>
-            navigation
-              .getParent()
-              ?.getParent()
-              ?.navigate('Main', {
-                screen: 'AppointmentsTab',
-                params: {
-                  screen: 'AppointmentForm',
-                  params: {
-                    customerId: customer.id,
-                  },
-                },
-              })
-          }
+          onPress={openAppointmentForm}
         />
         <AppButton
           label="Abrir WhatsApp"
           variant="secondary"
-          onPress={() => void openWhatsApp(customer)}
+          onPress={() => void openWhatsApp(currentCustomer)}
         />
       </ScrollView>
     </Screen>
@@ -242,10 +254,45 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     textTransform: 'uppercase',
   },
+  historyHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  historyLabel: {
+    marginBottom: 0,
+  },
+  historyAction: {
+    borderWidth: 1,
+    borderColor: colors.borderStrong,
+    borderRadius: 999,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    backgroundColor: '#FFFFFF',
+  },
+  historyActionText: {
+    color: colors.roseDark,
+    fontFamily: typography.fontFamily.bodyBold,
+    fontSize: 11,
+  },
   metaParagraph: {
     fontFamily: typography.fontFamily.body,
     fontSize: 12,
     lineHeight: 18,
     color: colors.textSecondary,
+  },
+  emptyHistoryAction: {
+    alignSelf: 'flex-start',
+    marginTop: 12,
+    borderRadius: 999,
+    backgroundColor: colors.roseLight,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  emptyHistoryActionText: {
+    color: colors.roseDark,
+    fontFamily: typography.fontFamily.bodyBold,
+    fontSize: 11,
   },
 });
