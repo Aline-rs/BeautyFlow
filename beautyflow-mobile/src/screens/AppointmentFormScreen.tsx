@@ -11,7 +11,6 @@ import { AppTextarea } from '../components/AppTextarea';
 import { KeyboardScrollScreen } from '../components/KeyboardScrollScreen';
 import { TopBar } from '../components/TopBar';
 import { AppointmentFormValues, appointmentSchema, useAppointments } from '../features/appointments';
-import { useCustomers } from '../features/customers';
 import { fetchCustomers } from '../features/customers/customersService';
 import { Customer } from '../features/customers/types';
 import { fetchServices } from '../features/services/servicesService';
@@ -44,7 +43,6 @@ function todayIsoDate() {
 export function AppointmentFormScreen({ navigation, route }: Props) {
   const presetCustomerId = route.params?.customerId;
   const { registerAppointment } = useAppointments();
-  const { getCustomerById } = useCustomers();
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [services, setServices] = useState<Service[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -157,7 +155,6 @@ export function AppointmentFormScreen({ navigation, route }: Props) {
         appointmentDate: values.appointmentDate,
         notes: values.notes || undefined,
       });
-      await getCustomerById(values.customerId);
 
       navigation.goBack();
     } catch {
