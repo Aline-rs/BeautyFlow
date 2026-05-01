@@ -1,6 +1,6 @@
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useFocusEffect } from '@react-navigation/native';
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { AppButton } from '../components/AppButton';
 import { AppCard } from '../components/AppCard';
@@ -20,6 +20,18 @@ export function CustomerDetailScreen({ navigation, route }: Props) {
   const { customerId } = route.params;
   const { getCustomerById } = useCustomers();
   const [customer, setCustomer] = useState<Customer | null>(null);
+  const sortedHistory = useMemo(
+    () =>
+      [...(customer?.history ?? [])].sort((left, right) => {
+        const appointmentDateComparison = right.appointmentDate.localeCompare(left.appointmentDate);
+        if (appointmentDateComparison !== 0) {
+          return appointmentDateComparison;
+        }
+
+        return (right.nextContactDate ?? '').localeCompare(left.nextContactDate ?? '');
+      }),
+    [customer?.history],
+  );
 
   useFocusEffect(
     useCallback(() => {
@@ -120,7 +132,7 @@ export function CustomerDetailScreen({ navigation, route }: Props) {
             <Text style={styles.historyActionText}>+ Atendimento</Text>
           </Pressable>
         </View>
-        {currentCustomer.history.length === 0 ? (
+        {sortedHistory.length === 0 ? (
           <AppCard style={styles.sectionCard}>
             <Text style={styles.metaParagraph}>
               Esta cliente ainda nao tem atendimentos registrados.
@@ -130,7 +142,7 @@ export function CustomerDetailScreen({ navigation, route }: Props) {
             </Pressable>
           </AppCard>
         ) : (
-          currentCustomer.history.map((item) => (
+          sortedHistory.map((item) => (
             <ListCard
               key={item.id}
               title={item.serviceName}
