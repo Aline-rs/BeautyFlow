@@ -164,11 +164,13 @@ export function HomeScreen({ navigation }: Props) {
               <Text style={styles.title}>Home</Text>
               <Text style={styles.subtitle}>Ola {firstName}, seja bem vindo de volta!</Text>
             </View>
-            <Avatar
-              initials={buildInitials(session?.user.name ?? 'BF')}
-              size={48}
-              source={session?.user.profilePhotoUrl ? { uri: session.user.profilePhotoUrl } : undefined}
-            />
+            <View style={styles.heroAvatarWrap}>
+              <Avatar
+                initials={buildInitials(session?.user.name ?? 'BF')}
+                size={52}
+                source={session?.user.profilePhotoUrl ? { uri: session.user.profilePhotoUrl } : undefined}
+              />
+            </View>
           </View>
 
           <View style={styles.quickActions}>
@@ -194,6 +196,26 @@ export function HomeScreen({ navigation }: Props) {
           </View>
         ) : (
           <>
+            <AppCard style={styles.summaryCard}>
+              <Text style={styles.sectionLabel}>Resumo da semana</Text>
+              <View style={styles.summaryRow}>
+                <View style={styles.summaryItem}>
+                  <Text style={styles.summaryValue}>{weeklySummary.appointments}</Text>
+                  <Text style={styles.summaryLabel}>Atendimentos</Text>
+                </View>
+                <View style={styles.summaryDivider} />
+                <View style={styles.summaryItem}>
+                  <Text style={styles.summaryValue}>{weeklySummary.servedCustomers}</Text>
+                  <Text style={styles.summaryLabel}>Clientes atendidas</Text>
+                </View>
+                <View style={styles.summaryDivider} />
+                <View style={styles.summaryItem}>
+                  <Text style={styles.summaryValue}>{weeklySummary.scheduledFollowUps}</Text>
+                  <Text style={styles.summaryLabel}>Retornos programados</Text>
+                </View>
+              </View>
+            </AppCard>
+
             <View style={styles.statsGrid}>
               <Pressable
                 style={styles.statPressable}
@@ -223,26 +245,6 @@ export function HomeScreen({ navigation }: Props) {
                 <StatCard value={String(upcomingCustomers.length)} label="Clientes com retorno proximo" />
               </Pressable>
             </View>
-
-            <AppCard style={styles.summaryCard}>
-              <Text style={styles.sectionLabel}>Resumo da semana</Text>
-              <View style={styles.summaryRow}>
-                <View style={styles.summaryItem}>
-                  <Text style={styles.summaryValue}>{weeklySummary.appointments}</Text>
-                  <Text style={styles.summaryLabel}>Atendimentos</Text>
-                </View>
-                <View style={styles.summaryDivider} />
-                <View style={styles.summaryItem}>
-                  <Text style={styles.summaryValue}>{weeklySummary.servedCustomers}</Text>
-                  <Text style={styles.summaryLabel}>Clientes atendidas</Text>
-                </View>
-                <View style={styles.summaryDivider} />
-                <View style={styles.summaryItem}>
-                  <Text style={styles.summaryValue}>{weeklySummary.scheduledFollowUps}</Text>
-                  <Text style={styles.summaryLabel}>Retornos programados</Text>
-                </View>
-              </View>
-            </AppCard>
 
             <AppCard style={styles.highlightCard}>
               <Text style={styles.sectionLabel}>Atividade em destaque</Text>
@@ -353,6 +355,9 @@ const styles = StyleSheet.create({
   heroTextBlock: {
     flex: 1,
   },
+  heroAvatarWrap: {
+    marginLeft: 'auto',
+  },
   title: {
     fontFamily: typography.fontFamily.title,
     fontSize: 30,
@@ -381,11 +386,13 @@ const styles = StyleSheet.create({
   statsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: spacing.sm,
+    justifyContent: 'space-between',
+    rowGap: spacing.sm,
     marginBottom: 12,
   },
   statPressable: {
-    width: '48.5%',
+    flexBasis: '48.5%',
+    maxWidth: '48.5%',
   },
   sectionLabel: {
     marginBottom: 10,
