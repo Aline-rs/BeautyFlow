@@ -21,15 +21,20 @@ export function CustomerDetailScreen({ navigation, route }: Props) {
   const { getCustomerById } = useCustomers();
   const [customer, setCustomer] = useState<Customer | null>(null);
   const sortedHistory = useMemo(
-    () =>
-      [...(customer?.history ?? [])].sort((left, right) => {
-        const appointmentDateComparison = right.appointmentDate.localeCompare(left.appointmentDate);
-        if (appointmentDateComparison !== 0) {
-          return appointmentDateComparison;
-        }
+    () => {
+      const historyWithOrder = (customer?.history ?? []).map((item, index) => ({ item, index }));
 
-        return (right.nextContactDate ?? '').localeCompare(left.nextContactDate ?? '');
-      }),
+      return historyWithOrder
+        .sort((left, right) => {
+          const appointmentDateComparison = right.item.appointmentDate.localeCompare(left.item.appointmentDate);
+          if (appointmentDateComparison !== 0) {
+            return appointmentDateComparison;
+          }
+
+          return left.index - right.index;
+        })
+        .map(({ item }) => item);
+    },
     [customer?.history],
   );
 
