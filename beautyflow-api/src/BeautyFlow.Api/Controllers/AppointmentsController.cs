@@ -4,6 +4,7 @@ using BeautyFlow.Application.Abstractions.Appointments;
 using BeautyFlow.Application.Abstractions.Auth;
 using BeautyFlow.Application.Models.Appointments;
 using BeautyFlow.Domain.Entities;
+using BeautyFlow.Domain.Enums;
 using BeautyFlow.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -127,7 +128,148 @@ public sealed class AppointmentsController : ControllerBase
         return Ok(appointments.Select(MapAppointment).ToList());
     }
 
+    [HttpGet("{id:guid}")]
+    [ProducesResponseType(typeof(AppointmentDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<AppointmentDto>> GetAppointment(Guid id)
+    {
+        var userId = GetUserId();
+        if (userId is null)
+        {
+            return Unauthorized(ApiResponse<object>.Failure("User is not authenticated."));
+        }
+
+        var appointment = await LoadTrackedAppointmentAsync(id, userId.Value);
+        if (appointment is null)
+        {
+            return NotFound(ApiResponse<object>.Failure("Appointment was not found."));
+        }
+
+        return Ok(MapAppointment(appointment));
+    }
+
+    [HttpPut("{id:guid}")]
+    [ProducesResponseType(typeof(AppointmentDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<AppointmentDto>> UpdateAppointment(Guid id, [FromBody] CreateAppointmentRequest request)
+    {
+        var userId = GetUserId();
+        if (userId is null)
+        {
+            return Unauthorized(ApiResponse<object>.Failure("User is not authenticated."));
+        }
+
+        if (!TryParseRequest(request, out var customerId, out var serviceIds, out var appointmentDate))
+        {
+            return BadRequest(ApiResponse<object>.Failure("Invalid appointment payload."));
+        }
+
+        var appointment = await LoadTrackedAppointmentAsync(id, userId.Value);
+        if (appointment is null)
+        {
+            return NotFound(ApiResponse<object>.Failure("Appointment was not found."));
+        }
+
+        var customer = await _dbContext.Customers
+            .Include(x => x.Salon)
+            .FirstOrDefaultAsync(x => x.Id == customerId && x.UserId == userId.Value);
+
+        if (customer is null)
+        {
+            return BadRequest(ApiResponse<object>.Failure("Customer was not found."));
+        }
+
+        var services = await _dbContext.Services
+            .Where(x => x.UserId == userId.Value && serviceIds.Contains(x.Id))
+            .OrderBy(x => x.Name)
+            .ToListAsync();
+
+        if (services.Count != serviceIds.Count)
+        {
+            return BadRequest(ApiResponse<object>.Failure("One or more services were not found."));
+        }
+
+        var triggerService = PickTriggerService(services);
+        var scheduledForDate = appointmentDate.AddDays(triggerService.SuggestedReturnDays);
+        var messageText = BuildFollowUpMessageText(customer.Name, triggerService.Name, triggerService.SuggestedReturnDays);
+
+        appointment.CustomerId = customer.Id;
+        appointment.Customer = customer;
+        appointment.SalonId = customer.SalonId;
+        appointment.Salon = customer.Salon;
+        appointment.ServiceId = triggerService.Id;
+        appointment.Service = triggerService;
+        appointment.AppointmentDate = appointmentDate;
+        appointment.Notes = NormalizeOptionalText(request.Notes);
+
+        _dbContext.AppointmentServices.RemoveRange(appointment.AppointmentServices);
+        appointment.AppointmentServices.Clear();
+
+        foreach (var service in services.Select((item, index) => new { item, index }))
+        {
+            appointment.AppointmentServices.Add(new Domain.Entities.AppointmentService
+            {
+                UserId = userId.Value,
+                AppointmentId = appointment.Id,
+                CustomerId = customer.Id,
+                ServiceId = service.item.Id,
+                SalonId = customer.SalonId,
+                AppointmentDate = appointmentDate,
+                SuggestedReturnDays = service.item.SuggestedReturnDays,
+                SortOrder = service.index,
+                Service = service.item
+            });
+        }
+
+        if (appointment.ScheduledMessage is null)
+        {
+            appointment.ScheduledMessage = new ScheduledMessage
+            {
+                UserId = userId.Value,
+                AppointmentId = appointment.Id,
+                CustomerId = customer.Id,
+                ServiceId = triggerService.Id,
+                SalonId = customer.SalonId,
+                Status = MessageStatus.Pending
+            };
+            _dbContext.ScheduledMessages.Add(appointment.ScheduledMessage);
+        }
+
+        appointment.ScheduledMessage.UserId = userId.Value;
+        appointment.ScheduledMessage.CustomerId = customer.Id;
+        appointment.ScheduledMessage.ServiceId = triggerService.Id;
+        appointment.ScheduledMessage.SalonId = customer.SalonId;
+        appointment.ScheduledMessage.ScheduledForDate = scheduledForDate;
+        appointment.ScheduledMessage.MessageText = messageText;
+        appointment.ScheduledMessage.UpdatedAtUtc = DateTime.UtcNow;
+
+        await _dbContext.SaveChangesAsync();
+
+        var updatedAppointment = await LoadAppointmentAsync(id, userId.Value);
+        return Ok(MapAppointment(updatedAppointment!));
+    }
+
     private Guid? GetUserId() => _currentUserService.UserId;
+
+    private static bool TryParseRequest(
+        CreateAppointmentRequest request,
+        out Guid customerId,
+        out List<Guid> serviceIds,
+        out DateOnly appointmentDate)
+    {
+        appointmentDate = default;
+        serviceIds = request.ServiceIds
+            .Where(x => !string.IsNullOrWhiteSpace(x))
+            .Select(x => Guid.TryParse(x, out var parsedId) ? parsedId : Guid.Empty)
+            .Where(x => x != Guid.Empty)
+            .Distinct()
+            .ToList();
+
+        return Guid.TryParse(request.CustomerId, out customerId) &&
+               serviceIds.Count > 0 &&
+               DateOnly.TryParse(request.AppointmentDate, out appointmentDate);
+    }
 
     private async Task<Appointment?> LoadAppointmentAsync(Guid appointmentId, Guid userId)
     {
@@ -138,6 +280,18 @@ public sealed class AppointmentsController : ControllerBase
             .Include(x => x.Service)
             .Include(x => x.AppointmentServices)
                 .ThenInclude(x => x.Service)
+            .Include(x => x.ScheduledMessage)
+            .FirstOrDefaultAsync(x => x.Id == appointmentId && x.UserId == userId);
+    }
+
+    private async Task<Appointment?> LoadTrackedAppointmentAsync(Guid appointmentId, Guid userId)
+    {
+        return await _dbContext.Appointments
+            .Include(x => x.Customer)
+                .ThenInclude(x => x.Salon)
+            .Include(x => x.Salon)
+            .Include(x => x.Service)
+            .Include(x => x.AppointmentServices)
             .Include(x => x.ScheduledMessage)
             .FirstOrDefaultAsync(x => x.Id == appointmentId && x.UserId == userId);
     }
@@ -186,5 +340,23 @@ public sealed class AppointmentsController : ControllerBase
             .Select(part => char.ToUpperInvariant(part[0]));
 
         return string.Concat(parts);
+    }
+
+    private static Service PickTriggerService(IReadOnlyList<Service> services)
+    {
+        return services
+            .OrderByDescending(x => x.SuggestedReturnDays)
+            .ThenBy(x => x.Name)
+            .First();
+    }
+
+    private static string BuildFollowUpMessageText(string customerName, string serviceName, int suggestedReturnDays)
+    {
+        return $"Oi, {customerName}! Tudo bem? Ja faz {suggestedReturnDays} dias desde {serviceName.ToLowerInvariant()}. Que tal agendar um retorno?";
+    }
+
+    private static string? NormalizeOptionalText(string? value)
+    {
+        return string.IsNullOrWhiteSpace(value) ? null : value.Trim();
     }
 }

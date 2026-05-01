@@ -45,7 +45,7 @@ export function CustomerDetailScreen({ navigation, route }: Props) {
 
   const currentCustomer = customer;
 
-  function openAppointmentForm() {
+  function openAppointmentForm(appointmentId?: string) {
     navigation
       .getParent()
       ?.getParent()
@@ -55,6 +55,7 @@ export function CustomerDetailScreen({ navigation, route }: Props) {
           screen: 'AppointmentForm',
           params: {
             customerId: currentCustomer.id,
+            appointmentId,
           },
         },
       });
@@ -112,7 +113,7 @@ export function CustomerDetailScreen({ navigation, route }: Props) {
 
         <View style={styles.historyHeader}>
           <Text style={[styles.sectionLabel, styles.historyLabel]}>Historico</Text>
-          <Pressable style={styles.historyAction} onPress={openAppointmentForm}>
+          <Pressable style={styles.historyAction} onPress={() => openAppointmentForm()}>
             <Text style={styles.historyActionText}>+ Atendimento</Text>
           </Pressable>
         </View>
@@ -121,7 +122,7 @@ export function CustomerDetailScreen({ navigation, route }: Props) {
             <Text style={styles.metaParagraph}>
               Esta cliente ainda nao tem atendimentos registrados.
             </Text>
-            <Pressable style={styles.emptyHistoryAction} onPress={openAppointmentForm}>
+            <Pressable style={styles.emptyHistoryAction} onPress={() => openAppointmentForm()}>
               <Text style={styles.emptyHistoryActionText}>Registrar primeiro atendimento</Text>
             </Pressable>
           </AppCard>
@@ -141,14 +142,10 @@ export function CustomerDetailScreen({ navigation, route }: Props) {
                   variant={item.messageStatus === 'Enviada' ? 'sent' : 'pending'}
                 />
               }
+              onPress={() => openAppointmentForm(item.id)}
             />
           ))
         )}
-
-        <AppButton
-          label="Registrar atendimento"
-          onPress={openAppointmentForm}
-        />
         <AppButton
           label="Abrir WhatsApp"
           variant="secondary"

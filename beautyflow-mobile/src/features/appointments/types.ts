@@ -25,6 +25,8 @@ export type CreateAppointmentPayload = {
   notes?: string;
 };
 
+export type UpdateAppointmentPayload = CreateAppointmentPayload;
+
 export type ScheduledMessage = {
   id: string;
   appointmentId: string;

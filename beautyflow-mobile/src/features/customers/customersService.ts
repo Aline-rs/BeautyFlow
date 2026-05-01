@@ -210,6 +210,26 @@ type AppointmentCustomerSyncPayload = {
 };
 
 export function syncMockCustomerAfterAppointment(payload: AppointmentCustomerSyncPayload) {
+  syncMockCustomerAfterAppointmentMutation(payload);
+}
+
+export function syncMockCustomerAfterAppointmentMutation(
+  payload: AppointmentCustomerSyncPayload,
+  previousPayload?: AppointmentCustomerSyncPayload,
+) {
+  if (previousPayload && previousPayload.customerId !== payload.customerId) {
+    mockDatabase = mockDatabase.map((customer) => {
+      if (customer.id !== previousPayload.customerId) {
+        return customer;
+      }
+
+      return {
+        ...customer,
+        history: customer.history.filter((item) => item.id !== previousPayload.appointmentId),
+      };
+    });
+  }
+
   mockDatabase = mockDatabase.map((customer) => {
     if (customer.id !== payload.customerId) {
       return customer;
