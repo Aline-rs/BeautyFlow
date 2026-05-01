@@ -1,5 +1,5 @@
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { AppCard } from '../components/AppCard';
 import { Avatar } from '../components/Avatar';
 import { Screen } from '../components/Screen';
@@ -29,57 +29,64 @@ export function MoreScreen({ navigation }: Props) {
 
   return (
     <Screen>
-      <View style={styles.hero}>
-        <Avatar
-          initials={buildInitials(session?.user.name ?? 'BF')}
-          size={64}
-          source={session?.user.profilePhotoUrl ? { uri: session.user.profilePhotoUrl } : undefined}
-        />
-        <Text style={styles.heroEyebrow}>Profissional BeautyFlow</Text>
-        <Text style={styles.heroTitle}>{session?.user.name ?? 'BeautyFlow'}</Text>
-        <Text style={styles.heroSubtitle}>{session?.user.email ?? 'sessao@beautyflow.app'}</Text>
-      </View>
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        <View style={styles.hero}>
+          <Avatar
+            initials={buildInitials(session?.user.name ?? 'BF')}
+            size={64}
+            source={session?.user.profilePhotoUrl ? { uri: session.user.profilePhotoUrl } : undefined}
+          />
+          <Text style={styles.heroEyebrow}>Profissional BeautyFlow</Text>
+          <Text style={styles.heroTitle}>{session?.user.name ?? 'BeautyFlow'}</Text>
+          <Text style={styles.heroSubtitle}>{session?.user.email ?? 'sessao@beautyflow.app'}</Text>
+        </View>
 
-      <View style={styles.content}>
-        <Text style={styles.sectionLabel}>Conta profissional</Text>
+        <View style={styles.content}>
+          <Text style={styles.sectionLabel}>Conta profissional</Text>
 
-        <AppCard style={styles.menuCard}>
-          {professionalMenuItems.map((item, index) => (
-            <Pressable
-              key={item.route}
-              style={[styles.menuRow, index === professionalMenuItems.length - 1 ? styles.lastRow : null]}
-              onPress={() => navigation.navigate(item.route)}
-            >
-              <Text style={styles.menuIcon}>{item.icon}</Text>
-              <Text style={styles.menuLabel}>{item.label}</Text>
-              <Text style={styles.menuArrow}>{'>'}</Text>
+          <AppCard style={styles.menuCard}>
+            {professionalMenuItems.map((item, index) => (
+              <Pressable
+                key={item.route}
+                style={[styles.menuRow, index === professionalMenuItems.length - 1 ? styles.lastRow : null]}
+                onPress={() => navigation.navigate(item.route)}
+              >
+                <Text style={styles.menuIcon}>{item.icon}</Text>
+                <Text style={styles.menuLabel}>{item.label}</Text>
+                <Text style={styles.menuArrow}>{'>'}</Text>
+              </Pressable>
+            ))}
+          </AppCard>
+
+          <Text style={styles.sectionLabel}>Organizacao por salao</Text>
+          <AppCard style={styles.contextCard}>
+            <Text style={styles.contextTitle}>
+              {hasSalon ? `${session?.salons.length ?? 0} saloes cadastrados` : 'Nenhum salao cadastrado'}
+            </Text>
+            <Text style={styles.contextCopy}>
+              No MVP, o salao serve para classificar suas clientes. Abra a lista de saloes para criar novos cadastros e ver quais clientes pertencem a cada um.
+            </Text>
+            <Pressable style={styles.contextAction} onPress={() => navigation.navigate('Salons')}>
+              <Text style={styles.contextActionIcon}>S</Text>
+              <Text style={styles.contextActionLabel}>Abrir saloes e clientes</Text>
             </Pressable>
-          ))}
-        </AppCard>
+          </AppCard>
 
-        <Text style={styles.sectionLabel}>Organizacao por salao</Text>
-        <AppCard style={styles.contextCard}>
-          <Text style={styles.contextTitle}>
-            {hasSalon ? `${session?.salons.length ?? 0} saloes cadastrados` : 'Nenhum salao cadastrado'}
-          </Text>
-          <Text style={styles.contextCopy}>
-            No MVP, o salao serve para classificar suas clientes. Abra a lista de saloes para criar novos cadastros e ver quais clientes pertencem a cada um.
-          </Text>
-          <Pressable style={styles.contextAction} onPress={() => navigation.navigate('Salons')}>
-            <Text style={styles.contextActionIcon}>S</Text>
-            <Text style={styles.contextActionLabel}>Abrir saloes e clientes</Text>
+          <Pressable style={styles.signOutButton} onPress={() => void signOut()}>
+            <Text style={styles.signOutText}>Sair da conta</Text>
           </Pressable>
-        </AppCard>
-
-        <Pressable style={styles.signOutButton} onPress={() => void signOut()}>
-          <Text style={styles.signOutText}>Sair da conta</Text>
-        </Pressable>
-      </View>
+        </View>
+      </ScrollView>
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
+  scrollContent: {
+    flexGrow: 1,
+    paddingBottom: 24,
+    backgroundColor: colors.offWhite,
+  },
   hero: {
     paddingHorizontal: 16,
     paddingTop: 22,
@@ -109,7 +116,6 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
   },
   content: {
-    flex: 1,
     padding: 16,
   },
   sectionLabel: {
