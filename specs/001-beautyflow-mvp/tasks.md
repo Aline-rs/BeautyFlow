@@ -203,14 +203,14 @@
 
 ### P3 - Improve customer discovery and customer form UX
 
-- [ ] P113 Add live customer search suggestions to `CustomersScreen`.
-- [ ] P114 Rename the `Portfolio profissional` filter chip to `Todas`.
-- [ ] P115 Update the customer-count copy to `{} clientes cadastradas` and to `{} clientes vinculadas ao salao` when a salon filter is active.
-- [ ] P116 Remove the top `+ Nova` button from `CustomersScreen` and keep only the floating create action.
-- [ ] P117 Update the salon helper text in `CustomerFormScreen` to explain salon classification and mention the `Mais` menu.
-- [ ] P118 Align the customer birth-date field behavior with the appointment date-selection pattern.
-- [ ] P119 Convert all selectable customer-form fields to explicit dropdown interactions.
-- [ ] P120 Review `CustomersScreen`, `CustomerFormScreen`, and `CustomerDetailScreen` against the HTML prototype and adjust spacing, hierarchy, and states.
+- [x] P113 Add live customer search suggestions to `CustomersScreen`.
+- [x] P114 Rename the `Portfolio profissional` filter chip to `Todas`.
+- [x] P115 Update the customer-count copy to `{} clientes cadastradas` and to `{} clientes vinculadas ao salao` when a salon filter is active.
+- [x] P116 Remove the top `+ Nova` button from `CustomersScreen` and keep only the floating create action.
+- [x] P117 Update the salon helper text in `CustomerFormScreen` to explain salon classification and mention the `Mais` menu.
+- [x] P118 Align the customer birth-date field behavior with the appointment date-selection pattern.
+- [x] P119 Convert all selectable customer-form fields to explicit dropdown interactions.
+- [x] P120 Review `CustomersScreen`, `CustomerFormScreen`, and `CustomerDetailScreen` against the HTML prototype and adjust spacing, hierarchy, and states.
 
 ### P4 - Refine appointments list and redesign register-appointment flow
 

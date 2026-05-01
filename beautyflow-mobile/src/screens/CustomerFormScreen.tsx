@@ -1,9 +1,10 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import * as ImagePicker from 'expo-image-picker';
 import { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Alert, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { AppButton } from '../components/AppButton';
 import { AppCard } from '../components/AppCard';
 import { AppInput } from '../components/AppInput';
@@ -24,6 +25,7 @@ const contactOptions: CustomerFormValues['contactPreference'][] = [
 ];
 
 type Props = NativeStackScreenProps<CustomersStackParamList, 'CustomerForm'>;
+type OpenDropdown = 'salon' | 'contact' | 'birthDate' | null;
 
 export function CustomerFormScreen({ navigation, route }: Props) {
   const customerId = route.params?.customerId;
@@ -31,7 +33,7 @@ export function CustomerFormScreen({ navigation, route }: Props) {
   const { getCustomerById, saveCustomer } = useCustomers();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(Boolean(customerId));
-  const [isSalonDropdownOpen, setIsSalonDropdownOpen] = useState(false);
+  const [openDropdown, setOpenDropdown] = useState<OpenDropdown>(null);
   const {
     control,
     handleSubmit,
@@ -54,6 +56,7 @@ export function CustomerFormScreen({ navigation, route }: Props) {
 
   const selectedPreference = watch('contactPreference');
   const selectedSalonId = watch('salonId');
+  const birthDate = watch('birthDate');
   const photoUrl = watch('photoUrl');
   const salonOptions = [
     { id: '', label: 'Nao informar agora' },
@@ -61,6 +64,7 @@ export function CustomerFormScreen({ navigation, route }: Props) {
   ];
   const selectedSalonLabel =
     salonOptions.find((option) => option.id === selectedSalonId)?.label ?? 'Nao informar agora';
+  const formattedBirthDate = birthDate ? formatBirthDate(birthDate) : '';
 
   useEffect(() => {
     async function loadCustomer() {
@@ -136,6 +140,18 @@ export function CustomerFormScreen({ navigation, route }: Props) {
     }
   }
 
+  function handleBirthDateChange(event: DateTimePickerEvent, selectedDate?: Date) {
+    if (Platform.OS === 'android') {
+      setOpenDropdown(null);
+    }
+
+    if (event.type === 'dismissed' || !selectedDate) {
+      return;
+    }
+
+    setValue('birthDate', toIsoDate(selectedDate));
+  }
+
   return (
     <KeyboardScrollScreen
       header={
@@ -192,10 +208,10 @@ export function CustomerFormScreen({ navigation, route }: Props) {
               <AppSelect
                 label="Salao da cliente"
                 value={selectedSalonLabel}
-                onPress={() => setIsSalonDropdownOpen((current) => !current)}
+                onPress={() => setOpenDropdown((current) => (current === 'salon' ? null : 'salon'))}
               />
 
-              {isSalonDropdownOpen ? (
+              {openDropdown === 'salon' ? (
                 <AppCard style={styles.dropdownCard}>
                   {salonOptions.map((option, index) => {
                     const isSelected = option.id === selectedSalonId;
@@ -209,7 +225,7 @@ export function CustomerFormScreen({ navigation, route }: Props) {
                         ]}
                         onPress={() => {
                           setValue('salonId', option.id);
-                          setIsSalonDropdownOpen(false);
+                          setOpenDropdown(null);
                         }}
                       >
                         <View>
@@ -229,32 +245,70 @@ export function CustomerFormScreen({ navigation, route }: Props) {
         />
 
         <Text style={styles.helperText}>
-          Opcional. Use esse campo apenas para indicar em qual salao essa cliente costuma ser atendida.
+          Use esse campo apenas para indicar em qual salao essa cliente costuma ser atendida. Voce pode cadastrar um novo salao no menu Mais.
         </Text>
 
-        <Controller
-          control={control}
-          name="birthDate"
-          render={({ field: { onChange, onBlur, value } }) => (
-            <AppInput
-              label="Data de nascimento"
-              placeholder="1994-07-16"
-              value={value}
-              onBlur={onBlur}
-              onChangeText={onChange}
-            />
-          )}
-        />
+        <View>
+          <AppSelect
+            label="Data de nascimento"
+            value={formattedBirthDate || undefined}
+            placeholder="Selecionar data"
+            onPress={() => setOpenDropdown((current) => (current === 'birthDate' ? null : 'birthDate'))}
+          />
 
-        <AppSelect
-          label="Preferencia de contato"
-          value={selectedPreference}
-          onPress={() => {
-            const currentIndex = contactOptions.indexOf(selectedPreference);
-            const nextIndex = (currentIndex + 1) % contactOptions.length;
-            setValue('contactPreference', contactOptions[nextIndex]);
-          }}
-        />
+          {openDropdown === 'birthDate' ? (
+            <AppCard style={styles.datePickerCard}>
+              <View style={styles.datePickerHeader}>
+                <Text style={styles.dropdownOptionTitle}>Escolha a data</Text>
+                {birthDate ? (
+                  <Pressable onPress={() => {
+                    setValue('birthDate', '');
+                    setOpenDropdown(null);
+                  }}>
+                    <Text style={styles.clearAction}>Limpar</Text>
+                  </Pressable>
+                ) : null}
+              </View>
+              <DateTimePicker
+                value={birthDate ? parseIsoDate(birthDate) : new Date(1995, 0, 1)}
+                mode="date"
+                display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                maximumDate={new Date()}
+                onChange={handleBirthDateChange}
+              />
+            </AppCard>
+          ) : null}
+        </View>
+
+        <View>
+          <AppSelect
+            label="Preferencia de contato"
+            value={selectedPreference}
+            onPress={() => setOpenDropdown((current) => (current === 'contact' ? null : 'contact'))}
+          />
+
+          {openDropdown === 'contact' ? (
+            <AppCard style={styles.dropdownCard}>
+              {contactOptions.map((option, index) => {
+                const isSelected = option === selectedPreference;
+
+                return (
+                  <Pressable
+                    key={option}
+                    style={[styles.dropdownOption, index === contactOptions.length - 1 ? styles.dropdownOptionLast : null]}
+                    onPress={() => {
+                      setValue('contactPreference', option);
+                      setOpenDropdown(null);
+                    }}
+                  >
+                    <Text style={styles.dropdownOptionTitle}>{option}</Text>
+                    {isSelected ? <Text style={styles.dropdownCheck}>OK</Text> : null}
+                  </Pressable>
+                );
+              })}
+            </AppCard>
+          ) : null}
+        </View>
 
         <Controller
           control={control}
@@ -288,6 +342,18 @@ export function CustomerFormScreen({ navigation, route }: Props) {
   );
 }
 
+function toIsoDate(date: Date) {
+  return date.toISOString().slice(0, 10);
+}
+
+function parseIsoDate(date: string) {
+  return new Date(`${date}T00:00:00`);
+}
+
+function formatBirthDate(date: string) {
+  return new Intl.DateTimeFormat('pt-BR').format(parseIsoDate(date));
+}
+
 const styles = StyleSheet.create({
   content: {
     padding: 16,
@@ -297,11 +363,16 @@ const styles = StyleSheet.create({
   infoText: {
     marginBottom: 12,
     color: colors.textSecondary,
+    fontFamily: typography.fontFamily.body,
+    fontSize: 11,
   },
   helperText: {
     marginTop: -4,
     marginBottom: 12,
     color: colors.textSecondary,
+    fontFamily: typography.fontFamily.body,
+    fontSize: 11,
+    lineHeight: 17,
   },
   dropdownCard: {
     marginTop: -4,
@@ -309,6 +380,19 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     paddingHorizontal: 0,
     overflow: 'hidden',
+  },
+  datePickerCard: {
+    marginTop: -4,
+    marginBottom: 12,
+    paddingTop: 12,
+    paddingBottom: 4,
+    paddingHorizontal: 12,
+  },
+  datePickerHeader: {
+    marginBottom: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
   dropdownOption: {
     flexDirection: 'row',
@@ -336,6 +420,11 @@ const styles = StyleSheet.create({
   },
   dropdownCheck: {
     color: colors.roseDark,
+    fontFamily: typography.fontFamily.bodyBold,
+    fontSize: 12,
+  },
+  clearAction: {
+    color: colors.rose,
     fontFamily: typography.fontFamily.bodyBold,
     fontSize: 12,
   },

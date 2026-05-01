@@ -60,16 +60,28 @@ export function CustomersScreen({ navigation }: Props) {
     return customers.filter((customer) => customer.contextSalonId === selectedSalon.id);
   }, [customers, filter, selectedSalon]);
 
+  const searchSuggestions = useMemo(() => {
+    const normalizedSearch = search.trim().toLowerCase();
+    if (!normalizedSearch) {
+      return [];
+    }
+
+    return visibleCustomers
+      .filter((customer) => {
+        const searchableText = `${customer.name} ${customer.whatsapp}`.toLowerCase();
+        return searchableText.includes(normalizedSearch);
+      })
+      .slice(0, 4);
+  }, [search, visibleCustomers]);
+
+  const totalCopy =
+    filter === 'current-context'
+      ? `${visibleCustomers.length} clientes vinculadas ao salao`
+      : `${visibleCustomers.length} clientes cadastradas`;
+
   return (
     <Screen>
-      <TopBar
-        title="Clientes"
-        rightContent={
-          <Pressable style={styles.newButton} onPress={() => navigation.navigate('CustomerForm', {})}>
-            <Text style={styles.newButtonText}>+ Nova</Text>
-          </Pressable>
-        }
-      />
+      <TopBar title="Clientes" />
       <View style={styles.content}>
         <TextInput
           placeholder="Buscar por nome ou telefone"
@@ -79,13 +91,41 @@ export function CustomersScreen({ navigation }: Props) {
           onChangeText={setSearch}
         />
 
+        {searchSuggestions.length > 0 ? (
+          <View style={styles.suggestionsCard}>
+            <Text style={styles.suggestionsLabel}>Sugestoes</Text>
+            {searchSuggestions.map((customer, index) => (
+              <Pressable
+                key={customer.id}
+                style={[styles.suggestionRow, index === searchSuggestions.length - 1 ? styles.suggestionRowLast : null]}
+                onPress={() =>
+                  navigation.navigate('CustomerDetail', {
+                    customerId: customer.id,
+                  })
+                }
+              >
+                <Avatar
+                  initials={customer.initials}
+                  size={34}
+                  source={customer.photoUrl ? { uri: customer.photoUrl } : undefined}
+                />
+                <View style={styles.suggestionMain}>
+                  <Text style={styles.suggestionTitle}>{customer.name}</Text>
+                  <Text style={styles.suggestionSubtitle}>{customer.whatsapp}</Text>
+                </View>
+                <Text style={styles.chevron}>{'>'}</Text>
+              </Pressable>
+            ))}
+          </View>
+        ) : null}
+
         <View style={styles.filtersRow}>
           <Pressable
             style={[styles.filterChip, filter === 'portfolio' ? styles.filterChipActive : null]}
             onPress={() => setFilter('portfolio')}
           >
             <Text style={[styles.filterChipText, filter === 'portfolio' ? styles.filterChipTextActive : null]}>
-              Portfolio profissional
+              Todas
             </Text>
           </Pressable>
           {selectedSalon ? (
@@ -100,9 +140,7 @@ export function CustomersScreen({ navigation }: Props) {
           ) : null}
         </View>
 
-        <Text style={styles.sectionLabel}>
-          {visibleCustomers.length} clientes {filter === 'portfolio' ? 'no portfolio profissional' : 'no contexto atual'}
-        </Text>
+        <Text style={styles.sectionLabel}>{totalCopy}</Text>
 
         {isLoading ? (
           <View style={styles.loadingContainer}>
@@ -175,19 +213,6 @@ const styles = StyleSheet.create({
     padding: 16,
     backgroundColor: colors.offWhite,
   },
-  newButton: {
-    borderWidth: 1,
-    borderColor: colors.borderStrong,
-    borderRadius: 999,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    backgroundColor: colors.rose,
-  },
-  newButtonText: {
-    color: '#FFFFFF',
-    fontFamily: typography.fontFamily.bodyBold,
-    fontSize: 11,
-  },
   searchInput: {
     marginBottom: 13,
     borderWidth: 1,
@@ -199,6 +224,49 @@ const styles = StyleSheet.create({
     color: colors.textMain,
     fontFamily: typography.fontFamily.body,
     fontSize: 13,
+  },
+  suggestionsCard: {
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radius.sm,
+    backgroundColor: '#FFFFFF',
+    overflow: 'hidden',
+  },
+  suggestionsLabel: {
+    paddingHorizontal: 13,
+    paddingTop: 11,
+    paddingBottom: 6,
+    color: colors.textSecondary,
+    fontFamily: typography.fontFamily.bodyBold,
+    fontSize: 10,
+    textTransform: 'uppercase',
+  },
+  suggestionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    paddingHorizontal: 13,
+    paddingVertical: 11,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+  },
+  suggestionRowLast: {
+    borderBottomWidth: 0,
+  },
+  suggestionMain: {
+    flex: 1,
+  },
+  suggestionTitle: {
+    color: colors.textMain,
+    fontFamily: typography.fontFamily.bodyBold,
+    fontSize: 13,
+  },
+  suggestionSubtitle: {
+    marginTop: 2,
+    color: colors.textSecondary,
+    fontFamily: typography.fontFamily.body,
+    fontSize: 11,
   },
   sectionLabel: {
     marginBottom: 8,
