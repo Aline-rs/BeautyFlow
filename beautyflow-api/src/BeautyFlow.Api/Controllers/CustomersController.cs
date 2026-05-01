@@ -358,7 +358,10 @@ public sealed class CustomersController : ControllerBase
             LastAppointmentLabel = latestAppointment is null
                 ? null
                 : $"{latestAppointment.Service.Name} em {latestAppointment.AppointmentDate:dd/MM/yyyy}",
-            History = appointments.Select(appointment => new CustomerHistoryItemDto
+            History = appointments
+                .OrderByDescending(appointment => appointment.AppointmentDate)
+                .ThenByDescending(appointment => appointment.CreatedAtUtc)
+                .Select(appointment => new CustomerHistoryItemDto
             {
                 Id = appointment.Id.ToString(),
                 ServiceName = appointment.Service.Name,
