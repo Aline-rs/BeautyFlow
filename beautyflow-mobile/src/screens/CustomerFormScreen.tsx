@@ -1,6 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import * as ImagePicker from 'expo-image-picker';
+import { AxiosError } from 'axios';
 import { useEffect, useMemo, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
@@ -149,8 +150,8 @@ export function CustomerFormScreen({ navigation, route }: Props) {
       navigation.replace('CustomerDetail', {
         customerId: savedCustomer.id,
       });
-    } catch {
-      Alert.alert('Erro', 'Nao foi possivel salvar a cliente agora.');
+    } catch (error) {
+      Alert.alert('Erro', getCustomerSaveErrorMessage(error));
     } finally {
       setIsSubmitting(false);
     }
@@ -456,6 +457,16 @@ function buildIsoDate(year: number, month: number, day: number) {
 
 function getDaysInMonth(year: number, month: number) {
   return new Date(year, month, 0).getDate();
+}
+
+function getCustomerSaveErrorMessage(error: unknown) {
+  const axiosError = error as AxiosError<{ message?: string; errors?: string[]; data?: { message?: string } }>;
+  return (
+    axiosError.response?.data?.message ??
+    axiosError.response?.data?.data?.message ??
+    axiosError.response?.data?.errors?.[0] ??
+    'Nao foi possivel salvar a cliente agora.'
+  );
 }
 
 const styles = StyleSheet.create({

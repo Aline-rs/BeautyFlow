@@ -21,8 +21,16 @@ function shouldFallback(error: unknown) {
 
   const axiosError = error as AxiosError | undefined;
   const status = axiosError?.response?.status;
+  const authorizationHeader = api.defaults.headers.common.Authorization;
+  const normalizedAuthorization =
+    typeof authorizationHeader === 'string'
+      ? authorizationHeader
+      : Array.isArray(authorizationHeader)
+        ? authorizationHeader.join(' ')
+        : '';
+  const isUsingMockToken = normalizedAuthorization.includes('mock-token-');
 
-  return !status || status === 404 || status >= 500;
+  return !status || status === 404 || status >= 500 || (status === 401 && isUsingMockToken);
 }
 
 function buildCustomer(payload: CustomerFormPayload, existing?: Customer): Customer {
