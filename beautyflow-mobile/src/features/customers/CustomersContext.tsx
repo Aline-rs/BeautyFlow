@@ -1,4 +1,4 @@
-import { PropsWithChildren, createContext, useCallback, useContext, useMemo, useState } from 'react';
+import { PropsWithChildren, createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import {
   createCustomer,
   fetchCustomerById,
@@ -21,6 +21,11 @@ const CustomersContext = createContext<CustomersContextValue | null>(null);
 export function CustomersProvider({ children }: PropsWithChildren) {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const customersRef = useRef<Customer[]>([]);
+
+  useEffect(() => {
+    customersRef.current = customers;
+  }, [customers]);
 
   const loadCustomers = useCallback(async (search?: string) => {
     setIsLoading(true);
@@ -36,7 +41,7 @@ export function CustomersProvider({ children }: PropsWithChildren) {
     const fetchedCustomer = await fetchCustomerById(customerId);
 
     if (!fetchedCustomer) {
-      return customers.find((customer) => customer.id === customerId) ?? null;
+      return customersRef.current.find((customer) => customer.id === customerId) ?? null;
     }
 
     setCustomers((currentCustomers) => {
@@ -52,7 +57,7 @@ export function CustomersProvider({ children }: PropsWithChildren) {
     });
 
     return fetchedCustomer;
-  }, [customers]);
+  }, []);
 
   const saveCustomer = useCallback(async (payload: CustomerFormPayload, customerId?: string) => {
     const basePayload = isLocalPhotoAsset(payload.photoUrl)
