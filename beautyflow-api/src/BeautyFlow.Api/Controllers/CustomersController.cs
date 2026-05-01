@@ -313,6 +313,13 @@ public sealed class CustomersController : ControllerBase
 
     private async Task<CustomerDto> MapCustomerAsync(Customer customer)
     {
+        if (customer.SalonId is not null && customer.Salon is null)
+        {
+            customer.Salon = await _dbContext.Salons
+                .AsNoTracking()
+                .FirstOrDefaultAsync(x => x.Id == customer.SalonId.Value);
+        }
+
         var appointments = await _dbContext.Appointments
             .AsNoTracking()
             .Include(x => x.Salon)
