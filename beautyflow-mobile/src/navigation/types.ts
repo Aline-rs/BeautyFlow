@@ -24,6 +24,7 @@ export type AppointmentsStackParamList = {
   AppointmentsMain: undefined;
   AppointmentForm: {
     customerId?: string;
+    appointmentId?: string;
   };
 };
 

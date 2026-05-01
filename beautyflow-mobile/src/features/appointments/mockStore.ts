@@ -134,6 +134,12 @@ export function prependMockAppointment(appointment: Appointment) {
   mockAppointments = [appointment, ...mockAppointments];
 }
 
+export function replaceMockAppointment(appointmentId: string, nextAppointment: Appointment) {
+  mockAppointments = mockAppointments.map((appointment) =>
+    appointment.id === appointmentId ? nextAppointment : appointment,
+  );
+}
+
 export function prependMockMessage(message: ScheduledMessage) {
   mockMessages = [message, ...mockMessages];
 }

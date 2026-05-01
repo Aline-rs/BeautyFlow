@@ -1,12 +1,13 @@
 import { PropsWithChildren, createContext, useCallback, useContext, useMemo, useState } from 'react';
-import { createAppointment, fetchAppointments } from './appointmentsService';
-import { Appointment, CreateAppointmentPayload } from './types';
+import { createAppointment, fetchAppointmentById, fetchAppointments, updateAppointment } from './appointmentsService';
+import { Appointment, CreateAppointmentPayload, UpdateAppointmentPayload } from './types';
 
 type AppointmentsContextValue = {
   appointments: Appointment[];
   isLoading: boolean;
   loadAppointments: (search?: string) => Promise<void>;
-  registerAppointment: (payload: CreateAppointmentPayload) => Promise<Appointment>;
+  getAppointmentById: (appointmentId: string) => Promise<Appointment | null>;
+  saveAppointment: (payload: CreateAppointmentPayload | UpdateAppointmentPayload, appointmentId?: string) => Promise<Appointment>;
 };
 
 const AppointmentsContext = createContext<AppointmentsContextValue | null>(null);
@@ -25,10 +26,36 @@ export function AppointmentsProvider({ children }: PropsWithChildren) {
     }
   }, []);
 
-  const registerAppointment = useCallback(async (payload: CreateAppointmentPayload) => {
-    const createdAppointment = await createAppointment(payload);
-    setAppointments((currentAppointments) => [createdAppointment, ...currentAppointments]);
-    return createdAppointment;
+  const getAppointmentById = useCallback(async (appointmentId: string) => {
+    const appointment = await fetchAppointmentById(appointmentId);
+
+    if (!appointment) {
+      return null;
+    }
+
+    setAppointments((currentAppointments) => {
+      const hasAppointment = currentAppointments.some((current) => current.id === appointment.id);
+      return hasAppointment
+        ? currentAppointments.map((current) => (current.id === appointment.id ? appointment : current))
+        : [appointment, ...currentAppointments];
+    });
+
+    return appointment;
+  }, []);
+
+  const saveAppointment = useCallback(async (payload: CreateAppointmentPayload | UpdateAppointmentPayload, appointmentId?: string) => {
+    const savedAppointment = appointmentId
+      ? await updateAppointment(appointmentId, payload)
+      : await createAppointment(payload);
+
+    setAppointments((currentAppointments) => {
+      const hasAppointment = currentAppointments.some((current) => current.id === savedAppointment.id);
+      return hasAppointment
+        ? currentAppointments.map((current) => (current.id === savedAppointment.id ? savedAppointment : current))
+        : [savedAppointment, ...currentAppointments];
+    });
+
+    return savedAppointment;
   }, []);
 
   const value = useMemo(
@@ -36,9 +63,10 @@ export function AppointmentsProvider({ children }: PropsWithChildren) {
       appointments,
       isLoading,
       loadAppointments,
-      registerAppointment,
+      getAppointmentById,
+      saveAppointment,
     }),
-    [appointments, isLoading, loadAppointments, registerAppointment],
+    [appointments, getAppointmentById, isLoading, loadAppointments, saveAppointment],
   );
 
   return <AppointmentsContext.Provider value={value}>{children}</AppointmentsContext.Provider>;

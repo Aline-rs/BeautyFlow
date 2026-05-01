@@ -42,7 +42,9 @@ function todayIsoDate() {
 
 export function AppointmentFormScreen({ navigation, route }: Props) {
   const presetCustomerId = route.params?.customerId;
-  const { registerAppointment } = useAppointments();
+  const editingAppointmentId = route.params?.appointmentId;
+  const isEditing = Boolean(editingAppointmentId);
+  const { getAppointmentById, saveAppointment } = useAppointments();
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [services, setServices] = useState<Service[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -51,6 +53,7 @@ export function AppointmentFormScreen({ navigation, route }: Props) {
   const {
     control,
     handleSubmit,
+    reset,
     setValue,
     watch,
     formState: { errors },
@@ -86,6 +89,19 @@ export function AppointmentFormScreen({ navigation, route }: Props) {
           setCustomers(nextCustomers);
           setServices(activeServices);
 
+          if (editingAppointmentId) {
+            const appointment = await getAppointmentById(editingAppointmentId);
+            if (appointment) {
+              reset({
+                customerId: appointment.customerId,
+                serviceIds: appointment.serviceIds.length > 0 ? appointment.serviceIds : [appointment.serviceId],
+                appointmentDate: appointment.appointmentDate,
+                notes: appointment.notes ?? '',
+              });
+              return;
+            }
+          }
+
           if (!selectedCustomerId && nextCustomers.length > 0) {
             setValue('customerId', presetCustomerId ?? nextCustomers[0].id);
           }
@@ -95,7 +111,7 @@ export function AppointmentFormScreen({ navigation, route }: Props) {
       }
 
       void loadOptions();
-    }, [presetCustomerId, selectedCustomerId, setValue]),
+    }, [editingAppointmentId, getAppointmentById, presetCustomerId, reset, selectedCustomerId, setValue]),
   );
 
   const selectedCustomer = useMemo(
@@ -149,12 +165,12 @@ export function AppointmentFormScreen({ navigation, route }: Props) {
     setIsSubmitting(true);
 
     try {
-      await registerAppointment({
+      await saveAppointment({
         customerId: values.customerId,
         serviceIds: values.serviceIds,
         appointmentDate: values.appointmentDate,
         notes: values.notes || undefined,
-      });
+      }, editingAppointmentId);
 
       navigation.goBack();
     } catch {
@@ -166,7 +182,7 @@ export function AppointmentFormScreen({ navigation, route }: Props) {
 
   return (
     <KeyboardScrollScreen
-      header={<TopBar title="Registrar atendimento" onBack={() => navigation.goBack()} />}
+      header={<TopBar title={isEditing ? 'Editar atendimento' : 'Registrar atendimento'} onBack={() => navigation.goBack()} />}
       contentContainerStyle={styles.content}
     >
       <View>
@@ -174,10 +190,11 @@ export function AppointmentFormScreen({ navigation, route }: Props) {
           label="Cliente *"
           value={selectedCustomer?.name}
           placeholder={isLoadingOptions ? 'Carregando clientes...' : 'Selecione uma cliente'}
-          onPress={() => setOpenDropdown((current) => (current === 'customer' ? null : 'customer'))}
+          onPress={isEditing ? undefined : () => setOpenDropdown((current) => (current === 'customer' ? null : 'customer'))}
         />
+        {isEditing ? <Text style={styles.helperText}>A cliente do atendimento nao pode ser alterada nesta edicao.</Text> : null}
 
-        {openDropdown === 'customer' ? (
+        {openDropdown === 'customer' && !isEditing ? (
           <AppCard style={styles.dropdownCard}>
             {customers.map((customer, index) => {
               const isSelected = customer.id === selectedCustomerId;
@@ -367,7 +384,7 @@ export function AppointmentFormScreen({ navigation, route }: Props) {
       />
 
       <AppButton
-        label="Salvar atendimento"
+        label={isEditing ? 'Salvar alteracoes' : 'Salvar atendimento'}
         onPress={handleSubmit(onSubmit)}
         loading={isSubmitting}
         disabled={isLoadingOptions}
@@ -554,6 +571,13 @@ const styles = StyleSheet.create({
     marginTop: -6,
     marginBottom: 8,
     color: colors.error,
+    fontFamily: typography.fontFamily.body,
+    fontSize: 11,
+  },
+  helperText: {
+    marginTop: -6,
+    marginBottom: 8,
+    color: colors.textSecondary,
     fontFamily: typography.fontFamily.body,
     fontSize: 11,
   },
