@@ -65,6 +65,7 @@ export async function createAppointment(payload: CreateAppointmentPayload): Prom
     const customerName = customer?.name ?? 'Cliente selecionada';
     const serviceName = service?.name ?? 'Servico selecionado';
     const customerWhatsapp = customer?.whatsapp ?? '(31) 90000-0000';
+    const contextLabel = customer?.contextLabel ?? 'Conta profissional';
     const messageText = `Oi, ${customerName}! Tudo bem? Ja faz ${suggestedReturnDays} dias desde ${serviceName.toLowerCase()}. Que tal agendar um retorno?`;
 
     const nextMessage: ScheduledMessage = {
@@ -75,7 +76,7 @@ export async function createAppointment(payload: CreateAppointmentPayload): Prom
       customerWhatsapp,
       serviceId: payload.serviceId,
       serviceName,
-      contextLabel: 'Conta profissional',
+      contextLabel,
       scheduledForDate,
       messageText,
       status: 'Pendente',
@@ -87,7 +88,7 @@ export async function createAppointment(payload: CreateAppointmentPayload): Prom
       customerName,
       serviceId: payload.serviceId,
       serviceName,
-      contextLabel: 'Conta profissional',
+      contextLabel,
       appointmentDate: payload.appointmentDate,
       notes: payload.notes,
       scheduledMessageId: nextMessage.id,
