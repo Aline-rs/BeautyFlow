@@ -25,6 +25,7 @@ export type AppointmentsStackParamList = {
   AppointmentForm: {
     customerId?: string;
     appointmentId?: string;
+    mode?: 'create' | 'edit';
   };
 };
 
