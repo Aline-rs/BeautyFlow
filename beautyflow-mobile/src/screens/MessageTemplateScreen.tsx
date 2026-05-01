@@ -3,11 +3,11 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useFocusEffect } from '@react-navigation/native';
 import { useCallback, useMemo, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { Alert, ScrollView, StyleSheet, Text } from 'react-native';
+import { Alert, StyleSheet, Text } from 'react-native';
 import { AppButton } from '../components/AppButton';
 import { AppCard } from '../components/AppCard';
 import { AppTextarea } from '../components/AppTextarea';
-import { Screen } from '../components/Screen';
+import { KeyboardScrollScreen } from '../components/KeyboardScrollScreen';
 import { TopBar } from '../components/TopBar';
 import {
   MessageTemplateFormValues,
@@ -92,9 +92,10 @@ export function MessageTemplateScreen({ navigation }: Props) {
   }
 
   return (
-    <Screen>
-      <TopBar title="Mensagens padrao" onBack={() => navigation.goBack()} />
-      <ScrollView contentContainerStyle={styles.content}>
+    <KeyboardScrollScreen
+      header={<TopBar title="Mensagens padrao" onBack={() => navigation.goBack()} />}
+      contentContainerStyle={styles.content}
+    >
         <AppCard style={styles.highlightCard}>
           <Text style={styles.sectionLabel}>Mensagem geral</Text>
           <Text style={styles.cardCopy}>
@@ -133,8 +134,7 @@ export function MessageTemplateScreen({ navigation }: Props) {
           loading={isSubmitting}
         />
         <AppButton label="Restaurar texto padrao" variant="secondary" onPress={() => void handleRestoreDefault()} />
-      </ScrollView>
-    </Screen>
+    </KeyboardScrollScreen>
   );
 }
 

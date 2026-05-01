@@ -42,11 +42,12 @@ export function TopBar({
 
 const styles = StyleSheet.create({
   container: {
-    height: 50,
+    minHeight: 58,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 16,
+    paddingVertical: 8,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
     backgroundColor: '#FFFFFF',

@@ -2,12 +2,12 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { Alert, ScrollView, StyleSheet, Text } from 'react-native';
+import { Alert, StyleSheet, Text } from 'react-native';
 import { AppButton } from '../components/AppButton';
 import { AppCard } from '../components/AppCard';
 import { AppInput } from '../components/AppInput';
 import { AppSelect } from '../components/AppSelect';
-import { Screen } from '../components/Screen';
+import { KeyboardScrollScreen } from '../components/KeyboardScrollScreen';
 import { TopBar } from '../components/TopBar';
 import { ServiceFormValues, serviceSchema, useServices } from '../features/services';
 import { MoreStackParamList } from '../navigation/types';
@@ -82,12 +82,15 @@ export function ServiceFormScreen({ navigation, route }: Props) {
   }
 
   return (
-    <Screen>
-      <TopBar
-        title={serviceId ? 'Editar servico' : 'Novo servico'}
-        onBack={() => navigation.goBack()}
-      />
-      <ScrollView contentContainerStyle={styles.content}>
+    <KeyboardScrollScreen
+      header={
+        <TopBar
+          title={serviceId ? 'Editar servico' : 'Novo servico'}
+          onBack={() => navigation.goBack()}
+        />
+      }
+      contentContainerStyle={styles.content}
+    >
         <Controller
           control={control}
           name="name"
@@ -144,8 +147,7 @@ export function ServiceFormScreen({ navigation, route }: Props) {
           onPress={() => navigation.goBack()}
           disabled={isSubmitting}
         />
-      </ScrollView>
-    </Screen>
+    </KeyboardScrollScreen>
   );
 }
 

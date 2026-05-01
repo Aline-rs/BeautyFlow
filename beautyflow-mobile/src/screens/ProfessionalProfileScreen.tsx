@@ -4,12 +4,12 @@ import { useFocusEffect } from '@react-navigation/native';
 import * as ImagePicker from 'expo-image-picker';
 import { useCallback, useMemo, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, StyleSheet, Text, View } from 'react-native';
 import { AppButton } from '../components/AppButton';
 import { AppInput } from '../components/AppInput';
 import { Avatar } from '../components/Avatar';
 import { PhotoPicker } from '../components/PhotoPicker';
-import { Screen } from '../components/Screen';
+import { KeyboardScrollScreen } from '../components/KeyboardScrollScreen';
 import { TopBar } from '../components/TopBar';
 import { useAuth } from '../features/auth';
 import {
@@ -130,9 +130,10 @@ export function ProfessionalProfileScreen({ navigation }: Props) {
   }
 
   return (
-    <Screen>
-      <TopBar title="Meu perfil" onBack={() => navigation.goBack()} />
-      <ScrollView contentContainerStyle={styles.content}>
+    <KeyboardScrollScreen
+      header={<TopBar title="Meu perfil" onBack={() => navigation.goBack()} />}
+      contentContainerStyle={styles.content}
+    >
         <View style={styles.header}>
           <Avatar
             initials={buildInitials(session?.user.name ?? 'BF')}
@@ -190,8 +191,7 @@ export function ProfessionalProfileScreen({ navigation }: Props) {
           loading={isSubmitting}
           disabled={isLoading}
         />
-      </ScrollView>
-    </Screen>
+    </KeyboardScrollScreen>
   );
 }
 

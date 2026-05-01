@@ -3,13 +3,13 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useFocusEffect } from '@react-navigation/native';
 import { useCallback, useMemo, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { Alert, ScrollView, StyleSheet, Text } from 'react-native';
+import { Alert, StyleSheet, Text } from 'react-native';
 import { AppButton } from '../components/AppButton';
 import { AppCard } from '../components/AppCard';
 import { AppInput } from '../components/AppInput';
 import { AppSelect } from '../components/AppSelect';
 import { AppTextarea } from '../components/AppTextarea';
-import { Screen } from '../components/Screen';
+import { KeyboardScrollScreen } from '../components/KeyboardScrollScreen';
 import { TopBar } from '../components/TopBar';
 import { AppointmentFormValues, appointmentSchema, useAppointments } from '../features/appointments';
 import { fetchCustomers } from '../features/customers/customersService';
@@ -129,9 +129,10 @@ export function AppointmentFormScreen({ navigation, route }: Props) {
   }
 
   return (
-    <Screen>
-      <TopBar title="Registrar atendimento" onBack={() => navigation.goBack()} />
-      <ScrollView contentContainerStyle={styles.content}>
+    <KeyboardScrollScreen
+      header={<TopBar title="Registrar atendimento" onBack={() => navigation.goBack()} />}
+      contentContainerStyle={styles.content}
+    >
         <AppSelect
           label="Cliente *"
           value={selectedCustomer?.name}
@@ -223,8 +224,7 @@ export function AppointmentFormScreen({ navigation, route }: Props) {
           onPress={() => navigation.goBack()}
           disabled={isSubmitting}
         />
-      </ScrollView>
-    </Screen>
+    </KeyboardScrollScreen>
   );
 }
 

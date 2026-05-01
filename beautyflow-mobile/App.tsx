@@ -6,6 +6,7 @@ import {
 import { PlayfairDisplay_600SemiBold } from '@expo-google-fonts/playfair-display';
 import { useFonts } from 'expo-font';
 import { StatusBar } from 'expo-status-bar';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AuthProvider } from './src/features/auth';
 import { RootNavigator } from './src/navigation/RootNavigator';
 
@@ -22,9 +23,11 @@ export default function App() {
   }
 
   return (
-    <AuthProvider>
-      <RootNavigator />
-      <StatusBar style="dark" />
-    </AuthProvider>
+    <SafeAreaProvider>
+      <AuthProvider>
+        <RootNavigator />
+        <StatusBar style="dark" />
+      </AuthProvider>
+    </SafeAreaProvider>
   );
 }
