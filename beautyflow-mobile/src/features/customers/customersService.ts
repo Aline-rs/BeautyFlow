@@ -238,27 +238,52 @@ export function syncMockCustomerAfterAppointmentMutation(
     const nextServiceName = payload.serviceNames.length > 0
       ? payload.serviceNames.join(' + ')
       : payload.serviceName;
-    const lastAppointmentLabel = `${nextServiceName} - ${formatShortDate(payload.appointmentDate)}`;
+    const nextHistoryItem: Customer['history'][number] = {
+      id: payload.appointmentId,
+      serviceName: nextServiceName,
+      contextLabel: payload.contextLabel || customer.contextLabel,
+      appointmentDate: payload.appointmentDate,
+      messageStatus: payload.messageStatus,
+      nextContactDate: payload.nextContactDate,
+    };
+    const existingOrder = new Map(
+      customer.history.map((item, index) => [item.id, index]),
+    );
+    const history = [
+      nextHistoryItem,
+      ...customer.history.filter((item) => item.id !== payload.appointmentId),
+    ].sort((left, right) => {
+      const dateCompare = compareIsoDatesDesc(left.appointmentDate, right.appointmentDate);
+      if (dateCompare !== 0) {
+        return dateCompare;
+      }
+
+      return (existingOrder.get(left.id) ?? Number.MAX_SAFE_INTEGER) - (existingOrder.get(right.id) ?? Number.MAX_SAFE_INTEGER);
+    });
+    const latestHistoryItem = history[0];
+    const nextPendingHistoryItem = history
+      .filter((item) => item.messageStatus === 'Pendente' && item.nextContactDate)
+      .sort((left, right) => compareIsoDatesAsc(left.nextContactDate!, right.nextContactDate!))[0];
 
     return {
       ...customer,
       contextLabel: payload.contextLabel || customer.contextLabel,
-      nextServiceName,
-      nextContactDate: payload.nextContactDate,
-      lastAppointmentLabel,
-      history: [
-        {
-          id: payload.appointmentId,
-          serviceName: nextServiceName,
-          contextLabel: payload.contextLabel || customer.contextLabel,
-          appointmentDate: payload.appointmentDate,
-          messageStatus: payload.messageStatus,
-          nextContactDate: payload.nextContactDate,
-        },
-        ...customer.history.filter((item) => item.id !== payload.appointmentId),
-      ],
+      nextServiceName: nextPendingHistoryItem?.serviceName ?? latestHistoryItem?.serviceName ?? customer.nextServiceName,
+      nextContactDate: nextPendingHistoryItem?.nextContactDate,
+      lastAppointmentLabel: latestHistoryItem
+        ? `${latestHistoryItem.serviceName} - ${formatShortDate(latestHistoryItem.appointmentDate)}`
+        : customer.lastAppointmentLabel,
+      history,
     };
   });
+}
+
+function compareIsoDatesAsc(left: string, right: string) {
+  return left.localeCompare(right);
+}
+
+function compareIsoDatesDesc(left: string, right: string) {
+  return right.localeCompare(left);
 }
 
 function formatShortDate(date: string) {
