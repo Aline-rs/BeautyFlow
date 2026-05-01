@@ -32,12 +32,25 @@ export function CustomersProvider({ children }: PropsWithChildren) {
   }, []);
 
   const getCustomerById = useCallback(async (customerId: string) => {
-    const existingCustomer = customers.find((customer) => customer.id === customerId);
-    if (existingCustomer) {
-      return existingCustomer;
+    const fetchedCustomer = await fetchCustomerById(customerId);
+
+    if (!fetchedCustomer) {
+      return customers.find((customer) => customer.id === customerId) ?? null;
     }
 
-    return fetchCustomerById(customerId);
+    setCustomers((currentCustomers) => {
+      const hasCustomer = currentCustomers.some((customer) => customer.id === fetchedCustomer.id);
+
+      if (hasCustomer) {
+        return currentCustomers.map((customer) =>
+          customer.id === fetchedCustomer.id ? fetchedCustomer : customer,
+        );
+      }
+
+      return [fetchedCustomer, ...currentCustomers];
+    });
+
+    return fetchedCustomer;
   }, [customers]);
 
   const saveCustomer = useCallback(async (payload: CustomerFormPayload, customerId?: string) => {
