@@ -16,6 +16,7 @@ public sealed class Customer : Entity
     public DateTime? UpdatedAtUtc { get; set; }
 
     public ICollection<Appointment> Appointments { get; set; } = new List<Appointment>();
+    public ICollection<AppointmentService> AppointmentServices { get; set; } = new List<AppointmentService>();
     public ICollection<ScheduledMessage> ScheduledMessages { get; set; } = new List<ScheduledMessage>();
     public Salon? Salon { get; set; }
     public User User { get; set; } = null!;

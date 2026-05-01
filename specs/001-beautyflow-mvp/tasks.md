@@ -214,19 +214,19 @@
 
 ### P4 - Refine appointments list and redesign register-appointment flow
 
-- [ ] P121 Remove the top `+ Novo` button from `AppointmentsHistoryScreen` and add a floating `+` action like `Clientes`.
-- [ ] P122 Move appointment filter chips below the search bar.
-- [ ] P123 Remove the `Com retorno` appointment filter chip.
-- [ ] P124 Add a `Mes passado` appointment filter chip.
-- [ ] P125 Add a salon filter chip to appointments so the professional can view attendances by salon.
-- [ ] P126 Show customer profile photo on appointment cards when available and fallback to centered initials otherwise.
-- [ ] P127 Convert all selectable fields in `AppointmentFormScreen` to dropdown interactions.
-- [ ] P128 Replace manual appointment-date typing with a calendar picker.
-- [ ] P129 Remove the message-preview card from `AppointmentFormScreen`.
-- [ ] P130 Decide the persistence model for multi-service appointments.
-- [ ] P131 Implement multi-service selection in appointment registration.
-- [ ] P132 Schedule the follow-up message date using the selected service with the longest recurrence window.
-- [ ] P133 Review `AppointmentFormScreen` and `AppointmentsHistoryScreen` against the HTML prototype.
+- [x] P121 Remove the top `+ Novo` button from `AppointmentsHistoryScreen` and add a floating `+` action like `Clientes`.
+- [x] P122 Move appointment filter chips below the search bar.
+- [x] P123 Remove the `Com retorno` appointment filter chip.
+- [x] P124 Add a `Mes passado` appointment filter chip.
+- [x] P125 Add a salon filter chip to appointments so the professional can view attendances by salon.
+- [x] P126 Show customer profile photo on appointment cards when available and fallback to centered initials otherwise.
+- [x] P127 Convert all selectable fields in `AppointmentFormScreen` to dropdown interactions.
+- [x] P128 Replace manual appointment-date typing with a calendar picker.
+- [x] P129 Remove the message-preview card from `AppointmentFormScreen`.
+- [x] P130 Decide the persistence model for multi-service appointments.
+- [x] P131 Implement multi-service selection in appointment registration.
+- [x] P132 Schedule the follow-up message date using the selected service with the longest recurrence window.
+- [x] P133 Review `AppointmentFormScreen` and `AppointmentsHistoryScreen` against the HTML prototype.
 
 ### P5 - Improve messages visibility, editing, and filtering
 

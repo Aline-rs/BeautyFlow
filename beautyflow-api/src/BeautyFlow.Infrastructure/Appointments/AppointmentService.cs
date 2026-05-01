@@ -44,14 +44,19 @@ public sealed class AppointmentService : IAppointmentService
 
         var service = await _dbContext.Services
             .AsNoTracking()
-            .FirstOrDefaultAsync(
-                x => x.Id == input.ServiceId && x.UserId == userId,
-                cancellationToken);
+            .Where(x => input.ServiceIds.Contains(x.Id) && x.UserId == userId)
+            .OrderBy(x => x.Name)
+            .ToListAsync(cancellationToken);
 
-        if (service is null)
+        if (service.Count != input.ServiceIds.Count)
         {
-            throw new InvalidOperationException("Service was not found.");
+            throw new InvalidOperationException("One or more services were not found.");
         }
+
+        var triggerService = service
+            .OrderByDescending(x => x.SuggestedReturnDays)
+            .ThenBy(x => x.Name)
+            .First();
 
         Salon? salon = null;
         var effectiveSalonId = salonId ?? customer.SalonId;
@@ -64,12 +69,12 @@ public sealed class AppointmentService : IAppointmentService
                 ?? throw new InvalidOperationException("Salon was not found.");
         }
 
-        var scheduledForDate = input.AppointmentDate.AddDays(service.SuggestedReturnDays);
+        var scheduledForDate = input.AppointmentDate.AddDays(triggerService.SuggestedReturnDays);
         var messageText = _messageTemplateRenderer.RenderFollowUpMessage(
             salon?.Name ?? user.Name,
             customer.Name,
-            service.Name,
-            service.SuggestedReturnDays,
+            triggerService.Name,
+            triggerService.SuggestedReturnDays,
             input.AppointmentDate);
 
         await using var transaction = await _dbContext.Database.BeginTransactionAsync(cancellationToken);
@@ -79,12 +84,29 @@ public sealed class AppointmentService : IAppointmentService
             UserId = userId,
             SalonId = effectiveSalonId,
             CustomerId = customer.Id,
-            ServiceId = service.Id,
+            ServiceId = triggerService.Id,
             AppointmentDate = input.AppointmentDate,
             Notes = string.IsNullOrWhiteSpace(input.Notes) ? null : input.Notes.Trim()
         };
 
         _dbContext.Appointments.Add(appointment);
+        await _dbContext.SaveChangesAsync(cancellationToken);
+
+        var appointmentServices = service
+            .Select((item, index) => new Domain.Entities.AppointmentService
+            {
+                UserId = userId,
+                AppointmentId = appointment.Id,
+                CustomerId = customer.Id,
+                ServiceId = item.Id,
+                SalonId = effectiveSalonId,
+                AppointmentDate = input.AppointmentDate,
+                SuggestedReturnDays = item.SuggestedReturnDays,
+                SortOrder = index
+            })
+            .ToList();
+
+        _dbContext.AppointmentServices.AddRange(appointmentServices);
         await _dbContext.SaveChangesAsync(cancellationToken);
 
         var scheduledMessage = new ScheduledMessage
@@ -93,7 +115,7 @@ public sealed class AppointmentService : IAppointmentService
             SalonId = effectiveSalonId,
             AppointmentId = appointment.Id,
             CustomerId = customer.Id,
-            ServiceId = service.Id,
+            ServiceId = triggerService.Id,
             ScheduledForDate = scheduledForDate,
             MessageText = messageText
         };

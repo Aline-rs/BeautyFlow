@@ -54,8 +54,15 @@ public sealed class AppointmentsController : ControllerBase
             salonId = selectedSalonId.Value;
         }
 
+        var serviceIds = request.ServiceIds
+            .Where(x => !string.IsNullOrWhiteSpace(x))
+            .Select(x => Guid.TryParse(x, out var parsedId) ? parsedId : Guid.Empty)
+            .Where(x => x != Guid.Empty)
+            .Distinct()
+            .ToList();
+
         if (!Guid.TryParse(request.CustomerId, out var customerId) ||
-            !Guid.TryParse(request.ServiceId, out var serviceId) ||
+            serviceIds.Count == 0 ||
             !DateOnly.TryParse(request.AppointmentDate, out var appointmentDate))
         {
             return BadRequest(ApiResponse<object>.Failure("Invalid appointment payload."));
@@ -69,7 +76,7 @@ public sealed class AppointmentsController : ControllerBase
                 new CreateAppointmentInput
                 {
                     CustomerId = customerId,
-                    ServiceId = serviceId,
+                    ServiceIds = serviceIds,
                     AppointmentDate = appointmentDate,
                     Notes = request.Notes
                 });
@@ -98,6 +105,8 @@ public sealed class AppointmentsController : ControllerBase
             .Include(x => x.Customer)
             .Include(x => x.Salon)
             .Include(x => x.Service)
+            .Include(x => x.AppointmentServices)
+                .ThenInclude(x => x.Service)
             .Include(x => x.ScheduledMessage)
             .Where(x => x.UserId == userId.Value);
 
@@ -106,7 +115,8 @@ public sealed class AppointmentsController : ControllerBase
             var normalizedSearch = search.Trim().ToLowerInvariant();
             query = query.Where(x =>
                 EF.Functions.ILike(x.Customer.Name, $"%{normalizedSearch}%") ||
-                EF.Functions.ILike(x.Service.Name, $"%{normalizedSearch}%"));
+                EF.Functions.ILike(x.Service.Name, $"%{normalizedSearch}%") ||
+                x.AppointmentServices.Any(link => EF.Functions.ILike(link.Service.Name, $"%{normalizedSearch}%")));
         }
 
         var appointments = await query
@@ -126,19 +136,38 @@ public sealed class AppointmentsController : ControllerBase
             .Include(x => x.Customer)
             .Include(x => x.Salon)
             .Include(x => x.Service)
+            .Include(x => x.AppointmentServices)
+                .ThenInclude(x => x.Service)
             .Include(x => x.ScheduledMessage)
             .FirstOrDefaultAsync(x => x.Id == appointmentId && x.UserId == userId);
     }
 
     private static AppointmentDto MapAppointment(Appointment appointment)
     {
+        var orderedServices = appointment.AppointmentServices
+            .OrderBy(x => x.SortOrder)
+            .Select(x => x.Service)
+            .ToList();
+        var primaryService = orderedServices.FirstOrDefault() ?? appointment.Service;
+        var serviceIds = orderedServices.Count > 0
+            ? orderedServices.Select(x => x.Id.ToString()).ToArray()
+            : new[] { primaryService.Id.ToString() };
+        var serviceNames = orderedServices.Count > 0
+            ? orderedServices.Select(x => x.Name).ToArray()
+            : new[] { primaryService.Name };
+
         return new AppointmentDto
         {
             Id = appointment.Id.ToString(),
             CustomerId = appointment.CustomerId.ToString(),
             CustomerName = appointment.Customer.Name,
-            ServiceId = appointment.ServiceId.ToString(),
-            ServiceName = appointment.Service.Name,
+            CustomerInitials = BuildInitials(appointment.Customer.Name),
+            CustomerPhotoUrl = appointment.Customer.PhotoUrl,
+            ServiceId = primaryService.Id.ToString(),
+            ServiceName = primaryService.Name,
+            ServiceIds = serviceIds,
+            ServiceNames = serviceNames,
+            ContextSalonId = appointment.SalonId?.ToString(),
             ContextLabel = appointment.Salon?.Name ?? "Conta profissional",
             AppointmentDate = appointment.AppointmentDate.ToString("yyyy-MM-dd"),
             Notes = appointment.Notes,
@@ -147,5 +176,15 @@ public sealed class AppointmentsController : ControllerBase
             MessageStatus = CustomersController.MapMessageStatusLabel(appointment.ScheduledMessage?.Status),
             MessageText = appointment.ScheduledMessage?.MessageText ?? string.Empty
         };
+    }
+
+    private static string BuildInitials(string name)
+    {
+        var parts = name
+            .Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Take(2)
+            .Select(part => char.ToUpperInvariant(part[0]));
+
+        return string.Concat(parts);
     }
 }

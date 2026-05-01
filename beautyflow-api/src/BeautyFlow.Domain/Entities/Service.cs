@@ -13,5 +13,6 @@ public sealed class Service : Entity
 
     public User User { get; set; } = null!;
     public ICollection<Appointment> Appointments { get; set; } = new List<Appointment>();
+    public ICollection<AppointmentService> AppointmentServices { get; set; } = new List<AppointmentService>();
     public ICollection<ScheduledMessage> ScheduledMessages { get; set; } = new List<ScheduledMessage>();
 }

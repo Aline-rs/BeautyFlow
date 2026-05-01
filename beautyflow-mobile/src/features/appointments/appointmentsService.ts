@@ -55,18 +55,33 @@ export async function createAppointment(payload: CreateAppointmentPayload): Prom
       throw error;
     }
 
-    const [customer, service] = await Promise.all([
-      fetchCustomerById(payload.customerId),
-      fetchServiceById(payload.serviceId),
-    ]);
+    const customer = await fetchCustomerById(payload.customerId);
+    const services = (
+      await Promise.all(
+        payload.serviceIds.map(async (serviceId) => fetchServiceById(serviceId)),
+      )
+    ).filter((service): service is NonNullable<typeof service> => Boolean(service));
 
-    const suggestedReturnDays = service?.suggestedReturnDays ?? 15;
+    if (services.length === 0) {
+      throw new Error('Servico nao encontrado.');
+    }
+
+    const triggerService = [...services].sort((left, right) => {
+      if (right.suggestedReturnDays !== left.suggestedReturnDays) {
+        return right.suggestedReturnDays - left.suggestedReturnDays;
+      }
+
+      return left.name.localeCompare(right.name);
+    })[0];
+
+    const serviceNames = services.map((service) => service.name);
+    const serviceIds = services.map((service) => service.id);
+    const suggestedReturnDays = triggerService.suggestedReturnDays;
     const scheduledForDate = addDaysToIsoDate(payload.appointmentDate, suggestedReturnDays);
     const customerName = customer?.name ?? 'Cliente selecionada';
-    const serviceName = service?.name ?? 'Servico selecionado';
     const customerWhatsapp = customer?.whatsapp ?? '(31) 90000-0000';
     const contextLabel = customer?.contextLabel ?? 'Conta profissional';
-    const messageText = `Oi, ${customerName}! Tudo bem? Ja faz ${suggestedReturnDays} dias desde ${serviceName.toLowerCase()}. Que tal agendar um retorno?`;
+    const messageText = `Oi, ${customerName}! Tudo bem? Ja faz ${suggestedReturnDays} dias desde ${triggerService.name.toLowerCase()}. Que tal agendar um retorno?`;
 
     const nextMessage: ScheduledMessage = {
       id: `message-${Date.now()}`,
@@ -74,8 +89,8 @@ export async function createAppointment(payload: CreateAppointmentPayload): Prom
       customerId: payload.customerId,
       customerName,
       customerWhatsapp,
-      serviceId: payload.serviceId,
-      serviceName,
+      serviceId: triggerService.id,
+      serviceName: triggerService.name,
       contextLabel,
       scheduledForDate,
       messageText,
@@ -86,8 +101,13 @@ export async function createAppointment(payload: CreateAppointmentPayload): Prom
       id: nextMessage.appointmentId,
       customerId: payload.customerId,
       customerName,
-      serviceId: payload.serviceId,
-      serviceName,
+      customerInitials: customer?.initials ?? buildInitials(customerName),
+      customerPhotoUrl: customer?.photoUrl,
+      serviceId: triggerService.id,
+      serviceName: triggerService.name,
+      serviceIds,
+      serviceNames,
+      contextSalonId: customer?.contextSalonId ?? null,
       contextLabel,
       appointmentDate: payload.appointmentDate,
       notes: payload.notes,
@@ -101,4 +121,13 @@ export async function createAppointment(payload: CreateAppointmentPayload): Prom
     prependMockMessage(nextMessage);
     return nextAppointment;
   }
+}
+
+function buildInitials(name: string) {
+  return name
+    .split(' ')
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase() ?? '')
+    .join('');
 }

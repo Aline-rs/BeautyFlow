@@ -2,8 +2,13 @@ export type Appointment = {
   id: string;
   customerId: string;
   customerName: string;
+  customerInitials: string;
+  customerPhotoUrl?: string;
   serviceId: string;
   serviceName: string;
+  serviceIds: string[];
+  serviceNames: string[];
+  contextSalonId?: string | null;
   contextLabel: string;
   appointmentDate: string;
   notes?: string;
@@ -15,7 +20,7 @@ export type Appointment = {
 
 export type CreateAppointmentPayload = {
   customerId: string;
-  serviceId: string;
+  serviceIds: string[];
   appointmentDate: string;
   notes?: string;
 };

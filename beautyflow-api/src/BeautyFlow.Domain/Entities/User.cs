@@ -11,6 +11,7 @@ public sealed class User : Entity
     public DateTime CreatedAtUtc { get; set; } = DateTime.UtcNow;
 
     public ICollection<Appointment> Appointments { get; set; } = new List<Appointment>();
+    public ICollection<AppointmentService> AppointmentServices { get; set; } = new List<AppointmentService>();
     public ICollection<Customer> Customers { get; set; } = new List<Customer>();
     public MessageTemplate? MessageTemplate { get; set; }
     public NotificationSettings? NotificationSettings { get; set; }
