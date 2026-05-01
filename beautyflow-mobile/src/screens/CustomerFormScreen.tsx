@@ -530,7 +530,8 @@ const styles = StyleSheet.create({
   dayGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
+    justifyContent: 'space-between',
+    rowGap: 8,
   },
   dateChip: {
     minWidth: 56,
@@ -544,7 +545,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
   },
   dayChip: {
-    width: '14.9%',
+    width: '13.4%',
     borderWidth: 1,
     borderColor: colors.borderStrong,
     borderRadius: 12,

@@ -30,7 +30,11 @@ function shouldFallback(error: unknown) {
         : '';
   const isUsingMockToken = normalizedAuthorization.includes('mock-token-');
 
-  return !status || status === 404 || status >= 500 || (status === 401 && isUsingMockToken);
+  if (isUsingMockToken) {
+    return true;
+  }
+
+  return !status || status === 404 || status >= 500;
 }
 
 function buildCustomer(payload: CustomerFormPayload, existing?: Customer): Customer {
