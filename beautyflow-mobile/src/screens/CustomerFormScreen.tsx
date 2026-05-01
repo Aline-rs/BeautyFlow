@@ -117,6 +117,7 @@ export function CustomerFormScreen({ navigation, route }: Props) {
           name: values.name,
           whatsapp: values.whatsapp,
           salonId: values.salonId || undefined,
+          salonLabel: values.salonId ? selectedSalonLabel : undefined,
           birthDate: values.birthDate || undefined,
           contactPreference: values.contactPreference,
           notes: values.notes || undefined,
