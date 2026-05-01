@@ -19,7 +19,7 @@ const filters: MessageFilter[] = ['Hoje', 'Pendentes', 'Enviadas', 'Erro'];
 
 export function MessagesScreen({ navigation }: Props) {
   const { messages, isLoading, loadMessages, markAsSent, getWhatsappLink } = useMessages();
-  const [selectedFilter, setSelectedFilter] = useState<MessageFilter>('Hoje');
+  const [selectedFilter, setSelectedFilter] = useState<MessageFilter>('Pendentes');
 
   useFocusEffect(
     useCallback(() => {
